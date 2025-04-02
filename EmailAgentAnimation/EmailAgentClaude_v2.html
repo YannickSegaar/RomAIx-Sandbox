@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Automation - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .post-container {
+            width: 1080px;
+            height: 1080px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #587C74, #2F3E46);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .laptop-mockup {
+            width: 880px;
+            height: 650px;
+            position: relative;
+            perspective: 1500px;
+            transform-style: preserve-3d;
+            transform: rotateX(5deg) rotateY(0deg);
+        }
+        
+        .laptop-screen {
+            width: 880px;
+            height: 620px;
+            background-color: #1a1a1a;
+            border-radius: 20px 20px 0 0;
+            padding: 15px 15px 25px 15px;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .laptop-screen::after {
+            content: '';
+            position: absolute;
+            width: 880px;
+            height: 620px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px 20px 0 0;
+            top: 0;
+            left: 0;
+            transform: translateZ(2px);
+            pointer-events: none;
+        }
+        
+        .laptop-base {
+            width: 920px;
+            height: 30px;
+            background: linear-gradient(to bottom, #333, #1a1a1a);
+            position: absolute;
+            top: 620px;
+            left: -20px;
+            transform: rotateX(80deg);
+            transform-origin: top;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .display {
+            width: 100%;
+            height: 100%;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .email-header {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .email-header-title {
+            font-size: 18px;
+        }
+        
+        .email-toolbar {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .toolbar-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .email-sidebar {
+            width: 180px;
+            height: calc(100% - 60px);
+            background-color: rgba(241, 242, 242, 0.5);
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 20px 0;
+            position: absolute;
+            top: 60px;
+            z-index: 1;
+        }
+        
+        .sidebar-item {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: rgba(85, 85, 85, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+        
+        .sidebar-item-active {
+            background-color: rgba(88, 124, 116, 0.15);
+            color: #2F3E46;
+            font-weight: 600;
+        }
+        
+        .sidebar-item-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            background-color: rgba(88, 124, 116, 0.3);
+        }
+
+        .notification {
+            width: 18px;
+            height: 18px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            position: absolute;
+            right: 15px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .email-content {
+            margin-left: 180px;
+            height: calc(100% - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .email-message {
+            padding: 25px 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        .email-subject {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2F3E46;
+            margin-bottom: 20px;
+        }
+        
+        .email-meta {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+        
+        .sender-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f1f2f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #2F3E46;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .sender-info {
+            font-size: 14px;
+        }
+        
+        .sender-name {
+            font-weight: 600;
+            color: #2F3E46;
+        }
+        
+        .sender-email {
+            color: #777;
+        }
+        
+        .sender-time {
+            color: #999;
+            font-size: 12px;
+            margin-left: auto;
+        }
+        
+        .email-body {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .email-reply {
+            background-color: #f1f2f2;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+            position: relative;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        .reply-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .ai-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, #2F3E46, #587C74);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        
+        .ai-tag {
+            font-size: 12px;
+            background-color: rgba(88, 124, 116, 0.15);
+            color: #2F3E46;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .reply-text {
+            min-height: 80px;
+        }
+        
+        .cursor {
+            display: inline-block;
+            animation: blink 1s infinite;
+            margin-left: 1px;
+            color: #333;
+        }
+        
+        .click-animation {
+            animation: click 0.3s ease;
+        }
+        
+        @keyframes click {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .email-composer {
+            height: 60px;
+            padding: 10px 30px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .composer-input {
+            flex-grow: 1;
+            height: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: #f1f2f2;
+            padding: 0 15px;
+            font-size: 14px;
+            color: #999;
+            display: flex;
+            align-items: center;
+        }
+        
+        .send-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, #2F3E46, #587C74);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .send-icon {
+            width: 18px;
+            height: 18px;
+            background-color: rgba(255, 255, 255, 0.8);
+            clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+        }
+        
+        .logo {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #2F3E46;
+        }
+
+        .approval-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .approve-btn {
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .approve-btn:hover {
+            background: linear-gradient(to right, #3a4f5a, #6b9b91);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .approve-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .approve-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .approve-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0) translate(-50%, -50%);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20) translate(-50%, -50%);
+                opacity: 0;
+            }
+        }
+
+        .email-sending {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .email-sending.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .sending-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 35px 55px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .sending-message {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2F3E46;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .sending-icon {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .paper-plane-container {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            perspective: 1000px;
+        }
+        
+        .paper-plane {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 25px;
+            left: 0;
+            animation: fly-plane 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+            transform-origin: center center;
+            will-change: transform;
+        }
+        
+        .paper-plane svg {
+            width: 100%;
+            height: 100%;
+            fill: #587C74;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .send-path {
+            stroke: #587C74;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: draw-path 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes draw-path {
+            0% { stroke-dashoffset: 100; opacity: 0.15; }
+            40% { stroke-dashoffset: 0; opacity: 0.4; }
+            80% { stroke-dashoffset: 0; opacity: 0.15; }
+            100% { stroke-dashoffset: 0; opacity: 0.05; }
+        }
+        
+        @keyframes fly-plane {
+            0% { transform: translateX(0) translateY(0) rotateZ(0deg) scale(0.9); }
+            10% { transform: translateX(10px) translateY(-3px) rotateZ(2deg) scale(0.95); }
+            20% { transform: translateX(20px) translateY(-5px) rotateZ(4deg) scale(1); }
+            30% { transform: translateX(30px) translateY(-6px) rotateZ(5deg) scale(1); }
+            40% { transform: translateX(40px) translateY(-5px) rotateZ(4deg) scale(1); }
+            50% { transform: translateX(50px) translateY(-3px) rotateZ(2deg) scale(1); }
+            60% { transform: translateX(60px) translateY(-1px) rotateZ(0deg) scale(1); }
+            70% { transform: translateX(70px) translateY(0px) rotateZ(-2deg) scale(1); }
+            80% { transform: translateX(80px) translateY(0px) rotateZ(-1deg) scale(0.95); }
+            90% { transform: translateX(90px) translateY(0px) rotateZ(0deg) scale(0.9); }
+            100% { transform: translateX(0) translateY(0) rotateZ(0deg) scale(0.9); }
+        }
+        
+        .success-icon {
+            display: none;
+            color: #587C74;
+            font-size: 48px;
+        }
+        
+        .success-icon.show {
+            display: block;
+            animation: success-pop 0.5s ease-out;
+        }
+        
+        @keyframes success-pop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="post-container">
+        <div class="laptop-mockup">
+            <div class="laptop-screen">
+                <div class="display">
+                    <div class="email-header">
+                        <div class="email-header-title">Tour Guide Assistant</div>
+                        <div class="email-toolbar">
+                            <div class="toolbar-icon"></div>
+                            <div class="toolbar-icon"></div>
+                            <div class="toolbar-icon"></div>
+                        </div>
+                    </div>
+                    <div class="email-sidebar">
+                        <div class="sidebar-item sidebar-item-active">
+                            <div class="sidebar-item-icon"></div>
+                            Inbox
+                            <div class="notification" id="inbox-notification">1</div>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-item-icon"></div>
+                            Sent
+                            <div class="notification" id="sent-notification">1</div>
+                        </div>
+                        <div class="sidebar-item">
+                            <div class="sidebar-item-icon"></div>
+                            Drafts
+                            <div class="notification" id="drafts-notification">1</div>
+                        </div>
+                    </div>
+                    <div class="email-content">
+                        <div class="email-message" id="email-content">
+                            <div class="email-subject">Question about sunset cruise availability</div>
+                            <div class="email-meta">
+                                <div class="sender-avatar">JD</div>
+                                <div class="sender-info">
+                                    <div class="sender-name">John Doe</div>
+                                    <div class="sender-email">john.doe@example.com</div>
+                                </div>
+                                <div class="sender-time">Today, 10:32 AM</div>
+                            </div>
+                            <div class="email-body">
+                                Hi,<br><br>
+                                Do you have sunset cruises for 6 people next month? Any special packages?<br><br>
+                                Thanks,<br>
+                                John
+                            </div>
+                            <div class="email-reply" id="email-reply">
+                                <div class="reply-header">
+                                    <div class="ai-avatar">AI</div>
+                                    <div class="ai-tag">AI Assistant</div>
+                                </div>
+                                <div class="reply-text" id="reply-text"></div>
+                                <div class="approval-section">
+                                    <button class="approve-btn" id="approve-btn">Approve</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="email-composer">
+                            <div class="composer-input">AI Assistant has responded to this email...</div>
+                            <div class="send-button">
+                                <div class="send-icon"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="laptop-base"></div>
+        </div>
+        <div class="logo">
+            <div class="logo-icon">R</div>
+            RomAIx
+        </div>
+    </div>
+
+    <div class="email-sending" id="email-sending">
+        <div class="sending-container">
+            <div class="sending-icon">
+                <div class="paper-plane-container">
+                    <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path class="send-path" d="M10,50 C30,30 70,70 90,50" fill="none"/>
+                    </svg>
+                    <div class="paper-plane">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21.7071 2.29289C21.9788 2.56476 22.0701 2.96965 21.9389 3.33039L15.9389 21.3304C15.8077 21.6911 15.4853 21.9404 15.1035 21.9923C14.7217 22.0442 14.3458 21.8893 14.1179 21.5858L9.35687 15.4329L3.20402 10.6719C2.90047 10.444 2.74559 10.0681 2.79748 9.68638C2.84937 9.30461 3.09873 8.98218 3.45938 8.85098L21.4594 2.85098C21.8201 2.71975 22.225 2.8111 22.4969 3.08279L21.7071 2.29289ZM5.64722 9.98022L10.4486 13.7942C10.5691 13.8899 10.6709 14.0053 10.7497 14.135L14.5637 18.9364L19.3924 4.60761L5.64722 9.98022Z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div id="success-icon" class="success-icon">✓</div>
+            </div>
+            <div class="sending-message" id="sending-message">Sending email...</div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION - Adjust these values to control animation speeds
+        const ANIMATION_SETTINGS = {
+            // Typing speed in milliseconds (higher = slower typing)
+            // Default: 30, Try 60-100 for slower typing
+            typeWriterSpeed: 20,
+            
+            // Delay before approval animation starts (in milliseconds)
+            // Default: 3000 (3 seconds)
+            approvalDelay: 3000
+        };
+        
+        // Function to simulate the approval process
+        function simulateEmailApproval() {
+            const emailSending = document.getElementById('email-sending');
+            const draftsNotification = document.getElementById('drafts-notification');
+            const sentNotification = document.getElementById('sent-notification');
+            const approveBtn = document.getElementById('approve-btn');
+            const sendingMessage = document.getElementById('sending-message');
+            const successIcon = document.getElementById('success-icon');
+            const paperPlaneContainer = document.querySelector('.paper-plane-container');
+            
+            // Add click animation to button
+            approveBtn.classList.add('click-animation');
+            
+            // Show sending animation
+            emailSending.classList.add('show');
+            
+            // Update sending status after 1.8 seconds to "Delivered"
+            setTimeout(function() {
+                sendingMessage.innerHTML = 'Email sent successfully!';
+                paperPlaneContainer.style.display = 'none';
+                successIcon.classList.add('show');
+            }, 1800);
+            
+            // Set a timeout to hide the animation and update notifications
+            setTimeout(function() {
+                emailSending.classList.remove('show');
+                draftsNotification.style.opacity = '0';
+                
+                // Reset the animation state for future runs
+                setTimeout(function() {
+                    paperPlaneContainer.style.display = 'block';
+                    successIcon.classList.remove('show');
+                    sendingMessage.innerHTML = 'Sending email...';
+                }, 1000);
+                
+                setTimeout(function() {
+                    sentNotification.style.opacity = '1';
+                    approveBtn.style.display = 'none';
+                    approveBtn.classList.remove('click-animation');
+                }, 500);
+            }, 2800);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const replyText = document.getElementById('reply-text');
+            const emailContent = document.getElementById('email-content');
+            const emailReply = document.getElementById('email-reply');
+            const approveBtn = document.getElementById('approve-btn');
+            const inboxNotification = document.getElementById('inbox-notification');
+            const draftsNotification = document.getElementById('drafts-notification');
+            
+            // Shorter, more concise response with emojis
+            const response = `Hi John! ✨
+
+Yes! We have sunset cruises for 6 next month. 🌅 You'll enjoy breathtaking ocean views, relaxing live music, and a delicious gourmet dinner, plus a 15% family discount!
+
+Would you like me to check specific dates? 📅
+
+Best,
+Tour Guide Assistant`;
+            
+            let i = 0;
+            // Use the configurable typing speed from the settings
+            let speed = ANIMATION_SETTINGS.typeWriterSpeed;
+            
+            // Start animation sequence
+            setTimeout(function() {
+                // Show inbox notification
+                inboxNotification.style.opacity = '1';
+                
+                // Fade in email content
+                setTimeout(function() {
+                    emailContent.style.opacity = '1';
+                    
+                    // Start reply animation after email appears
+                    setTimeout(function() {
+                        emailReply.style.opacity = '1';
+                        
+                        // Start typing animation
+                        setTimeout(function() {
+                            typeWriter();
+                        }, 1000);
+                    }, 1500);
+                }, 1000);
+            }, 500);
+            
+            function typeWriter() {
+                if (i < response.length) {
+                    // Completely remove the cursor element first
+                    if (replyText.querySelector('.cursor')) {
+                        replyText.querySelector('.cursor').remove();
+                    }
+                    
+                    if (response.charAt(i) === '\n') {
+                        replyText.innerHTML += '<br>';
+                    } else {
+                        replyText.innerHTML += response.charAt(i);
+                    }
+                    
+                    // Create a fresh cursor each time and append it
+                    const cursorElement = document.createElement('span');
+                    cursorElement.className = 'cursor';
+                    cursorElement.innerHTML = '|';
+                    replyText.appendChild(cursorElement);
+                    
+                    i++;
+                    setTimeout(typeWriter, speed);
+                } else {
+                    // When typing is complete, show drafts notification and approve button
+                    setTimeout(function() {
+                        draftsNotification.style.opacity = '1';
+                        approveBtn.style.display = 'block';
+                        
+                        // Wait for the configurable delay time after showing the draft notification and approve button
+                        // Then automatically trigger the approval animation
+                        setTimeout(function() {
+                            simulateEmailApproval();
+                        }, ANIMATION_SETTINGS.approvalDelay);
+                    }, 500);
+                }
+            }
+            
+            // Keep the button click functionality as well, in case you want to click it
+            approveBtn.addEventListener('click', simulateEmailApproval);
+        });
+    </script>
+</body>
+</html>
