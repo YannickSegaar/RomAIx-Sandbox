@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Routing System - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .background-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .animation-container {
+            width: 1000px;
+            height: 600px;
+            position: relative;
+            margin: 50px auto;
+        }
+        
+        .email-container {
+            position: absolute;
+            left: 50px;
+            top: 150px;
+            width: 200px;
+            height: 150px;
+            background-color: rgba(241, 242, 242, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        .email-header {
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .email-content {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 11px;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .email-subject {
+            font-weight: 700;
+            color: #2F3E46;
+        }
+        
+        .email-body {
+            color: #333;
+        }
+        
+        .router-agent {
+            position: absolute;
+            left: 400px;
+            top: 120px;
+            width: 220px;
+            height: 220px;
+            background-color: rgba(241, 242, 242, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 20;
+        }
+        
+        .router-header {
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            gap: 10px;
+        }
+        
+        .router-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .router-content {
+            flex-grow: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .analysis-text {
+            text-align: center;
+            font-size: 14px;
+            color: #2F3E46;
+            margin-bottom: 15px;
+        }
+        
+        .agent-container {
+            position: absolute;
+            right: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .agent {
+            width: 180px;
+            height: 120px;
+            background-color: rgba(241, 242, 242, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .agent.active {
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .agent-header {
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .agent-content {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 13px;
+            color: #2F3E46;
+        }
+        
+        .agent-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, #587C74, #2F3E46);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .support-agent {
+            top: 20px;
+        }
+        
+        .sales-agent {
+            top: 200px;
+        }
+        
+        .manager-agent {
+            top: 380px;
+        }
+        
+        .path {
+            position: absolute;
+            height: 2px;
+            background-color: rgba(88, 124, 116, 0.5);
+            z-index: 5;
+        }
+        
+        .arrow {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid rgba(88, 124, 116, 0.8);
+            border-right: 2px solid rgba(88, 124, 116, 0.8);
+        }
+        
+        .email {
+            position: absolute;
+            width: 28px;
+            height: 20px;
+            background-color: white;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #2F3E46;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 30;
+            transition: left 1.5s ease, top 1.5s ease;
+        }
+        
+        .email-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #2F3E46;
+            border-radius: 50%;
+        }
+        
+        .analysis-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .analysis-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #587C74;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+        
+        .analysis-dot.active {
+            opacity: 1;
+        }
+        
+        .routing-decision {
+            margin-top: 15px;
+            font-weight: 600;
+            color: #587C74;
+            text-align: center;
+            visibility: hidden;
+        }
+        
+        .logo {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+            z-index: 100;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #2F3E46;
+        }
+        
+        /* Animation keyframes */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes analyze {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .agent.pulse {
+            animation: pulse 0.6s ease;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1100px) {
+            .animation-container {
+                transform: scale(0.9);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .animation-container {
+                transform: scale(0.7);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background container - add your background image URL here -->
+    <div class="background-container">
+        <!-- Replace "your-background.png" with your actual background image path -->
+        <img class="background-image" src="your-background.png" alt="">
+    </div>
+
+    <div class="animation-container">
+        <!-- Incoming Email Container -->
+        <div class="email-container" id="email-container">
+            <div class="email-header">Incoming Email</div>
+            <div class="email-content">
+                <div class="email-subject" id="email-subject">Question about sunset cruise availability</div>
+                <div class="email-body" id="email-body">
+                    Hi,<br>
+                    Do you have sunset cruises for 6 people next month? Any special packages?<br>
+                    Thanks,<br>
+                    John
+                </div>
+            </div>
+        </div>
+        
+        <!-- Router/Orchestrator Agent -->
+        <div class="router-agent">
+            <div class="router-header">
+                <div class="router-icon">R</div>
+                AI Router Agent
+            </div>
+            <div class="router-content">
+                <div class="analysis-text">Analyzing email content...</div>
+                <div class="analysis-dots">
+                    <div class="analysis-dot"></div>
+                    <div class="analysis-dot"></div>
+                    <div class="analysis-dot"></div>
+                    <div class="analysis-dot"></div>
+                    <div class="analysis-dot"></div>
+                </div>
+                <div class="routing-decision" id="routing-decision">Routing to: Sales Agent</div>
+            </div>
+        </div>
+        
+        <!-- Specialized Agents -->
+        <div class="agent-container">
+            <!-- Customer Support Agent -->
+            <div class="agent support-agent" id="support-agent">
+                <div class="agent-header">Customer Support Agent</div>
+                <div class="agent-content">
+                    <div class="agent-icon">CS</div>
+                    <span>Handles inquiries about existing bookings</span>
+                </div>
+            </div>
+            
+            <!-- Sales Agent -->
+            <div class="agent sales-agent" id="sales-agent">
+                <div class="agent-header">Sales Agent</div>
+                <div class="agent-content">
+                    <div class="agent-icon">SA</div>
+                    <span>Handles new booking inquiries</span>
+                </div>
+            </div>
+            
+            <!-- Manager Agent -->
+            <div class="agent manager-agent" id="manager-agent">
+                <div class="agent-header">Manager Agent</div>
+                <div class="agent-content">
+                    <div class="agent-icon">MA</div>
+                    <span>Handles complex requests and concerns</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email movement paths -->
+        <div class="path" style="width: 150px; left: 250px; top: 220px;"></div>
+        <div class="path" style="width: 180px; left: 620px; top: 70px; transform: rotate(-10deg);"></div>
+        <div class="path" style="width: 180px; left: 620px; top: 250px;"></div>
+        <div class="path" style="width: 180px; left: 620px; top: 430px; transform: rotate(10deg);"></div>
+        
+        <!-- Arrows -->
+        <div class="arrow" style="transform: rotate(45deg); left: 395px; top: 215px;"></div>
+        <div class="arrow" style="transform: rotate(45deg); left: 795px; top: 65px;"></div>
+        <div class="arrow" style="transform: rotate(45deg); left: 795px; top: 245px;"></div>
+        <div class="arrow" style="transform: rotate(45deg); left: 795px; top: 425px;"></div>
+        
+        <!-- Moving Email Icon -->
+        <div class="email" id="moving-email" style="left: 150px; top: 220px;">
+            <div class="email-dot"></div>
+        </div>
+        
+        <!-- RomAIx Logo -->
+        <div class="logo">
+            <div class="logo-icon">R</div>
+            RomAIx
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuration for email examples
+            const emailExamples = [
+                {
+                    subject: "Question about sunset cruise availability",
+                    body: "Hi,<br>Do you have sunset cruises for 6 people next month? Any special packages?<br>Thanks,<br>John",
+                    routeTo: "sales-agent",
+                    routeDecision: "Routing to: Sales Agent"
+                },
+                {
+                    subject: "Help with my booking #RT45982",
+                    body: "Hello,<br>I need to modify my booking #RT45982. Can you help change the date?<br>Regards,<br>Sarah",
+                    routeTo: "support-agent",
+                    routeDecision: "Routing to: Customer Support"
+                },
+                {
+                    subject: "Complaint about tour guide",
+                    body: "To whom it may concern,<br>I had a very disappointing experience with one of your tour guides yesterday...<br>Sincerely,<br>David",
+                    routeTo: "manager-agent",
+                    routeDecision: "Routing to: Manager"
+                }
+            ];
+            
+            // DOM elements
+            const emailContainer = document.getElementById('email-container');
+            const emailSubject = document.getElementById('email-subject');
+            const emailBody = document.getElementById('email-body');
+            const movingEmail = document.getElementById('moving-email');
+            const routingDecision = document.getElementById('routing-decision');
+            const supportAgent = document.getElementById('support-agent');
+            const salesAgent = document.getElementById('sales-agent');
+            const managerAgent = document.getElementById('manager-agent');
+            const analysisDots = document.querySelectorAll('.analysis-dot');
+            
+            let currentEmailIndex = 0;
+            
+            // Function to animate analysis dots
+            function animateAnalysisDots() {
+                let dotIndex = 0;
+                
+                // Clear any existing dot animations
+                analysisDots.forEach(dot => {
+                    dot.classList.remove('active');
+                });
+                
+                const dotAnimation = setInterval(() => {
+                    // Reset all dots
+                    analysisDots.forEach(dot => {
+                        dot.classList.remove('active');
+                    });
+                    
+                    // Activate current dot
+                    analysisDots[dotIndex].classList.add('active');
+                    
+                    dotIndex = (dotIndex + 1) % analysisDots.length;
+                    
+                    // If we've gone through one complete cycle, stop
+                    if (dotIndex === 0) {
+                        clearInterval(dotAnimation);
+                        // After analysis completes, show routing decision
+                        routingDecision.style.visibility = 'visible';
+                        
+                        // After showing decision, animate email to destination
+                        setTimeout(routeEmailToAgent, 800);
+                    }
+                }, 250);
+            }
+            
+            // Function to route email to the appropriate agent
+            function routeEmailToAgent() {
+                const currentEmail = emailExamples[currentEmailIndex];
+                const targetAgent = document.getElementById(currentEmail.routeTo);
+                
+                // Reset agent states
+                supportAgent.classList.remove('active');
+                salesAgent.classList.remove('active');
+                managerAgent.classList.remove('active');
+                
+                // Get target agent position
+                const agentRect = targetAgent.getBoundingClientRect();
+                const containerRect = document.querySelector('.animation-container').getBoundingClientRect();
+                
+                // Calculate relative position
+                const targetX = agentRect.left - containerRect.left - 40; // Adjust as needed
+                const targetY = agentRect.top - containerRect.top + agentRect.height/2 - 10; // Center vertically
+                
+                // Animate email to target
+                movingEmail.style.left = targetX + 'px';
+                movingEmail.style.top = targetY + 'px';
+                
+                // Highlight target agent after email arrives
+                setTimeout(() => {
+                    targetAgent.classList.add('active');
+                    targetAgent.classList.add('pulse');
+                    
+                    // Remove pulse animation after it completes
+                    setTimeout(() => {
+                        targetAgent.classList.remove('pulse');
+                    }, 600);
+                    
+                    // Prepare for next email
+                    setTimeout(startNextEmailSequence, 3000);
+                }, 1500); // Time for email to arrive
+            }
+            
+            // Function to start the next email sequence
+            function startNextEmailSequence() {
+                // Reset UI elements
+                routingDecision.style.visibility = 'hidden';
+                supportAgent.classList.remove('active');
+                salesAgent.classList.remove('active');
+                managerAgent.classList.remove('active');
+                
+                // Move to next email example
+                currentEmailIndex = (currentEmailIndex + 1) % emailExamples.length;
+                
+                // Update email content
+                emailSubject.textContent = emailExamples[currentEmailIndex].subject;
+                emailBody.innerHTML = emailExamples[currentEmailIndex].body;
+                routingDecision.textContent = emailExamples[currentEmailIndex].routeDecision;
+                
+                // Reset email position
+                movingEmail.style.transition = 'none';
+                movingEmail.style.left = '150px';
+                movingEmail.style.top = '220px';
+                
+                // Force reflow to ensure transition is reset
+                void movingEmail.offsetWidth;
+                movingEmail.style.transition = 'left 1.5s ease, top 1.5s ease';
+                
+                // Start email container pulse animation
+                emailContainer.classList.add('pulse');
+                setTimeout(() => {
+                    emailContainer.classList.remove('pulse');
+                }, 600);
+                
+                // Move email to router after slight delay
+                setTimeout(() => {
+                    movingEmail.style.left = '480px';
+                    movingEmail.style.top = '220px';
+                    
+                    // Start analysis animation after email reaches router
+                    setTimeout(animateAnalysisDots, 1600);
+                }, 1000);
+            }
+            
+            // Start the first email sequence after a short delay
+            setTimeout(startNextEmailSequence, 1000);
+        });
+    </script>
+</body>
+</html>
