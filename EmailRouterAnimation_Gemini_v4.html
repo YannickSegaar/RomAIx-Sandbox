@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Email Router Animation V4 - RomAIx</title>
+    <title>AI Email Router Animation V5 - RomAIx</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
@@ -39,7 +39,7 @@
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
             position: relative;
             padding: 40px;
-            overflow: hidden; /* Keep this to clip corners */
+            overflow: hidden;
         }
 
         /* Common styles for Router and Incoming Source Nodes */
@@ -48,17 +48,17 @@
             border-radius: 12px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             display: flex;
-            align-items: center;
+            align-items: center; /* Vertically center items in the flex container */
+            justify-content: center; /* Horizontally center items */
             gap: 12px;
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             z-index: 5;
-            /* Ensure position is relative for absolute children like img */
-            position: relative;
+            padding: 18px 25px; /* Default padding */
         }
          .node .icon { font-size: 24px; }
          .node .text { font-weight: 600; font-size: 15px; }
-         .node img {
+         .node img { /* General style for images in nodes */
             width: 40px;
             height: 40px;
             border-radius: 8px;
@@ -71,44 +71,45 @@
              transform: translateY(-50%);
              background: linear-gradient(to right, #e8eaed, #f8f9fa);
              color: #3c4043;
-             padding: 18px 25px;
-             min-width: 180px;
-             justify-content: center;
+             min-width: 180px; /* Allow it to size based on content */
          }
 
-        /* Router */
+        /* --- CORRECTED ROUTER STYLES --- */
         .router-agent {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(135deg, #2F3E46, #587C74);
             color: white;
-            padding: 25px 30px;
-            min-width: 220px;
-            min-height: 100px;
+            width: 240px; /* Fixed width instead of min-width */
+            /* Height will be determined by content + padding */
+            padding: 20px; /* Adjusted padding */
             z-index: 10;
-            flex-direction: column;
-            gap: 10px; /* Reduced gap slightly */
-            justify-content: center;
+            flex-direction: column; /* Stack items vertically */
+            gap: 10px; /* Gap between image container and content */
+            /* align-items: center; is inherited and correct */
+            /* justify-content: center; is inherited and correct */
         }
-        .router-agent .router-image-container { /* Optional container for image */
-            width: 55px;
+        .router-agent .router-image-container { /* Container for image */
+            width: 55px; /* Size of image container */
             height: 55px;
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 8px; /* Space below image */
-            background-color: rgba(255,255,255,0.1); /* Placeholder */
+            /* margin-bottom: 8px; Removed, using gap on parent */
+            background-color: rgba(255,255,255,0.1); /* Placeholder bg */
+            flex-shrink: 0; /* Prevent image container from shrinking */
         }
          .router-agent img { /* Style for the router's specific image */
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: block; /* Remove extra space below image */
+            display: block;
          }
-         .router-agent .router-content {
+         .router-agent .router-content { /* Container for icon and text */
              display: flex;
-             align-items: center;
-             gap: 12px;
+             align-items: center; /* Center icon and text horizontally */
+             justify-content: center; /* Center icon and text horizontally */
+             gap: 12px; /* Gap between icon and text */
          }
          .router-agent .icon { font-size: 28px; }
          .router-agent .text { font-size: 16px; }
@@ -145,6 +146,7 @@
              justify-content: center;
              overflow: hidden;
              background-color: rgba(0,0,0,0.05);
+             flex-shrink: 0;
          }
          .specialized-agent .agent-avatar img {
              width: 100%;
@@ -179,7 +181,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Start position will be set by JS */
         }
         .email-icon { font-size: 30px; }
         .email-context-text {
@@ -200,26 +201,24 @@
         /* Arrow Styles (Line + Head) */
         .arrow-container {
             position: absolute;
-            height: 15px; /* Height for positioning head */
+            height: 15px;
             opacity: 0;
             transition: opacity 0.5s ease;
             z-index: 1;
             pointer-events: none;
-            /* Default transform origin for rotation */
             transform-origin: left center;
-             /* Width, left, top, transform: rotate will be set by JS */
         }
         .arrow-container.visible {
-            opacity: 0.75; /* Slightly more visible */
+            opacity: 0.75;
         }
         .arrow-line {
             position: absolute;
-            background-color: #555; /* Default line color */
-            height: 4px; /* Slightly thicker */
+            background-color: #555;
+            height: 4px;
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            width: 100%; /* Line takes full width of container */
+            width: 100%;
             border-radius: 2px;
         }
         .arrow-head {
@@ -227,9 +226,9 @@
             width: 0;
             height: 0;
             border-style: solid;
-            border-width: 7px 0 7px 12px; /* Size of arrowhead */
-            border-color: transparent transparent transparent #555; /* Default head color */
-            right: -2px; /* Position head at the end of the line */
+            border-width: 7px 0 7px 12px;
+            border-color: transparent transparent transparent #555;
+            right: -2px;
             top: 50%;
             transform: translateY(-50%);
         }
@@ -366,13 +365,11 @@
             // --- Helper Function: Get element center relative to the animation container ---
             function getCenterPosition(element) {
                  const elemRect = element.getBoundingClientRect();
-                 const containerRect = animationContainer.getBoundingClientRect(); // Use cached container bounds
+                 const containerRect = animationContainer.getBoundingClientRect();
 
-                 // Calculate center relative to viewport
                  const elemCenterX = elemRect.left + elemRect.width / 2;
                  const elemCenterY = elemRect.top + elemRect.height / 2;
 
-                 // Calculate center relative to container top-left
                  const containerX = elemCenterX - containerRect.left;
                  const containerY = elemCenterY - containerRect.top;
 
@@ -387,23 +384,36 @@
                 const angle = Math.atan2(dy, dx); // Radians
                 const angleDeg = angle * (180 / Math.PI); // Degrees
 
-                // Adjust arrow position slightly if needed to start/end at edge, not center
-                // Example: Offset start position slightly along the angle
-                const startOffset = 40; // pixels (half router width approx) - adjust as needed!
+                // --- Arrow Offset Calculation ---
+                // Adjust offsets based on approximate element sizes/shapes
+                let startOffset = 0; // How far from the startPos center the arrow line begins
+                let endOffset = 0;   // How far from the endPos center the arrow line ends
+
+                // Example: Offset based on router/agent sizes (adjust these values)
+                if (arrowContainer === arrowContainerToRouter) {
+                    startOffset = 90; // Approx half-width of incoming source
+                    endOffset = 120; // Approx half-width of router
+                } else { // Arrows from router to agents
+                    startOffset = 120; // Approx half-width of router
+                    endOffset = 80;  // Approx radius of agent circle
+                }
+
+                // Calculate start point of the visible line
                 const adjustedStartLeft = startPos.left + startOffset * Math.cos(angle);
                 const adjustedStartTop = startPos.top + startOffset * Math.sin(angle);
 
-                // Calculate adjusted length (reduce by start and end offsets)
-                 const endOffset = 80; // pixels (agent radius) - adjust!
-                 const adjustedLength = Math.max(0, length - startOffset - endOffset);
+                // Calculate length of the visible line
+                const adjustedLength = Math.max(0, length - startOffset - endOffset);
 
-
+                // Apply styles
                 arrowContainer.style.width = `${adjustedLength}px`;
-                 // Position arrow container starts slightly away from center
                 arrowContainer.style.left = `${adjustedStartLeft}px`;
                 arrowContainer.style.top = `${adjustedStartTop}px`;
+                // Set transform origin to the beginning of the line for correct rotation
+                arrowContainer.style.transformOrigin = `0% 50%`;
                 arrowContainer.style.transform = `rotate(${angleDeg}deg)`;
             }
+
 
              function hideAllArrows() {
                  arrowContainerToRouter.classList.remove('visible');
@@ -417,7 +427,6 @@
                 const targetArrowContainer = targetAgentInfo.arrowContainer;
                 const currentEmailContext = targetAgentInfo.context;
 
-                // Calculate positions ONCE per cycle
                 const sourcePos = getCenterPosition(incomingSource);
                 const routerPos = getCenterPosition(router);
                 const agentPos = getCenterPosition(targetAgentElement);
@@ -426,32 +435,30 @@
                 const emailContainerWidth = emailIconContRect.width || 80;
                 const emailContainerHeight = emailIconContRect.height || 60;
 
-                // Start email slightly right of the source center
                 const startLeft = sourcePos.left + (incomingSource.offsetWidth / 2) - (emailContainerWidth / 4) + 10;
                 const startTop = sourcePos.top - (emailContainerHeight / 2);
 
                 // 1. Reset Email & Arrows
                 emailContainer.style.opacity = '0';
-                emailContainer.style.transition = 'none'; // Disable transition for reset
+                emailContainer.style.transition = 'none';
                 emailContainer.style.left = `${startLeft}px`;
                 emailContainer.style.top = `${startTop}px`;
                 emailContext.textContent = currentEmailContext;
                 hideAllArrows();
                 emailContainer.classList.remove('visible');
 
-                // Position arrow to router (recalculate each time)
+                // Position arrow to router *before* showing
                 updateArrow(arrowContainerToRouter, sourcePos, routerPos);
 
 
                 // Short delay before starting animation
                 setTimeout(() => {
-                    // Make email visible and set transition for movement
                     emailContainer.style.transition = `top ${timings.moveToRouterDuration}ms ease-in-out, left ${timings.moveToRouterDuration}ms ease-in-out, opacity 0.5s ease`;
                     emailContainer.style.opacity = '1';
-                    emailContainer.classList.add('visible'); // Show context text
-                    arrowContainerToRouter.classList.add('visible'); // Show arrow
+                    emailContainer.classList.add('visible');
+                    arrowContainerToRouter.classList.add('visible');
 
-                    // 2. Move Email to Router (target its center)
+                    // 2. Move Email to Router
                     const targetRouterLeft = routerPos.left - (emailContainerWidth / 2);
                     const targetRouterTop = routerPos.top - (emailContainerHeight / 2);
                     emailContainer.style.left = `${targetRouterLeft}px`;
@@ -463,7 +470,7 @@
                 // 3. Router Processing
                 setTimeout(() => {
                     router.classList.add('processing');
-                    arrowContainerToRouter.classList.remove('visible'); // Hide first arrow
+                    arrowContainerToRouter.classList.remove('visible');
                 }, timings.showEmailDelay + timings.moveToRouterDuration);
 
 
@@ -471,14 +478,12 @@
                 setTimeout(() => {
                     router.classList.remove('processing');
 
-                    // Calculate and position the arrow to the agent BEFORE showing it
+                    // Calculate and position the arrow to the agent *before* showing it
                     updateArrow(targetArrowContainer, routerPos, agentPos);
-                    targetArrowContainer.classList.add('visible'); // Show agent arrow
+                    targetArrowContainer.classList.add('visible');
 
-                    // Set transition for movement to agent
                     emailContainer.style.transition = `top ${timings.moveToAgentDuration}ms ease-in-out, left ${timings.moveToAgentDuration}ms ease-in-out, opacity 0.5s ease`;
 
-                    // Target the agent's center for the email container
                     const targetAgentLeft = agentPos.left - (emailContainerWidth / 2);
                     const targetAgentTop = agentPos.top - (emailContainerHeight / 2);
                     emailContainer.style.left = `${targetAgentLeft}px`;
@@ -490,8 +495,8 @@
                 // 5. Highlight Agent & Hide Email/Arrow
                 setTimeout(() => {
                     emailContainer.style.opacity = '0';
-                    emailContainer.classList.remove('visible'); // Hide context
-                    targetArrowContainer.classList.remove('visible'); // Hide agent arrow
+                    emailContainer.classList.remove('visible');
+                    targetArrowContainer.classList.remove('visible');
                     targetAgentElement.classList.add('highlight');
                 }, timings.showEmailDelay + timings.moveToRouterDuration + timings.processingDelay + timings.moveToAgentDuration);
 
