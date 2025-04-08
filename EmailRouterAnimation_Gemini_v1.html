@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Router Animation - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            /* --- PLACE YOUR BACKGROUND IMAGE URL HERE --- */
+            background-image: url('YOUR_BACKGROUND_IMAGE.png'); /* <--- CHANGE THIS PATH */
+            /* --- --- --- --- --- --- --- --- --- --- --- */
+            background-color: #eef2f5; /* Fallback color */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+
+        .animation-container {
+            width: 90%;
+            max-width: 800px;
+            height: 550px;
+            background-color: rgba(255, 255, 255, 0.85); /* Semi-transparent background */
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            padding: 40px;
+            display: flex; /* Use flexbox for easier alignment if needed later */
+            justify-content: center; /* Center content horizontally */
+            align-items: center; /* Center content vertically */
+            overflow: hidden; /* Prevents icons going outside boundaries */
+        }
+
+        .flow-element {
+            position: absolute;
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .flow-element:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .flow-element .icon {
+            font-size: 24px; /* Adjust icon size */
+        }
+         .flow-element .text {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+
+        .router-agent {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center the router */
+            z-index: 10;
+            min-width: 180px; /* Ensure it has some width */
+            justify-content: center;
+        }
+         .router-agent.processing {
+             animation: pulse 1s infinite;
+        }
+
+        .specialized-agent {
+            width: 160px; /* Slightly smaller */
+            justify-content: center;
+            background: linear-gradient(to right, #5c6b73, #88a09e); /* Different gradient */
+        }
+         .specialized-agent.highlight {
+             animation: highlight 0.8s ease;
+         }
+
+        .sales-agent {
+            top: 20%;
+            right: 10%;
+        }
+
+        .support-agent {
+            bottom: 20%;
+            right: 10%;
+        }
+
+        .booking-agent {
+           /* Example: Add another agent */
+           top: 50%;
+           transform: translateY(-50%);
+           right: 10%;
+        }
+
+        .incoming-source {
+            /* Visual representation of where emails come from */
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
+            background: #f1f2f2;
+            color: #555;
+            border: 1px solid #ddd;
+             width: 160px;
+             justify-content: center;
+        }
+
+        .email-icon {
+            position: absolute;
+            font-size: 30px; /* Size of the email emoji/icon */
+            opacity: 0; /* Start hidden */
+            transition: top 1.5s ease-in-out, left 1.5s ease-in-out, opacity 0.5s ease;
+            z-index: 20; /* Above other elements */
+            /* Start position near the incoming source */
+            top: calc(50% - 15px);
+            left: calc(10% + 80px); /* Center of incoming source */
+        }
+
+        .arrow {
+             position: absolute;
+             width: 0;
+             height: 0;
+             border-style: solid;
+             opacity: 0;
+             transition: opacity 0.5s ease-in-out 0.5s; /* Fade in after a delay */
+             pointer-events: none; /* Make sure arrows don't block interaction */
+        }
+
+        /* Arrow from Incoming to Router */
+        .arrow-to-router {
+             border-width: 50px 50px 0 0; /* Adjust size */
+             border-color: rgba(47, 62, 70, 0.3) transparent transparent transparent;
+             top: 50%;
+             left: calc(10% + 170px); /* Start after incoming source */
+             transform: translateY(-50%) rotate(0deg); /* Adjust rotation if needed */
+             /* Example animation target */
+             /* Calculate distance: roughly (50% - (10% + 170px)) */
+        }
+
+        /* Arrows from Router to Specialists */
+         .arrow-to-sales {
+             border-width: 0 0 50px 50px; /* Adjust size */
+             border-color: transparent transparent rgba(88, 124, 116, 0.3) transparent;
+             top: calc(20% + 40px); /* Adjust based on agent position */
+             left: calc(50% + 100px); /* Adjust based on router position */
+             /* Needs calculation based on final positions */
+             transform-origin: top left;
+             transform: rotate(-45deg); /* Example */
+        }
+
+         .arrow-to-support {
+             border-width: 50px 0 0 50px; /* Adjust size */
+             border-color: transparent transparent transparent rgba(88, 124, 116, 0.3);
+             top: calc(50% + 50px); /* Adjust based on agent position */
+             left: calc(50% + 100px); /* Adjust based on router position */
+             transform-origin: bottom left;
+             transform: rotate(45deg); /* Example */
+        }
+        /* Add more arrows if needed */
+
+
+        /* Keyframe Animations */
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 6px 20px rgba(47, 62, 70, 0.3); }
+            100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        }
+
+        @keyframes highlight {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+            50% { transform: scale(1.1); box-shadow: 0 8px 25px rgba(88, 124, 116, 0.4); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        }
+
+         /* Optional: Add RomAIx logo */
+         .romix-logo {
+             position: absolute;
+             bottom: 15px;
+             left: 20px;
+             display: flex;
+             align-items: center;
+             gap: 8px;
+             color: #2F3E46;
+             font-weight: 700;
+             font-size: 16px;
+             opacity: 0.8;
+         }
+         .romix-logo-icon {
+             width: 30px;
+             height: 30px;
+             background-color: #2F3E46;
+             border-radius: 6px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-size: 14px;
+             color: white;
+         }
+
+    </style>
+</head>
+<body>
+    <div class="animation-container">
+
+        <div class="flow-element incoming-source">
+            <span class="icon">📥</span>
+            <span class="text">Incoming Email</span>
+        </div>
+
+        <div class="flow-element router-agent" id="router">
+            <span class="icon">🧠</span>
+            <span class="text">AI Router</span>
+        </div>
+
+        <div class="flow-element specialized-agent sales-agent" id="sales-agent">
+            <span class="icon">📈</span>
+            <span class="text">Sales Agent</span>
+        </div>
+        <div class="flow-element specialized-agent support-agent" id="support-agent">
+            <span class="icon">🛠️</span>
+            <span class="text">Support Agent</span>
+        </div>
+         <div class="email-icon" id="email">📧</div>
+
+        <div class="romix-logo">
+             <div class="romix-logo-icon">R</div>
+             RomAIx
+         </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const email = document.getElementById('email');
+            const router = document.getElementById('router');
+            const salesAgent = document.getElementById('sales-agent');
+            const supportAgent = document.getElementById('support-agent');
+            // Add references to other agents if you create them
+            // const bookingAgent = document.getElementById('booking-agent');
+
+            const agents = [salesAgent, supportAgent]; // Add other agents to this array
+            let currentTargetAgentIndex = 0;
+
+            // --- Animation Configuration ---
+            const timings = {
+                showEmailDelay: 500,       // Wait before showing email
+                moveToRouterDuration: 1500,// Time to move to router
+                processingDelay: 1000,     // How long router "thinks"
+                moveToAgentDuration: 1500, // Time to move to specialist
+                highlightDelay: 800,       // How long specialist stays highlighted
+                cycleDelay: 1500          // Wait before starting next cycle
+            };
+            // --- End Configuration ---
+
+
+            // Function to get the center coordinates of an element
+            function getCenterPosition(element) {
+                 const rect = element.getBoundingClientRect();
+                 const containerRect = element.closest('.animation-container').getBoundingClientRect();
+                 // Calculate position relative to the animation container
+                 const left = rect.left - containerRect.left + (rect.width / 2);
+                 const top = rect.top - containerRect.top + (rect.height / 2);
+                 return { left, top };
+            }
+
+            function runAnimationCycle() {
+                const targetAgent = agents[currentTargetAgentIndex];
+                const routerPos = getCenterPosition(router);
+                const agentPos = getCenterPosition(targetAgent);
+                 // Start position near the incoming source visual (adjust if source element changes)
+                 const startPos = getCenterPosition(document.querySelector('.incoming-source'));
+                 startPos.left += 0; // Adjust offset from source element
+
+
+                // 1. Reset and Show Email near source
+                email.style.opacity = '0';
+                email.style.transition = 'none'; // Disable transition for reset
+                email.style.left = `${startPos.left}px`;
+                email.style.top = `${startPos.top - (email.offsetHeight / 2)}px`; // Adjust for icon height
+
+                setTimeout(() => {
+                    email.style.transition = `top ${timings.moveToRouterDuration}ms ease-in-out, left ${timings.moveToRouterDuration}ms ease-in-out, opacity 0.5s ease`;
+                    email.style.opacity = '1';
+                }, 50); // Small delay to ensure reset applies before fade-in
+
+                // 2. Move Email to Router
+                setTimeout(() => {
+                    email.style.left = `${routerPos.left - (email.offsetWidth / 2)}px`;
+                    email.style.top = `${routerPos.top - (email.offsetHeight / 2)}px`;
+                }, timings.showEmailDelay);
+
+                // 3. Router Processing Animation
+                setTimeout(() => {
+                    router.classList.add('processing');
+                }, timings.showEmailDelay + timings.moveToRouterDuration);
+
+                // 4. Move Email to Target Agent & Stop Router Processing
+                setTimeout(() => {
+                    router.classList.remove('processing');
+                    email.style.transition = `top ${timings.moveToAgentDuration}ms ease-in-out, left ${timings.moveToAgentDuration}ms ease-in-out, opacity 0.5s ease`; // Update transition timing
+                    email.style.left = `${agentPos.left - (email.offsetWidth / 2)}px`;
+                    email.style.top = `${agentPos.top - (email.offsetHeight / 2)}px`;
+                }, timings.showEmailDelay + timings.moveToRouterDuration + timings.processingDelay);
+
+                // 5. Highlight Target Agent & Hide Email
+                setTimeout(() => {
+                    email.style.opacity = '0';
+                    targetAgent.classList.add('highlight');
+                }, timings.showEmailDelay + timings.moveToRouterDuration + timings.processingDelay + timings.moveToAgentDuration);
+
+                // 6. Remove Highlight
+                 setTimeout(() => {
+                    targetAgent.classList.remove('highlight');
+                }, timings.showEmailDelay + timings.moveToRouterDuration + timings.processingDelay + timings.moveToAgentDuration + timings.highlightDelay);
+
+
+                // 7. Prepare for Next Cycle
+                setTimeout(() => {
+                    // Move to the next agent in the cycle
+                    currentTargetAgentIndex = (currentTargetAgentIndex + 1) % agents.length;
+                    runAnimationCycle(); // Loop
+                 }, timings.showEmailDelay + timings.moveToRouterDuration + timings.processingDelay + timings.moveToAgentDuration + timings.highlightDelay + timings.cycleDelay);
+            }
+
+            // Start the first cycle
+            runAnimationCycle();
+        });
+    </script>
+</body>
+</html>
