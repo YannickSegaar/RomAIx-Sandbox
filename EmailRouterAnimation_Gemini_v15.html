@@ -231,28 +231,28 @@
 
         <div class="node router-agent" id="router">
              <div class="router-avatar-container">
-                 <img src="EmailRobotAgent.svg" alt="AI Router Agent"> 
+                 <img src="EmailRouterAgent.svg" alt="AI Router Agent"> 
              </div>
              <span class="text">AI Router</span>
         </div>
 
         <div class="specialized-agent sales-agent" id="sales-agent">
             <div class="agent-avatar">
-                 <img src="HalfAgent.svg" alt="Sales Agent Avatar" class="icon-img"> 
+                 <img src="SalesAgent.svg" alt="Sales Agent Avatar" class="icon-img"> 
             </div>
             <span class="text">Sales Agent</span>
         </div>
         <div class="specialized-agent support-agent" id="support-agent">
              <div class="agent-avatar">
-                 <img src="FemaleHybrid.svg" alt="Support Agent Avatar" class="icon-img"> 
+                 <img src="SupportAgent.svg" alt="Support Agent Avatar" class="icon-img"> 
             </div>
             <span class="text">Support Agent</span>
         </div>
          <div class="specialized-agent manager-agent" id="manager-agent">
              <div class="agent-avatar">
-                  <img src="OlderAgent.svg" alt="Manager Avatar" class="icon-img">
+                  <img src="ManagerAgent.svg" alt="Manager Avatar" class="icon-img">
              </div>
-             <span class="text">Manager</span>
+             <span class="text">Manager Agent</span>
          </div>
 
         <div id="moving-text-element"></div>
@@ -288,7 +288,7 @@
                 { element: document.getElementById('support-agent'), arrowContainer: document.getElementById('arrow-container-to-support'),
                   label: "Support Request", emailText: "Hey, what time is my tour tomorrow?" },
                 { element: document.getElementById('manager-agent'), arrowContainer: document.getElementById('arrow-container-to-manager'),
-                  label: "Complaint", emailText: "This is unacceptable! The guide was late and rude. I want a refund!" }
+                  label: "Feedback", emailText: "Hi, we had some ideas on how to improve your tour!" }
             ];
             const arrowContainerToRouter = document.getElementById('arrow-container-to-router');
 
