@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Router Animation V15 - SVG Arrow - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-image: url('LinkedIn_Background.png'); /* <--- CHANGE THIS PATH if needed */
+            background-color: #eef2f5; /* Fallback color */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+
+        .animation-container {
+             /* --- SCALING CONTROL --- */
+            /* ---vvv--- CHANGE THESE VALUES TO RESIZE ---vvv--- */
+            --container-width: 1000px; 
+            --container-height: 750px; 
+            /* ---^^^--- CHANGE THESE VALUES TO RESIZE ---^^^--- */
+            --base-font-size: calc(var(--container-width) / 100); 
+            /* --- --- --- --- --- --- */
+
+            font-size: var(--base-font-size); 
+            width: var(--container-width);
+            height: var(--container-height);
+            max-width: 95%; 
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 2rem; 
+            box-shadow: 0 1.5rem 5rem rgba(0, 0, 0, 0.2); 
+            position: relative; 
+            padding: 4rem; 
+            overflow: hidden;
+        }
+
+        /* Common styles for Nodes */
+        .node {
+            position: absolute;
+            border-radius: 1.2rem; 
+            box-shadow: 0 0.6rem 1.5rem rgba(0, 0, 0, 0.1); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem; 
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 5;
+            padding: 1.8rem 2.5rem; 
+        }
+         .node .text { 
+             font-weight: 600; 
+             font-size: 1.5rem; 
+         }
+
+         .incoming-source {
+             top: 50%; left: 5%; transform: translateY(-50%);
+             background: linear-gradient(to right, #e8eaed, #f8f9fa);
+             color: #3c4043; 
+             min-width: 18rem; 
+         }
+         .incoming-source .icon { font-size: 2.4rem; }
+
+        /* Router Styles */
+        .router-agent {
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2F3E46, #587C74);
+            color: white; 
+            width: 20rem; height: 17rem; 
+            padding: 2rem; 
+            z-index: 10; flex-direction: column; 
+            gap: 1.5rem; 
+            border-radius: 1.5rem; 
+        }
+        .router-agent .router-avatar-container {
+            width: 7rem; height: 7rem; 
+            border-radius: 1.2rem; 
+            overflow: hidden;
+            background-color: rgba(255,255,255,0.15); flex-shrink: 0; 
+            margin-bottom: 0.5rem; 
+        }
+         .router-agent .router-avatar-container img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+         }
+         .router-agent .text { font-size: 1.6rem; font-weight: 700; }
+         .router-agent.processing { animation: pulse 1s infinite; }
+
+        /* Specialized Agent (Circular) */
+        .specialized-agent {
+            position: absolute; 
+            width: 16rem; height: 16rem; 
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dfe9f3, #ffffff); color: #333;
+            box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.15); 
+            display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; 
+            gap: 0.8rem; 
+            padding: 1.5rem; 
+            z-index: 5;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+         .specialized-agent .agent-avatar {
+             width: 8rem; height: 8rem; 
+             border-radius: 50%; 
+             margin-bottom: 0.8rem; 
+             display: flex; align-items: center; justify-content: center;
+             overflow: hidden; background-color: rgba(0,0,0,0.05); flex-shrink: 0;
+         }
+         .specialized-agent .agent-avatar .icon-img {
+             width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+         }
+         .specialized-agent .text { font-weight: 600; font-size: 1.4rem; line-height: 1.3; }
+         .specialized-agent.highlight {
+             animation: highlight-pulse 0.8s ease;
+             box-shadow: 0 0 3rem rgba(88, 124, 116, 0.6); 
+         }
+
+        /* Positioning the agents */
+        .sales-agent { top: 10%; right: 8%; }
+        .support-agent { top: 50%; right: 8%; transform: translateY(-50%); }
+        .manager-agent { bottom: 10%; right: 8%; }
+
+        /* Moving Text/Label Element */
+        #moving-text-element {
+            position: absolute; 
+            padding: 1rem 1.5rem; border-radius: 0.6rem; 
+            box-shadow: 0 0.4rem 1.2rem rgba(0,0,0,0.1); 
+            max-width: 22rem; font-size: 1.3rem; 
+            line-height: 1.4; text-align: center; opacity: 0;
+            transition: top 1.2s ease-in-out, left 1.2s ease-in-out, opacity 0.4s ease-in-out, background-color 0.3s ease, color 0.3s ease, border 0.3s ease;
+            z-index: 15; background-color: #f0f4f8; color: #333; 
+            border: 0.1rem solid #d1d9e0; 
+        }
+        #moving-text-element.label-style {
+            font-weight: 700; font-size: 1.2rem; 
+            background-color: #34495e; color: #fff; 
+            border: 0.1rem solid #2c3e50; 
+            padding: 0.6rem 1.2rem; max-width: 18rem; 
+        }
+
+        /* Arrow Styles */
+        .arrow-container {
+            position: absolute; 
+            height: 1.5rem; /* Base height */
+            z-index: 1;
+            pointer-events: none; transform-origin: left center;
+        }
+
+        .arrow-line {
+            position: absolute; background-color: #555; /* Default Color */
+            height: 0.3rem; 
+            left: 0; top: 50%; transform: translateY(-50%);
+            width: 0; /* Start with width 0 */
+            border-radius: 0.2rem; 
+            transition: width 0.5s ease-in-out; 
+        }
+
+        /* --- NEW SVG Arrow Head Style --- */
+        .arrow-head {
+            position: absolute;
+            width: 1.2rem; /* Size of the arrowhead */
+            height: 1.2rem;
+             /* Position the center of the arrowhead div at the end of the line */
+            right: 0; 
+            top: 50%; 
+             /* Adjust transform slightly if needed to center the SVG visually */
+            transform: translate(50%, -50%); 
+            opacity: 0; /* Start hidden */
+            /* Transition delay set by JS */
+            pointer-events: none; /* Prevent interaction */
+        }
+
+        .arrow-head svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            fill: #555; /* Default color - will be overridden */
+            transform-origin: center center;
+        }
+        /* --- End NEW SVG Arrow Head Style --- */
+
+
+         /* Specific Arrow Colors */
+         #arrow-container-to-router .arrow-line { background-color: #587C74; } 
+         #arrow-container-to-router .arrow-head svg { fill: #587C74; } 
+
+         #arrow-container-to-sales .arrow-line,
+         #arrow-container-to-support .arrow-line,
+         #arrow-container-to-manager .arrow-line { background-color: #8aa39e; }
+         
+         #arrow-container-to-sales .arrow-head svg, 
+         #arrow-container-to-support .arrow-head svg, 
+         #arrow-container-to-manager .arrow-head svg { fill: #8aa39e; }
+
+
+        /* Custom Logo Styles - POSITIONED ON VIEWPORT */
+        #custom-logo {
+            position: fixed; /* Fixed relative to the viewport */
+            bottom: 20px;    /* Offset from viewport bottom */
+            right: 25px;     /* Offset from viewport right */
+            width: 42px;     /* Fixed pixel size */
+            height: 42px;
+            object-fit: contain;
+            z-index: 100; /* Ensure it's above background */
+        }
+
+        /* Keyframes (Unchanged) */
+        @keyframes pulse { 
+            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0.6rem 1.5rem rgba(0, 0, 0, 0.1); } 
+            50% { transform: translate(-50%, -50%) scale(1.04); box-shadow: 0 0.8rem 2.5rem rgba(47, 62, 70, 0.3); } 
+            100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0.6rem 1.5rem rgba(0, 0, 0, 0.1); } 
+        }
+         @keyframes highlight-pulse { 
+             0% { transform: scale(1) translateY(0); box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.15); } 
+             50% { transform: scale(1.06) translateY(0); box-shadow: 0 0 3rem rgba(88, 124, 116, 0.6); } 
+             100% { transform: scale(1) translateY(0); box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.15); } 
+         }
+         .support-agent.highlight { animation-name: highlight-pulse-support; }
+         @keyframes highlight-pulse-support { 
+             0% { transform: scale(1) translateY(-50%); box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.15); } 
+             50% { transform: scale(1.06) translateY(-50%); box-shadow: 0 0 3rem rgba(88, 124, 116, 0.6); } 
+             100% { transform: scale(1) translateY(-50%); box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.15); } 
+         }
+
+    </style>
+</head>
+<body>
+    <div class="animation-container">
+
+        <div class="node incoming-source" id="incoming-source">
+            <span class="icon">📥</span> <span class="text">Incoming Email</span>
+        </div>
+
+        <div class="node router-agent" id="router">
+             <div class="router-avatar-container">
+                 <img src="CustomerSupportAgent.svg" alt="AI Router Agent"> 
+             </div>
+             <span class="text">AI Router</span>
+        </div>
+
+        <div class="specialized-agent sales-agent" id="sales-agent">
+            <div class="agent-avatar">
+                 <img src="CustomerSupportAgent.svg" alt="Sales Agent Avatar" class="icon-img">
+            </div>
+            <span class="text">Sales Agent</span>
+        </div>
+        <div class="specialized-agent support-agent" id="support-agent">
+             <div class="agent-avatar">
+                 <img src="CustomerSupportAgent.svg" alt="Support Agent Avatar" class="icon-img">
+             </div>
+             <span class="text">Support Agent</span>
+        </div>
+         <div class="specialized-agent manager-agent" id="manager-agent">
+             <div class="agent-avatar">
+                 <img src="CustomerSupportAgent.svg" alt="Manager Avatar" class="icon-img">
+             </div>
+             <span class="text">Manager</span>
+         </div>
+
+        <div id="moving-text-element"></div>
+
+        <div class="arrow-container" id="arrow-container-to-router">
+            <div class="arrow-line"></div> 
+            <div class="arrow-head">
+                <svg viewBox="0 0 10 10" preserveAspectRatio="none"><polygon points="0,0 10,5 0,10" /></svg>
+            </div>
+        </div>
+        <div class="arrow-container" id="arrow-container-to-sales">
+             <div class="arrow-line"></div> 
+             <div class="arrow-head">
+                 <svg viewBox="0 0 10 10" preserveAspectRatio="none"><polygon points="0,0 10,5 0,10" /></svg>
+             </div>
+        </div>
+        <div class="arrow-container" id="arrow-container-to-support">
+             <div class="arrow-line"></div> 
+             <div class="arrow-head">
+                 <svg viewBox="0 0 10 10" preserveAspectRatio="none"><polygon points="0,0 10,5 0,10" /></svg>
+             </div>
+        </div>
+        <div class="arrow-container" id="arrow-container-to-manager">
+             <div class="arrow-line"></div> 
+             <div class="arrow-head">
+                 <svg viewBox="0 0 10 10" preserveAspectRatio="none"><polygon points="0,0 10,5 0,10" /></svg>
+             </div>
+        </div>
+
+    </div> 
+    <img id="custom-logo" src="RomAIxLogoDesign.svg" alt="RomAIx Logo">
+
+    <script>
+        // --- JAVASCRIPT (Largely unchanged from previous version) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const animationContainer = document.querySelector('.animation-container');
+            const movingTextElement = document.getElementById('moving-text-element');
+            const router = document.getElementById('router');
+            const incomingSource = document.getElementById('incoming-source');
+
+            const agents = [
+                { element: document.getElementById('sales-agent'), arrowContainer: document.getElementById('arrow-container-to-sales'),
+                  label: "Sales Inquiry", emailText: "Hi! Can I get a quote for a private tour for 10 people next Tuesday?" },
+                { element: document.getElementById('support-agent'), arrowContainer: document.getElementById('arrow-container-to-support'),
+                  label: "Support Request", emailText: "Hey, what time is my tour tomorrow?" },
+                { element: document.getElementById('manager-agent'), arrowContainer: document.getElementById('arrow-container-to-manager'),
+                  label: "Complaint", emailText: "This is unacceptable! The guide was late and rude. I want a refund!" }
+            ];
+            const arrowContainerToRouter = document.getElementById('arrow-container-to-router');
+
+            let currentTargetAgentIndex = 0;
+
+            const timings = {
+                initialDelay: 500,
+                showEmailTextDelay: 200,
+                moveTextToRouterDuration: 1500,
+                arrowDrawDuration: 600,       
+                processingDelay: 1200,
+                labelTransformDelay: 200,
+                moveLabelToAgentDuration: 1500,
+                highlightDelay: 900,
+                cycleDelay: 2800
+            };
+
+            function getCenterPosition(element) {
+                 const containerRect = animationContainer.getBoundingClientRect(); 
+                 const elemRect = element.getBoundingClientRect();
+                 const elemCenterX = elemRect.left + elemRect.width / 2;
+                 const elemCenterY = elemRect.top + elemRect.height / 2;
+                 const containerX = elemCenterX - containerRect.left;
+                 const containerY = elemCenterY - containerRect.top;
+                 return { left: containerX, top: containerY };
+            }
+
+            function updateArrowGeometry(arrowContainer, startPos, endPos) {
+                const dx = endPos.left - startPos.left;
+                const dy = endPos.top - startPos.top;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                const angleDeg = angle * (180 / Math.PI);
+                
+                let startOffset = 0, endOffset = 0;
+                const baseWidth = parseFloat(getComputedStyle(animationContainer).getPropertyValue('--container-width')) || 1000;
+                const scaleFactor = baseWidth / 1000; 
+
+                // Adjust endOffset slightly more to account for arrowhead size visually
+                const arrowHeadWidthRem = 1.2; // From CSS .arrow-head width
+                const arrowHeadWidthPx = arrowHeadWidthRem * parseFloat(getComputedStyle(animationContainer).fontSize);
+
+                if (arrowContainer === arrowContainerToRouter) {
+                    startOffset = 90 * scaleFactor; 
+                    endOffset = (100 * scaleFactor) + (arrowHeadWidthPx / 2) ; // Add half arrowhead width
+                } else {
+                    startOffset = 100 * scaleFactor;
+                    endOffset = (80 * scaleFactor) + (arrowHeadWidthPx / 2); // Add half arrowhead width
+                }
+                
+                if (length < startOffset + endOffset) {
+                    const totalOffset = startOffset + endOffset;
+                    startOffset = length * (startOffset / totalOffset) * 0.95; 
+                    endOffset = length * (endOffset / totalOffset) * 0.95;
+                }
+
+                const adjustedStartLeft = startPos.left + startOffset * Math.cos(angle);
+                const adjustedStartTop = startPos.top + startOffset * Math.sin(angle);
+                
+                // Reduce adjustedLength slightly more to ensure line doesn't overlap arrowhead base
+                const adjustedLength = Math.max(0, length - startOffset - endOffset); 
+
+                arrowContainer.style.left = `${adjustedStartLeft}px`;
+                arrowContainer.style.top = `${adjustedStartTop}px`;
+                arrowContainer.style.transformOrigin = `0% 50%`;
+                arrowContainer.style.transform = `rotate(${angleDeg}deg)`;
+
+                return adjustedLength; 
+            }
+
+            function showDrawingArrow(arrowContainer, startPos, endPos) {
+                const line = arrowContainer.querySelector('.arrow-line');
+                const head = arrowContainer.querySelector('.arrow-head'); // The div containing the SVG
+                if (!line || !head) return;
+
+                const finalLength = updateArrowGeometry(arrowContainer, startPos, endPos);
+
+                line.style.transition = 'none';
+                head.style.transition = 'none';
+                line.style.width = '0px';
+                head.style.opacity = '0';
+
+                void arrowContainer.offsetWidth; 
+
+                line.style.transition = `width ${timings.arrowDrawDuration}ms ease-in-out`;
+                head.style.transition = `opacity 0.2s ease-in-out ${timings.arrowDrawDuration}ms`; 
+
+                line.style.width = `${finalLength}px`;
+                head.style.opacity = '1'; 
+                // console.log("Setting arrow head opacity to 1 for:", arrowContainer.id); // Uncomment to debug
+            }
+
+            function hideArrow(arrowContainer) {
+                const line = arrowContainer.querySelector('.arrow-line');
+                const head = arrowContainer.querySelector('.arrow-head');
+                if (!line || !head) return;
+                line.style.transition = 'none';
+                head.style.transition = 'none';
+                line.style.width = '0px';
+                head.style.opacity = '0';
+            }
+
+            function hideAllArrows() {
+                 hideArrow(arrowContainerToRouter);
+                 agents.forEach(agent => hideArrow(agent.arrowContainer));
+            }
+
+            function runAnimationCycle() {
+                const targetAgentInfo = agents[currentTargetAgentIndex];
+                const targetAgentElement = targetAgentInfo.element;
+                const targetArrowContainer = targetAgentInfo.arrowContainer;
+                const currentEmailLabel = targetAgentInfo.label;
+                const currentEmailText = targetAgentInfo.emailText;
+
+                const sourcePos = getCenterPosition(incomingSource);
+                const routerPos = getCenterPosition(router);
+                const agentPos = getCenterPosition(targetAgentElement);
+
+                const sourceRect = incomingSource.getBoundingClientRect();
+                const routerRect = router.getBoundingClientRect();
+                const containerStyle = getComputedStyle(animationContainer);
+                const containerBaseFontSize = parseFloat(containerStyle.fontSize);
+
+                // Use rem based offset for text positioning relative to font size
+                const textVertOffsetRem = 1.5; 
+                const textVertOffsetPx = textVertOffsetRem * containerBaseFontSize;
+
+                const textStartTop = sourcePos.top + (sourceRect.height / 2) + textVertOffsetPx; 
+                const textStartLeft = sourcePos.left;
+                const textRouterTop = routerPos.top + (routerRect.height / 2) + textVertOffsetPx;
+                const textRouterLeft = routerPos.left;
+
+                // 1. Reset State
+                movingTextElement.style.opacity = '0';
+                movingTextElement.style.transition = 'none'; 
+                movingTextElement.classList.remove('label-style');
+                hideAllArrows();
+                movingTextElement.style.left = '0px'; movingTextElement.style.top = '0px';
+                movingTextElement.style.visibility = 'hidden'; 
+                movingTextElement.style.display = 'block'; 
+
+
+                // 2. Show Incoming Email Text Below Source
+                setTimeout(() => {
+                    movingTextElement.textContent = currentEmailText;
+                    movingTextElement.style.position = 'absolute'; 
+                    movingTextElement.style.visibility = 'hidden'; 
+                    movingTextElement.style.display = 'block'; 
+                    const textWidth = movingTextElement.offsetWidth;
+
+                    movingTextElement.style.left = `${textStartLeft - (textWidth / 2)}px`;
+                    movingTextElement.style.top = `${textStartTop}px`;
+                    movingTextElement.style.visibility = 'visible'; 
+
+                    setTimeout(() => {
+                        movingTextElement.style.transition = `top ${timings.moveTextToRouterDuration}ms ease-in-out, left ${timings.moveTextToRouterDuration}ms ease-in-out, opacity 0.4s ease-in-out, background-color 0.3s ease, color 0.3s ease, border 0.3s ease`;
+                        movingTextElement.style.opacity = '1';
+
+                        showDrawingArrow(arrowContainerToRouter, sourcePos, routerPos);
+
+                        // 3. Move Email Text Below Router 
+                        const currentTextWidth = movingTextElement.offsetWidth;
+                        movingTextElement.style.left = `${textRouterLeft - (currentTextWidth / 2)}px`;
+                        movingTextElement.style.top = `${textRouterTop}px`;
+                    }, 50); 
+
+                }, timings.showEmailTextDelay);
+
+
+                // 4. Arrive at Router, Process, Transform to Label
+                const arriveRouterTime = timings.showEmailTextDelay + 50 + timings.moveTextToRouterDuration;
+                setTimeout(() => {
+                    hideArrow(arrowContainerToRouter);
+                    router.classList.add('processing');
+                }, arriveRouterTime);
+
+                const transformTime = arriveRouterTime + timings.processingDelay;
+                setTimeout(() => {
+                    router.classList.remove('processing');
+                    movingTextElement.style.opacity = '0'; // Quick fade for swap
+
+                    setTimeout(() => {
+                        movingTextElement.classList.add('label-style');
+                        movingTextElement.textContent = currentEmailLabel;
+                        movingTextElement.style.visibility = 'hidden'; 
+                        const labelWidth = movingTextElement.offsetWidth;
+                        const labelHeight = movingTextElement.offsetHeight;
+
+                        movingTextElement.style.left = `${textRouterLeft - (labelWidth / 2)}px`;
+                        movingTextElement.style.top = `${textRouterTop}px`;
+                        movingTextElement.style.visibility = 'visible'; 
+                        movingTextElement.style.opacity = '1'; 
+
+                        // 5. Prepare and Move Label to Agent
+                        showDrawingArrow(targetArrowContainer, routerPos, agentPos);
+
+                        movingTextElement.style.transition = `top ${timings.moveLabelToAgentDuration}ms ease-in-out, left ${timings.moveLabelToAgentDuration}ms ease-in-out, opacity 0.4s ease-in-out, background-color 0.3s ease, color 0.3s ease, border 0.3s ease`;
+                        const targetAgentLeft = agentPos.left - (labelWidth / 2);
+                        const targetAgentTop = agentPos.top - (labelHeight / 2);
+                        
+                        movingTextElement.style.left = `${targetAgentLeft}px`;
+                        movingTextElement.style.top = `${targetAgentTop}px`;
+
+                    }, timings.labelTransformDelay);
+
+                }, transformTime);
+
+
+                // 6. Arrive at Agent, Highlight Agent, Hide Label/Arrow
+                const arriveAgentTime = transformTime + timings.labelTransformDelay + timings.moveLabelToAgentDuration;
+                setTimeout(() => {
+                    movingTextElement.style.opacity = '0';
+                    hideArrow(targetArrowContainer);
+                    targetAgentElement.classList.add('highlight');
+                }, arriveAgentTime);
+
+
+                // 7. Remove Highlight
+                const removeHighlightTime = arriveAgentTime + timings.highlightDelay;
+                setTimeout(() => {
+                    targetAgentElement.classList.remove('highlight');
+                }, removeHighlightTime);
+
+
+                // 8. Prepare for Next Cycle
+                const nextCycleTime = removeHighlightTime + timings.cycleDelay;
+                setTimeout(() => {
+                    currentTargetAgentIndex = (currentTargetAgentIndex + 1) % agents.length;
+                    runAnimationCycle();
+                }, nextCycleTime);
+            }
+
+            // Start
+            setTimeout(runAnimationCycle, timings.initialDelay);
+        });
+    </script>
+</body>
+</html>
