@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Router Animation V8 - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            /* --- PLACE YOUR BACKGROUND IMAGE URL HERE --- */
+            background-image: url('YOUR_BACKGROUND_IMAGE.png'); /* <--- CHANGE THIS PATH */
+            /* --- --- --- --- --- --- --- --- --- --- --- */
+            background-color: #eef2f5; /* Fallback color */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+
+        .animation-container {
+            width: 95%;
+            max-width: 1000px;
+            height: 750px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+            position: relative;
+            padding: 40px;
+            overflow: hidden;
+        }
+
+        /* Common styles for Router and Incoming Source Nodes */
+        .node {
+            position: absolute;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 5;
+            padding: 18px 25px;
+        }
+         .node .text { font-weight: 600; font-size: 15px; }
+         .node .placeholder-img {
+            width: 40px; height: 40px; border-radius: 8px; object-fit: cover;
+         }
+
+         .incoming-source {
+             top: 50%; left: 5%; transform: translateY(-50%);
+             background: linear-gradient(to right, #e8eaed, #f8f9fa);
+             color: #3c4043; min-width: 180px;
+         }
+         .incoming-source .icon-img {
+             width: 32px; height: 32px; object-fit: contain;
+         }
+
+
+        /* Router Styles */
+        .router-agent {
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2F3E46, #587C74);
+            color: white; width: 240px; padding: 20px; z-index: 10;
+            flex-direction: column; gap: 10px;
+        }
+        .router-agent .router-image-container {
+            width: 55px; height: 55px; border-radius: 10px; overflow: hidden;
+            background-color: rgba(255,255,255,0.1); flex-shrink: 0;
+        }
+         .router-agent .router-image-container img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+         }
+         .router-agent .router-content {
+             display: flex; align-items: center; justify-content: center; gap: 12px;
+         }
+         .router-agent .icon-img { /* Router Icon Image */
+             width: 32px; height: 32px; border-radius: 50%;
+             object-fit: cover; flex-shrink: 0;
+         }
+         .router-agent .text { font-size: 16px; }
+         .router-agent.processing { animation: pulse 1s infinite; }
+
+        /* Specialized Agent (Circular) */
+        .specialized-agent {
+            position: absolute; width: 160px; height: 160px; border-radius: 50%;
+            background: linear-gradient(135deg, #dfe9f3, #ffffff); color: #333;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; gap: 8px; padding: 15px; z-index: 5;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+         .specialized-agent .agent-avatar {
+             width: 80px; height: 80px; border-radius: 50%; margin-bottom: 8px;
+             display: flex; align-items: center; justify-content: center;
+             overflow: hidden; background-color: rgba(0,0,0,0.05); flex-shrink: 0;
+         }
+         .specialized-agent .agent-avatar .icon-img { /* Agent Avatar Image */
+             width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+         }
+         .specialized-agent .text {
+             font-weight: 600; font-size: 14px; line-height: 1.3;
+         }
+         .specialized-agent.highlight {
+             animation: highlight-pulse 0.8s ease;
+             box-shadow: 0 0 30px rgba(88, 124, 116, 0.6);
+         }
+
+        /* Positioning the agents */
+        .sales-agent { top: 10%; right: 8%; }
+        .support-agent { top: 50%; right: 8%; transform: translateY(-50%); }
+        .manager-agent { bottom: 10%; right: 8%; }
+
+        /* --- UPDATED: Moving Text/Label Element --- */
+        #moving-text-element {
+            position: absolute;
+            padding: 10px 15px; /* Adjusted padding */
+            border-radius: 6px; /* Slightly less rounded */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 220px;
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: center;
+            opacity: 0;
+            /* Transition properties */
+            transition: top 1.2s ease-in-out, left 1.2s ease-in-out, opacity 0.4s ease-in-out, background-color 0.3s ease, color 0.3s ease, border 0.3s ease;
+            z-index: 15;
+            /* Initial style (like incoming email) */
+            background-color: #f0f4f8;
+            color: #333;
+            border: 1px solid #d1d9e0;
+        }
+
+        /* Style when it becomes a label */
+        #moving-text-element.label-style {
+            font-weight: 700;
+            font-size: 12px;
+            background-color: #34495e; /* Darker background for label */
+            color: #fff; /* White text */
+            border: 1px solid #2c3e50;
+            padding: 6px 12px; /* Smaller padding for label */
+            max-width: 180px; /* Can be narrower */
+        }
+
+        /* --- REMOVED/HIDDEN: Old Email Icon Container --- */
+        .email-icon-container {
+            display: none;
+        }
+
+
+        /* Arrow Styles */
+        .arrow-container {
+            position: absolute; height: 15px; opacity: 0;
+            transition: opacity 0.5s ease; z-index: 1;
+            pointer-events: none; transform-origin: left center;
+        }
+        .arrow-container.visible { opacity: 0.75; }
+        .arrow-line {
+            position: absolute; background-color: #555; height: 4px;
+            left: 0; top: 50%; transform: translateY(-50%);
+            width: 100%; border-radius: 2px;
+        }
+        .arrow-head {
+            position: absolute; width: 0; height: 0; border-style: solid;
+            border-width: 7px 0 7px 12px; border-color: transparent transparent transparent #555;
+            right: -2px; top: 50%; transform: translateY(-50%);
+        }
+         #arrow-container-to-router .arrow-line,
+         #arrow-container-to-router .arrow-head { background-color: #587C74; border-left-color: #587C74; }
+         #arrow-container-to-sales .arrow-line, #arrow-container-to-sales .arrow-head,
+         #arrow-container-to-support .arrow-line, #arrow-container-to-support .arrow-head,
+         #arrow-container-to-manager .arrow-line, #arrow-container-to-manager .arrow-head { background-color: #8aa39e; border-left-color: #8aa39e; }
+
+
+        /* Keyframes */
+        @keyframes pulse { /* Unchanged */
+            0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); }
+            50% { transform: translate(-50%, -50%) scale(1.04); box-shadow: 0 8px 25px rgba(47, 62, 70, 0.3); }
+            100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); }
+        }
+         @keyframes highlight-pulse { /* Unchanged */
+             0% { transform: scale(1) translateY(0); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+             50% { transform: scale(1.06) translateY(0); box-shadow: 0 0 30px rgba(88, 124, 116, 0.6); }
+             100% { transform: scale(1) translateY(0); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+         }
+         .support-agent.highlight { animation-name: highlight-pulse-support; }
+         @keyframes highlight-pulse-support { /* Unchanged */
+             0% { transform: scale(1) translateY(-50%); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+             50% { transform: scale(1.06) translateY(-50%); box-shadow: 0 0 30px rgba(88, 124, 116, 0.6); }
+             100% { transform: scale(1) translateY(-50%); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+         }
+
+         /* Logo */
+         .romix-logo { /* Unchanged */
+             position: absolute; bottom: 20px; left: 25px; display: flex; align-items: center;
+             gap: 10px; color: #2F3E46; font-weight: 700; font-size: 18px; opacity: 0.9; z-index: 1;
+         }
+         .romix-logo-icon { /* Unchanged */
+             width: 35px; height: 35px; background-color: #2F3E46; border-radius: 8px;
+             display: flex; align-items: center; justify-content: center; font-size: 16px; color: white;
+         }
+
+    </style>
+</head>
+<body>
+    <div class="animation-container">
+
+        <div class="node incoming-source" id="incoming-source">
+            <span class="icon">📥</span> <span class="text">Incoming Email</span>
+        </div>
+
+        <div class="node router-agent" id="router">
+             <div class="router-image-container">
+                 </div>
+             <div class="router-content">
+                 <img src="router-icon.png" alt="AI Router Icon" class="icon-img">
+                 <span class="text">AI Router</span>
+             </div>
+        </div>
+
+        <div class="specialized-agent sales-agent" id="sales-agent">
+            <div class="agent-avatar">
+                 <img src="sales-avatar.png" alt="Sales Agent Avatar" class="icon-img">
+            </div>
+            <span class="text">Sales Agent</span>
+        </div>
+        <div class="specialized-agent support-agent" id="support-agent">
+             <div class="agent-avatar">
+                 <img src="support-avatar.png" alt="Support Agent Avatar" class="icon-img">
+            </div>
+            <span class="text">Support Agent</span>
+        </div>
+         <div class="specialized-agent manager-agent" id="manager-agent">
+             <div class="agent-avatar">
+                 <img src="manager-avatar.png" alt="Manager Avatar" class="icon-img">
+            </div>
+            <span class="text">Manager</span>
+        </div>
+
+        <div id="moving-text-element"></div>
+
+        <div class="arrow-container" id="arrow-container-to-router">
+            <div class="arrow-line"></div> <div class="arrow-head"></div>
+        </div>
+        <div class="arrow-container" id="arrow-container-to-sales">
+             <div class="arrow-line"></div> <div class="arrow-head"></div>
+        </div>
+        <div class="arrow-container" id="arrow-container-to-support">
+             <div class="arrow-line"></div> <div class="arrow-head"></div>
+        </div>
+        <div class="arrow-container" id="arrow-container-to-manager">
+             <div class="arrow-line"></div> <div class="arrow-head"></div>
+        </div>
+
+        <div class="romix-logo">
+             <div class="romix-logo-icon">R</div> RomAIx
+         </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const animationContainer = document.querySelector('.animation-container');
+            const movingTextElement = document.getElementById('moving-text-element'); // The element that moves and transforms
+            const router = document.getElementById('router');
+            const incomingSource = document.getElementById('incoming-source');
+
+            const agents = [
+                { element: document.getElementById('sales-agent'), arrowContainer: document.getElementById('arrow-container-to-sales'),
+                  label: "Sales Inquiry", emailText: "Hi! Can I get a quote for a private tour for 10 people next Tuesday?" },
+                { element: document.getElementById('support-agent'), arrowContainer: document.getElementById('arrow-container-to-support'),
+                  label: "Support Request", emailText: "Hey, what time is my tour tomorrow?" },
+                { element: document.getElementById('manager-agent'), arrowContainer: document.getElementById('arrow-container-to-manager'),
+                  label: "Complaint", emailText: "This is unacceptable! The guide was late and rude. I want a refund!" }
+            ];
+            const arrowContainerToRouter = document.getElementById('arrow-container-to-router');
+
+            let currentTargetAgentIndex = 0;
+
+            // --- Adjusted Timings for New Flow ---
+            const timings = {
+                initialDelay: 500,
+                showEmailTextDelay: 200,        // Delay before showing incoming text
+                moveTextToRouterDuration: 1500, // Time for text to move to router
+                processingDelay: 1200,          // Router thinking time
+                labelTransformDelay: 200,       // Quick delay during label swap
+                moveLabelToAgentDuration: 1500, // Time for label to move to agent
+                highlightDelay: 900,
+                cycleDelay: 2800                // Longer pause between full cycles
+            };
+
+            // --- Helper Functions (getCenterPosition, updateArrow, hideAllArrows - Unchanged) ---
+            function getCenterPosition(element) {
+                 const elemRect = element.getBoundingClientRect();
+                 const containerRect = animationContainer.getBoundingClientRect();
+                 const elemCenterX = elemRect.left + elemRect.width / 2;
+                 const elemCenterY = elemRect.top + elemRect.height / 2;
+                 const containerX = elemCenterX - containerRect.left;
+                 const containerY = elemCenterY - containerRect.top;
+                 return { left: containerX, top: containerY };
+            }
+
+            function updateArrow(arrowContainer, startPos, endPos) {
+                const dx = endPos.left - startPos.left;
+                const dy = endPos.top - startPos.top;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                const angleDeg = angle * (180 / Math.PI);
+                let startOffset = 0, endOffset = 0;
+
+                // Adjust offsets based on the specific arrow being drawn
+                if (arrowContainer === arrowContainerToRouter) {
+                    startOffset = 90;  // Approx half-width incoming source
+                    endOffset = 120; // Approx half-width router
+                } else { // Arrows from router to agents
+                    startOffset = 120; // Approx half-width router
+                    endOffset = 80;  // Approx radius agent circle
+                }
+
+                // Ensure offsets don't exceed length
+                if (length < startOffset + endOffset) {
+                    startOffset = length * (startOffset / (startOffset + endOffset + 1)); // Proportional adjustment
+                    endOffset = length * (endOffset / (startOffset + endOffset + 1));
+                }
+
+                const adjustedStartLeft = startPos.left + startOffset * Math.cos(angle);
+                const adjustedStartTop = startPos.top + startOffset * Math.sin(angle);
+                const adjustedLength = Math.max(0, length - startOffset - endOffset);
+
+                arrowContainer.style.width = `${adjustedLength}px`;
+                arrowContainer.style.left = `${adjustedStartLeft}px`;
+                arrowContainer.style.top = `${adjustedStartTop}px`;
+                arrowContainer.style.transformOrigin = `0% 50%`;
+                arrowContainer.style.transform = `rotate(${angleDeg}deg)`;
+            }
+
+            function hideAllArrows() {
+                 arrowContainerToRouter.classList.remove('visible');
+                 agents.forEach(agent => agent.arrowContainer.classList.remove('visible'));
+            }
+
+            // --- Updated Main Animation Loop ---
+            function runAnimationCycle() {
+                const targetAgentInfo = agents[currentTargetAgentIndex];
+                const targetAgentElement = targetAgentInfo.element;
+                const targetArrowContainer = targetAgentInfo.arrowContainer;
+                const currentEmailLabel = targetAgentInfo.label;
+                const currentEmailText = targetAgentInfo.emailText;
+
+                const sourcePos = getCenterPosition(incomingSource);
+                const routerPos = getCenterPosition(router);
+                const agentPos = getCenterPosition(targetAgentElement);
+
+                // Calculate positions BELOW source and router
+                const textStartTop = sourcePos.top + (incomingSource.offsetHeight / 2) + 15; // 15px below source
+                const textStartLeft = sourcePos.left; // Centered horizontally with source
+                const textRouterTop = routerPos.top + (router.offsetHeight / 2) + 15; // 15px below router
+                const textRouterLeft = routerPos.left; // Centered horizontally with router
+
+                // 1. Reset State
+                movingTextElement.style.opacity = '0';
+                movingTextElement.style.transition = 'none'; // Disable transitions during reset
+                movingTextElement.classList.remove('label-style'); // Ensure it starts as email text style
+                hideAllArrows();
+                // Set initial position (doesn't need to be exact yet)
+                movingTextElement.style.left = '0px';
+                movingTextElement.style.top = '0px';
+
+
+                // 2. Show Incoming Email Text Below Source
+                setTimeout(() => {
+                    movingTextElement.textContent = currentEmailText;
+                    // Set final start position (centered below source)
+                    movingTextElement.style.left = `${textStartLeft - (movingTextElement.offsetWidth / 2)}px`;
+                    movingTextElement.style.top = `${textStartTop}px`;
+                    // Use timeout to allow positioning before transition starts
+                    setTimeout(() => {
+                        movingTextElement.style.transition = `top ${timings.moveTextToRouterDuration}ms ease-in-out, left ${timings.moveTextToRouterDuration}ms ease-in-out, opacity 0.4s ease-in-out, background-color 0.3s ease, color 0.3s ease, border 0.3s ease`;
+                        movingTextElement.style.opacity = '1';
+
+                        // Update and show arrow to router (adjust start/end points if needed)
+                        // For simplicity, arrow still goes from node center to node center
+                        updateArrow(arrowContainerToRouter, sourcePos, routerPos);
+                        arrowContainerToRouter.classList.add('visible');
+
+                        // 3. Move Email Text Below Router
+                        movingTextElement.style.left = `${textRouterLeft - (movingTextElement.offsetWidth / 2)}px`;
+                        movingTextElement.style.top = `${textRouterTop}px`;
+                    }, 50); // Small delay
+
+                }, timings.showEmailTextDelay);
+
+
+                // 4. Arrive at Router, Process, Transform to Label
+                const arriveRouterTime = timings.showEmailTextDelay + timings.moveTextToRouterDuration;
+                setTimeout(() => {
+                    arrowContainerToRouter.classList.remove('visible');
+                    router.classList.add('processing');
+                }, arriveRouterTime);
+
+                // After processing delay, transform text to label
+                const transformTime = arriveRouterTime + timings.processingDelay;
+                setTimeout(() => {
+                    router.classList.remove('processing');
+
+                    // Quick fade out -> change content/style -> fade in
+                    movingTextElement.style.opacity = '0';
+
+                    setTimeout(() => {
+                        movingTextElement.textContent = currentEmailLabel;
+                        movingTextElement.classList.add('label-style');
+                        // Recenter after text/style change might alter width
+                        movingTextElement.style.left = `${textRouterLeft - (movingTextElement.offsetWidth / 2)}px`;
+                        movingTextElement.style.top = `${textRouterTop}px`; // Keep vertical position
+                        movingTextElement.style.opacity = '1';
+
+                        // 5. Prepare and Move Label to Agent
+                        // Update and show arrow to agent
+                        updateArrow(targetArrowContainer, routerPos, agentPos);
+                        targetArrowContainer.classList.add('visible');
+
+                        // Set transition for diagonal movement
+                        movingTextElement.style.transition = `top ${timings.moveLabelToAgentDuration}ms ease-in-out, left ${timings.moveLabelToAgentDuration}ms ease-in-out, opacity 0.4s ease-in-out, background-color 0.3s ease, color 0.3s ease, border 0.3s ease`;
+
+                        // Target agent's center (adjust slightly if needed)
+                        const targetAgentLeft = agentPos.left - (movingTextElement.offsetWidth / 2);
+                        const targetAgentTop = agentPos.top - (movingTextElement.offsetHeight / 2);
+                        movingTextElement.style.left = `${targetAgentLeft}px`;
+                        movingTextElement.style.top = `${targetAgentTop}px`;
+
+                    }, timings.labelTransformDelay); // Short delay for the swap
+
+                }, transformTime);
+
+
+                // 6. Arrive at Agent, Highlight Agent, Hide Label/Arrow
+                const arriveAgentTime = transformTime + timings.labelTransformDelay + timings.moveLabelToAgentDuration;
+                setTimeout(() => {
+                    movingTextElement.style.opacity = '0'; // Fade out label
+                    targetArrowContainer.classList.remove('visible');
+                    targetAgentElement.classList.add('highlight');
+                }, arriveAgentTime);
+
+
+                // 7. Remove Highlight
+                const removeHighlightTime = arriveAgentTime + timings.highlightDelay;
+                setTimeout(() => {
+                    targetAgentElement.classList.remove('highlight');
+                }, removeHighlightTime);
+
+
+                // 8. Prepare for Next Cycle
+                const nextCycleTime = removeHighlightTime + timings.cycleDelay;
+                setTimeout(() => {
+                    currentTargetAgentIndex = (currentTargetAgentIndex + 1) % agents.length;
+                    runAnimationCycle(); // Loop
+                }, nextCycleTime);
+            }
+
+            // Start the first cycle
+            setTimeout(runAnimationCycle, timings.initialDelay);
+        });
+    </script>
+</body>
+</html>
