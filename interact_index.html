@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voiceflow Web Chat Demo - Custom Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        #questionInput {
+            width: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Voiceflow Web Chat Demo</h1>
+        <p>The chat widget should appear in the bottom right corner of this page.</p>
+        <input type="text" id="questionInput" placeholder="Enter your question here">
+        <button onclick="sendCustomQuestion()">Send Question to Assistant</button>
+    </div>
+
+    <script type="text/javascript">
+        (function(d, t) {
+            var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            v.onload = function() {
+                window.voiceflow.chat.load({
+                    verify: { projectID: '66ed54695ee859bfb84fe587' },
+                    url: 'https://general-runtime.voiceflow.com',
+                    versionID: 'production'
+                }).then(() => {
+                    console.log('Voiceflow chat widget loaded');
+                    setTimeout(() => {
+                        window.voiceflow.chat.open();
+                    }, 1000);
+                });
+            }
+            v.src = "https://cdn.voiceflow.com/widget/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+        })(document, 'script');
+
+        function sendCustomQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+
+            if (question) {
+                console.log('Sending custom question:', question);
+                
+                window.voiceflow.chat.interact({
+                    type: 'text',
+                    payload: question
+                });
+
+                // Clear the input field after sending
+                questionInput.value = '';
+            } else {
+                console.log('Please enter a question');
+                alert('Please enter a question before sending.');
+            }
+        }
+
+        // Listen for Voiceflow events
+        window.addEventListener('message', (event) => {
+            if (typeof event.data === 'string' && event.data.includes('voiceflow:')) {
+                const data = JSON.parse(event.data);
+                console.log('Voiceflow event:', data.type);
+            }
+        }, false);
+    </script>
+</body>
+</html>
