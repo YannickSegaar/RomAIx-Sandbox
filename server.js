@@ -15,28 +15,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Store the trigger ID and payload
+// Store the trigger ID
 let currentTriggerId = 0;
-let currentPayload = {};
 
 // Endpoint that n8n will call to trigger the chat
 app.post('/api/trigger-chat', (req, res) => {
-  const { executionID, resumeURL } = req.body;
-
-  if (!executionID || !resumeURL) {
-    return res.status(400).json({ success: false, message: 'Missing executionID or resumeURL' });
-  }
-
   currentTriggerId++;
-  currentPayload = { executionID, resumeURL }; // Store the payload
-
-  console.log(`Chat trigger received. New ID: ${currentTriggerId}, Payload:`, currentPayload);
+  console.log(`Chat trigger received. New ID: ${currentTriggerId}`);
   res.json({ success: true, triggerId: currentTriggerId });
 });
 
 // Endpoint that the webpage polls to check if chat should open
 app.get('/api/check-chat-trigger', (req, res) => {
-  res.json({ triggerId: currentTriggerId, payload: currentPayload });
+  res.json({ triggerId: currentTriggerId });
 });
 
 // Explicitly serve index.html for the root path
@@ -54,7 +45,7 @@ app.listen(PORT, () => {
 ========================================
   Server running on port ${PORT}
 ========================================
-
+  
   - View the website at: http://localhost:${PORT}
   - n8n should call: http://localhost:${PORT}/api/trigger-chat
   
