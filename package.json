@@ -1,0 +1,25 @@
+{
+  "name": "romaix-sandbox",
+  "version": "1.0.0",
+  "main": "extensions_New.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YannickSegaar/RomAIx-Sandbox.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YannickSegaar/RomAIx-Sandbox/issues"
+  },
+  "homepage": "https://github.com/YannickSegaar/RomAIx-Sandbox#readme",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
