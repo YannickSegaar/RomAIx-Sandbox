@@ -115,87 +115,10 @@
                 resumeUrl: resumeUrl
               };
               
-              // Launch chat with custom variables
-              window.voiceflow.chat.load({
-                verify: { projectID: '6798b43c9f655dc50cb7cb58' },
-                url: 'https://general-runtime.voiceflow.com',
-                versionID: 'production',
-                voice: { 
-                  url: "https://runtime-api.voiceflow.com" 
-                },
-                user: {
-                  name: 'Demo User',
-                },
-                render: {
-                  mode: 'overlay',
-                },
-                launch: {
-                  event: {
-                    type: 'launch',
-                    payload: {
-                      executionId: executionId,
-                      resumeUrl: resumeUrl
-                    }
-                  }
-                },
-                assistant: {
-                  extensions: [
-                    VideoExtension,
-                    TimerExtension,
-                    FormExtension,
-                    MapExtension,
-                    FileUploadExtension,
-                    KBUploadExtension,
-                    DateExtension,
-                    ConfettiExtension,
-                    GTH_FormExtension,
-                    GTH_FeedbackExtension,
-                    WaitingAnimationExtension,
-                    GiftCardDisplayExtension,
-                    DoneAnimationExtension,
-                    InvisibleTimerExtension,
-                    DisableInputExtension,
-                    makeToVoiceflowExtension,
-                    RescheduleCancelFormExtension,
-                    IframeEmbedExtension,
-                    CustomizedIframeExtension,
-                    DirectionsWorkflowExtension,
-                    DirectionsWorkflowExtension2,
-                    DirectionsWorkflowExtension3,
-                    DirectionsWorkflowExtension4,
-                    DirectionsWorkflowExtension5,
-                    DirectionsWorkflowExtension6,
-                    DirectionsWorkflowExtension7,
-                    DirectionsWorkflowExtension8,
-                    DirectionsWorkflowExtension9,
-                    DirectionsWorkflowExtension10,
-                    DirectionsWorkflowExtension11,
-                    DirectionsWorkflowExtension12,
-                    DirectionsWorkflowExtension13,
-                    DirectionsWorkflowExtension14,
-                    DirectionsWorkflowExtension15,
-                    DirectionsWorkflowExtension16,
-                    DirectionsWorkflowExtension17,
-                    DirectionsWorkflowExtension18,
-                    DirectionsWorkflowExtension19,
-                    DirectionsWorkflowExtension20,
-                    DirectionsWorkflowExtension22,
-                    GTH_FormExtension2,
-                    RomAIxWebhookExtension1,
-                    RomAIxWebhookExtension2
-                  ],
-                  stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_FareHarborCarousel.css",
-                },
-              }).then(() => {
-                console.log("Voiceflow chat initialized successfully.");
-                window.voiceflow.chat.open(); // Open the chat after initialization
-                statusElement.textContent = 'Voiceflow chat opened with execution data.';
-                statusElement.className = 'status ready';
-              }).catch((error) => {
-                console.error("Error initializing Voiceflow chat:", error);
-                statusElement.textContent = 'Error initializing Voiceflow chat: ' + error.message;
-                statusElement.className = 'status error';
-              });
+              window.voiceflow.chat.open(); // Open the chat
+              
+              statusElement.textContent = 'Voiceflow chat opened with execution data.';
+              statusElement.className = 'status ready';
             } else {
               console.warn('Voiceflow chat not yet loaded');
               statusElement.textContent = 'Voiceflow chat not yet loaded. Waiting for initialization...';
@@ -228,3 +151,159 @@
       setInterval(checkChatTrigger, 3000);
     });
   </script>
+
+  <!-- Canvas Confetti Script -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <!-- Voiceflow Chat Widget and Extensions Script -->
+  <script type="module">
+    console.log("Script loaded. Initializing Voiceflow chat widget...");
+
+    // Import extensions from the extensions.js file
+    import {
+      VideoExtension,
+      TimerExtension,
+      FormExtension,
+      MapExtension,
+      FileUploadExtension,
+      KBUploadExtension,
+      DateExtension,
+      ConfettiExtension,
+      GTH_FormExtension,
+      GTH_FeedbackExtension,
+      WaitingAnimationExtension,
+      GiftCardDisplayExtension,
+      DoneAnimationExtension,
+      InvisibleTimerExtension,
+      DisableInputExtension,
+      makeToVoiceflowExtension,
+      RescheduleCancelFormExtension,
+      IframeEmbedExtension,
+      CustomizedIframeExtension,
+      DirectionsWorkflowExtension,
+      DirectionsWorkflowExtension2,
+      DirectionsWorkflowExtension3,
+      DirectionsWorkflowExtension4,
+      DirectionsWorkflowExtension5,
+      DirectionsWorkflowExtension6,
+      DirectionsWorkflowExtension7,
+      DirectionsWorkflowExtension8,
+      DirectionsWorkflowExtension9,
+      DirectionsWorkflowExtension10,
+      DirectionsWorkflowExtension11,
+      DirectionsWorkflowExtension12,
+      DirectionsWorkflowExtension13,
+      DirectionsWorkflowExtension14,
+      DirectionsWorkflowExtension15,
+      DirectionsWorkflowExtension16,
+      DirectionsWorkflowExtension17,
+      DirectionsWorkflowExtension18,
+      DirectionsWorkflowExtension19,
+      DirectionsWorkflowExtension20,
+      DirectionsWorkflowExtension22,
+      GTH_FormExtension2,
+      RomAIxWebhookExtension1,
+      RomAIxWebhookExtension2
+    } from '/extensions_New.js';
+
+    // Load the Voiceflow chat widget with extensions
+    (function (d, t) {
+      var v = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+      v.onload = function () {
+        console.log("Voiceflow widget script loaded. Initializing chat...");
+
+        window.voiceflow.chat.load({
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Replace with your Voiceflow project ID
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production', // Use 'development' for testing or 'production' for live
+          voice: { 
+            url: "https://runtime-api.voiceflow.com" 
+          },
+          user: {
+            name: 'Demo User',
+          },
+          render: {
+            mode: 'overlay',
+          },
+          autostart: false, // Ensure the chat does not open automatically
+          allowDangerousHTML: true,
+          launch: {
+            event: {
+              type: 'launch',
+              payload: {
+                executionId: window.romaixData ? window.romaixData.executionId : null,
+                resumeUrl: window.romaixData ? window.romaixData.resumeUrl : null
+              }
+            }
+          },
+          assistant: {
+            extensions: [
+              VideoExtension,
+              TimerExtension,
+              FormExtension,
+              MapExtension,
+              FileUploadExtension,
+              KBUploadExtension,
+              DateExtension,
+              ConfettiExtension,
+              GTH_FormExtension,
+              GTH_FeedbackExtension,
+              WaitingAnimationExtension,
+              GiftCardDisplayExtension,
+              DoneAnimationExtension,
+              InvisibleTimerExtension,
+              DisableInputExtension,
+              makeToVoiceflowExtension,
+              RescheduleCancelFormExtension,
+              IframeEmbedExtension,
+              CustomizedIframeExtension,
+              DirectionsWorkflowExtension,
+              DirectionsWorkflowExtension2,
+              DirectionsWorkflowExtension3,
+              DirectionsWorkflowExtension4,
+              DirectionsWorkflowExtension5,
+              DirectionsWorkflowExtension6,
+              DirectionsWorkflowExtension7,
+              DirectionsWorkflowExtension8,
+              DirectionsWorkflowExtension9,
+              DirectionsWorkflowExtension10,
+              DirectionsWorkflowExtension11,
+              DirectionsWorkflowExtension12,
+              DirectionsWorkflowExtension13,
+              DirectionsWorkflowExtension14,
+              DirectionsWorkflowExtension15,
+              DirectionsWorkflowExtension16,
+              DirectionsWorkflowExtension17,
+              DirectionsWorkflowExtension18,
+              DirectionsWorkflowExtension19,
+              DirectionsWorkflowExtension20,
+              DirectionsWorkflowExtension22,
+              GTH_FormExtension2,
+              RomAIxWebhookExtension1,
+              RomAIxWebhookExtension2
+            ],
+            stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_FareHarborCarousel.css",
+          },
+        }).then(() => {
+          console.log("Voiceflow chat initialized successfully.");
+          statusElement.textContent = 'Voiceflow chat initialized successfully. Ready for triggers.';
+          statusElement.className = 'status ready';
+          
+          // If we already have a trigger pending, open the chat
+          if (executionId && resumeUrl && lastProcessedTrigger > 0) {
+            window.voiceflow.chat.open();
+          }
+        }).catch((error) => {
+          console.error("Error initializing Voiceflow chat:", error);
+          statusElement.textContent = 'Error initializing Voiceflow chat: ' + error.message;
+          statusElement.className = 'status error';
+        });
+      };
+      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs'; // Updated to the new widget version
+      v.type = 'text/javascript';
+      s.parentNode.insertBefore(v, s);
+    })(document, 'script');
+  </script>
+</body>
+</html>
