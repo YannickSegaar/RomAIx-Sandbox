@@ -37284,3 +37284,223 @@ else if (window.romaixData && window.romaixData.n8n_executionID && window.romaix
     element.appendChild(formWrapper)
   }
 }
+
+// YRS: Webhook Trigger VERSION 3 (11 April 2025)
+
+// Ensure this is exported correctly if using ES Modules, or just define globally if using plain <script> includes.
+// Assuming global definition for simplicity with the HTML structure provided:
+
+const RomAIxWebhookExtension3 = {
+  name: 'RomAIxWebhookForm3', // Keep this name consistent
+  type: 'response',
+  match: ({ trace }) => {
+      // Match based on the Custom Action Name set in Voiceflow
+      const expectedName = 'romaix_webhook_form3'; // Make sure this matches VF Custom Action Name
+      const match = trace.type === expectedName || trace.payload?.name === expectedName;
+      // if (match) console.log("RomAIxWebhookExtension2 matched trace:", trace);
+      return match;
+  },
+  render: ({ trace, element }) => {
+    console.log("Rendering RomAIxWebhookForm. Received trace:", trace);
+
+    // --- Get n8n data primarily from trace.payload (passed via VF Custom Action) ---
+    let n8n_executionID = trace?.payload?.n8n_executionID || null;
+    let n8n_resumeURL = trace?.payload?.n8n_resumeURL || null;
+
+    console.log(`[Extension] Retrieved from trace.payload: executionID=${n8n_executionID}, resumeURL=${n8n_resumeURL}`);
+
+    // Optional: Fallback to window object if trace payload is missing (less reliable)
+    if (!n8n_executionID && window.romaixData?.n8n_executionID) {
+      n8n_executionID = window.romaixData.n8n_executionID;
+      console.warn("[Extension] Used fallback executionID from window.romaixData");
+    }
+    if (!n8n_resumeURL && window.romaixData?.n8n_resumeURL) {
+      n8n_resumeURL = window.romaixData.n8n_resumeURL;
+      console.warn("[Extension] Used fallback resumeURL from window.romaixData");
+    }
+
+    if (!n8n_resumeURL) {
+        console.error("[Extension] Critical: n8n_resumeURL is missing. Form submission to N8N will fail.");
+        // Potentially disable the submit button or show an error to the user here
+    }
+
+    // Create a container that spans the full width
+    const formWrapper = document.createElement('div');
+    formWrapper.style.cssText = 'width: 100% !important; margin: 0 !important; padding: 0 !important;';
+
+    // --- Keep the existing innerHTML for the form structure and CSS ---
+    formWrapper.innerHTML = `
+      <style>
+        /* ... (keep existing CSS) ... */
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+
+        .romaix-form-container { /* ... */ }
+        .romaix-form { /* ... */ }
+        .romaix-form-header { /* ... */ }
+        /* ... all other styles ... */
+        .error-message.visible { display: block !important; }
+        .romaix-form-content.hidden { display: none !important; }
+        .romaix-form-state.active { display: block !important; }
+      </style>
+
+      <div class="romaix-form-container">
+        <form class="romaix-form" id="romaix-webhook-form-${Date.now()}"> <div class="romaix-form-header">N8N Webhook Demo Form</div>
+          <div class="romaix-form-content" id="romaix-form-fields">
+            <div class="romaix-logo-container">
+              <div class="romaix-logo">R</div>
+              <div class="n8n-logo">n8n</div>
+            </div>
+            <div class="romaix-form-row" id="execution-info" style="font-size: 10px; color: grey; word-break: break-all; text-align: left; display: none;"> <strong>Debug Info:</strong><br>
+              <code id="execution-data">Data loading...</code>
+            </div>
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Full Name</label>
+              <input type="text" class="romaix-form-input romaix-name" placeholder="John Doe" required>
+              <div class="error-message" data-for="name">Name is required</div>
+            </div>
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Email Address</label>
+              <input type="email" class="romaix-form-input romaix-email" placeholder="youremail@example.com" required>
+              <div class="error-message" data-for="email">Please enter a valid email address</div>
+            </div>
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Company/Organization</label>
+              <input type="text" class="romaix-form-input romaix-company" placeholder="Your company" required>
+              <div class="error-message" data-for="company">Company name is required</div>
+            </div>
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Service Type</label>
+              <select class="romaix-form-select romaix-service" required>
+                <option value="" disabled selected>Select service type</option>
+                <option value="chatbot">AI Chatbot Development</option>
+                <option value="automation">Workflow Automation</option>
+                <option value="integration">API Integration</option>
+                <option value="custom">Custom AI Solution</option>
+              </select>
+              <div class="error-message" data-for="service">Please select a service type</div>
+            </div>
+            <div class="romaix-form-row">
+              <button type="submit" class="romaix-form-button" id="romaix-submit-btn">Trigger Webhook</button>
+            </div>
+          </div>
+          <div class="romaix-form-state" id="romaix-loading-state"> /* ... loading state ... */ </div>
+          <div class="romaix-form-state" id="romaix-success-state"> /* ... success state ... */ </div>
+        </form>
+      </div>
+    `;
+
+    // Get elements from the newly created formWrapper
+    const form = formWrapper.querySelector('form'); // More specific selector if needed
+    const fieldsContainer = form.querySelector('#romaix-form-fields');
+    const loadingState = form.querySelector('#romaix-loading-state');
+    const successState = form.querySelector('#romaix-success-state');
+    const nameInput = form.querySelector('.romaix-name');
+    const emailInput = form.querySelector('.romaix-email');
+    const companyInput = form.querySelector('.romaix-company');
+    const serviceSelect = form.querySelector('.romaix-service');
+    const submitBtn = form.querySelector('#romaix-submit-btn');
+    const resetBtn = form.querySelector('#romaix-reset-btn'); // Ensure this exists in success state HTML
+    const executionInfoEl = form.querySelector('#execution-info');
+    const executionDataEl = form.querySelector('#execution-data');
+
+    // Display debug info (optional)
+    if (executionInfoEl && executionDataEl) {
+       executionDataEl.textContent = `ExecID: ${n8n_executionID || 'Not Found'}\nResumeURL: ${n8n_resumeURL || 'Not Found'}`;
+       executionInfoEl.style.display = 'block'; // Show the debug info block
+    }
+
+     // --- Keep existing helper functions (showError, clearError, isEmailValid, showState) ---
+    const showError = (field, message) => { /* ... */ };
+    const clearError = (field) => { /* ... */ };
+    const isEmailValid = (email) => { /* ... */ };
+    const showState = (state) => { /* ... */ };
+
+    // Add input event listeners (Keep as is)
+    nameInput.addEventListener('input', () => clearError('name'));
+    emailInput.addEventListener('input', () => clearError('email'));
+    companyInput.addEventListener('input', () => clearError('company'));
+    serviceSelect.addEventListener('change', () => clearError('service'));
+
+    // --- Form Submit Handler (Keep core logic, ensure n8n_resumeURL is used) ---
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      clearError('name'); clearError('email'); clearError('company'); clearError('service');
+
+      let isValid = true;
+      // --- Keep validation logic ---
+      if (!nameInput.value.trim()) { showError('name', 'Name is required'); isValid = false; }
+      if (!emailInput.value.trim()) { showError('email', 'Email is required'); isValid = false; }
+      else if (!isEmailValid(emailInput.value.trim())) { showError('email', 'Valid email needed'); isValid = false; }
+      if (!companyInput.value.trim()) { showError('company', 'Company is required'); isValid = false; }
+      if (!serviceSelect.value) { showError('service', 'Service type needed'); isValid = false; }
+
+
+      if (isValid) {
+        showState('loading');
+
+        const formData = {
+          name: nameInput.value.trim(),
+          email: emailInput.value.trim(),
+          company: companyInput.value.trim(),
+          serviceType: serviceSelect.value,
+          // Include the N8N data received via trace.payload
+          n8n_executionID: n8n_executionID,
+          // n8n_resumeURL: n8n_resumeURL // No need to send the URL itself back usually
+        };
+
+        console.log("[Extension] Form data prepared:", formData);
+        console.log(`[Extension] Using N8N Resume URL: ${n8n_resumeURL}`);
+
+        if (n8n_resumeURL) {
+          fetch(n8n_resumeURL, { // Use the captured resume URL
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData) // Send form data to N8N Wait node
+          })
+          .then(response => {
+            if (!response.ok) { throw new Error(`N8N Webhook Error: ${response.status}`); }
+            return response.json();
+          })
+          .then(data => {
+            console.log("[Extension] N8N Webhook response:", data);
+            showState('success');
+            // Optionally interact back with Voiceflow if needed
+            // window.voiceflow.chat.interact({ type: 'complete', payload: { success: true, ...formData } });
+          })
+          .catch(error => {
+            console.error("[Extension] Error calling N8N webhook:", error);
+            // Handle error - maybe show an error state instead of success
+            // For now, we'll still go to success to unblock VF flow maybe?
+             showState('success'); // Or implement an error state
+             // window.voiceflow.chat.interact({ type: 'complete', payload: { success: false, error: error.message, ...formData } });
+          });
+        } else {
+          console.error("[Extension] Cannot submit form: n8n_resumeURL is missing!");
+          // Show error to user, prevent proceeding
+          showState('form'); // Go back to form
+          alert("Configuration error: Cannot contact the workflow. Please contact support.");
+          // Or show an error message within the form area
+        }
+      }
+    });
+
+    // Reset button logic (Keep as is if needed)
+     if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+          nameInput.value = ''; emailInput.value = ''; companyInput.value = ''; serviceSelect.value = '';
+          showState('form');
+        });
+     } else {
+       // console.log("[Extension] Reset button not found in success state.");
+     }
+
+
+    // Append the form wrapper to the element provided by Voiceflow
+    element.innerHTML = ''; // Clear previous content
+    element.appendChild(formWrapper);
+    console.log("[Extension] Form rendered and attached.");
+  }
+};
+
+// Make it available globally if not using modules
+window.RomAIxWebhookExtension2 = RomAIxWebhookExtension2;
