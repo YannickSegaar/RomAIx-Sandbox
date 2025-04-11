@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voiceflow Chat</title>
+  <title>Voiceflow Chat API Trigger</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,11 +16,11 @@
       height: 100vh;
       text-align: center;
     }
-    h1 {
-      color: #333;
-    }
     .container {
       max-width: 800px;
+    }
+    h1 {
+      color: #333;
     }
     .status {
       margin-top: 20px;
@@ -37,13 +37,29 @@
       background-color: #ffebee;
       color: #c62828;
     }
+    .btn {
+      background-color: #587C74;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    .btn:hover {
+      background-color: #2F3E46;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>My Website</h1>
-    <p>This page includes a Voiceflow chat agent that can be triggered via API.</p>
+    <h1>RomAIx Voiceflow Integration</h1>
+    <p>This page includes a Voiceflow chat agent that can be triggered via API call.</p>
     <div id="status" class="status">Loading Voiceflow chat widget...</div>
+    
+    <!-- Test button (for manual testing) -->
+    <button id="test-btn" class="btn">Test Open Chat</button>
   </div>
 
   <!-- Voiceflow Chat Widget Container -->
@@ -51,17 +67,21 @@
   
   <!-- Script for Chat Trigger API -->
   <script>
-    // This variable will be used to track if we've processed an API trigger
+    // This variable will be used to track the last processed trigger
     let lastProcessedTrigger = 0;
     const statusElement = document.getElementById('status');
+    const testBtn = document.getElementById('test-btn');
     
     // Function to check if the chat should be opened
     function checkChatTrigger() {
-      // Use absolute URL to API endpoint
-      fetch('http://localhost:3000/api/check-chat-trigger?' + new Date().getTime())
-        .then(response => response.json())
+      fetch('/api/check-chat-trigger?' + new Date().getTime())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        })
         .then(data => {
-          // If there's a new trigger and it's newer than what we've processed
           if (data.triggerId && data.triggerId > lastProcessedTrigger) {
             lastProcessedTrigger = data.triggerId;
             statusElement.textContent = `Received trigger ID: ${data.triggerId}, opening chat...`;
@@ -71,6 +91,7 @@
             if (window.voiceflow && window.voiceflow.chat) {
               console.log('Opening chat due to API trigger');
               window.voiceflow.chat.open();
+              statusElement.textContent = 'Chat opened successfully!';
             } else {
               console.warn('Voiceflow chat not yet loaded');
               statusElement.textContent = 'Voiceflow chat not yet loaded, will try again...';
@@ -92,9 +113,21 @@
         });
     }
 
+    // Test button to manually open chat
+    testBtn.addEventListener('click', () => {
+      if (window.voiceflow && window.voiceflow.chat) {
+        window.voiceflow.chat.open();
+        statusElement.textContent = 'Chat opened manually';
+        statusElement.className = 'status ready';
+      } else {
+        statusElement.textContent = 'Voiceflow chat not loaded yet';
+        statusElement.className = 'status error';
+      }
+    });
+
     // Start checking for triggers once the page is loaded
     document.addEventListener('DOMContentLoaded', () => {
-      statusElement.textContent = 'Connected to API, checking for triggers...';
+      statusElement.textContent = 'Page loaded, connecting to API...';
       // Check every 3 seconds
       setInterval(checkChatTrigger, 3000);
     });
