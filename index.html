@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>API-Only Voiceflow Trigger</title>
+  <title>N8n Voiceflow Integration</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,7 +19,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    h1 {
+    h1, h2 {
       text-align: center;
       color: #333;
     }
@@ -50,13 +50,19 @@
       border-bottom: 1px solid #ddd;
       word-break: break-all;
     }
+    .code {
+      font-family: monospace;
+      background-color: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
     .log-container {
       margin-top: 20px;
       padding: 10px;
       background-color: #f9f9f9;
       border: 1px solid #ddd;
       border-radius: 5px;
-      height: 150px;
+      height: 200px;
       overflow-y: auto;
     }
     .log-entry {
@@ -74,7 +80,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>API-Only Voiceflow Trigger</h1>
+    <h1>N8n Voiceflow Integration</h1>
+    <p>This page uses Voiceflow's event system to trigger the chat with custom payload data.</p>
     
     <div class="status-box">
       <p class="status-message" id="status-message">Waiting for API trigger...</p>
@@ -136,26 +143,28 @@
       logEvent(message);
     }
     
-    // API check function
+    // Check for API triggers
     function checkForTrigger() {
       fetch(`/api/check-chat-trigger?t=${Date.now()}`)
         .then(response => response.json())
         .then(data => {
-          // Update display data
+          // Update display data regardless of whether it's new
           if (data.triggerId) {
             triggerIdEl.textContent = data.triggerId;
             executionIdEl.textContent = data.n8n_executionID || 'Not provided';
             resumeUrlEl.textContent = data.n8n_resumeURL || 'Not provided';
             
-            // Check if this is a new trigger
+            // Check if this is a new trigger we haven't processed yet
             if (data.triggerId > lastProcessedTrigger) {
               lastProcessedTrigger = data.triggerId;
               logEvent(`New API trigger received: ID ${data.triggerId}`);
               
+              // Only proceed if Voiceflow is initialized
               if (isVoiceflowInitialized && window.voiceflow && window.voiceflow.chat) {
-                updateStatus('API trigger received! Opening chat with payload...');
+                updateStatus('API trigger received! Sending event to Voiceflow...');
                 
-                // First send the payload data
+                // First: Send a launch event with the payload data using interact
+                logEvent('Sending launch event with payload data...');
                 window.voiceflow.chat.interact({
                   type: 'launch',
                   payload: {
@@ -163,11 +172,13 @@
                     n8n_resumeURL: data.n8n_resumeURL
                   }
                 }).then(() => {
-                  // Then open the chat
-                  logEvent('Payload sent to Voiceflow, opening chat...');
+                  // Second: Open the chat after the event is processed
+                  logEvent('Launch event sent successfully, opening chat...');
                   window.voiceflow.chat.open();
+                  updateStatus('Chat opened with payload data!');
                 }).catch(error => {
-                  logEvent(`Error sending payload: ${error.message}`);
+                  logEvent(`Error sending launch event: ${error.message}`);
+                  updateStatus('Error sending payload. See log for details.');
                 });
               } else {
                 updateStatus('API trigger received but Voiceflow not ready yet. Will retry...');
@@ -180,48 +191,53 @@
         });
     }
     
-    // Initialize application
-    function initApp() {
-      logEvent('Application initialized');
-      updateStatus('Waiting for API trigger to open chat');
+    // Initialize Voiceflow
+    function initializeVoiceflow() {
+      // Load the Voiceflow widget script
+      logEvent('Loading Voiceflow widget script...');
       
-      // Start polling for API triggers
-      setInterval(checkForTrigger, 3000);
-      
-      // Load Voiceflow script but DO NOT open the chat
+      // Create script element
       const script = document.createElement('script');
       script.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
       script.type = 'text/javascript';
       
+      // Set up onload handler
       script.onload = function() {
-        logEvent('Voiceflow script loaded');
+        logEvent('Voiceflow script loaded, initializing widget...');
         
         // Initialize with autostart explicitly set to false
         window.voiceflow.chat.load({
-          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Replace with your actual project ID
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Your project ID
           url: 'https://general-runtime.voiceflow.com',
           versionID: 'production',
-          user: { name: 'API User' },
-          render: { mode: 'overlay' },
-          
-          // CRITICAL: This ensures the chat will NOT open automatically
-          autostart: false,
-          
-          // Additional settings
-          allowDangerousHTML: true,
+          autostart: false, // Critical - prevent auto-opening
+          render: { mode: 'overlay' }
         }).then(() => {
           isVoiceflowInitialized = true;
-          logEvent('Voiceflow initialized successfully (chat will NOT open until API triggered)');
+          logEvent('Voiceflow initialized successfully (will NOT auto-open)');
+          updateStatus('Ready! Waiting for API trigger...');
         }).catch(error => {
           logEvent(`Voiceflow initialization error: ${error.message}`);
+          updateStatus('Error initializing Voiceflow');
         });
       };
       
+      // Add to document
       document.body.appendChild(script);
     }
     
-    // Start everything when page is loaded
-    document.addEventListener('DOMContentLoaded', initApp);
+    // Start application
+    document.addEventListener('DOMContentLoaded', function() {
+      logEvent('Page loaded, initializing...');
+      updateStatus('Initializing Voiceflow (chat will NOT auto-open)');
+      
+      // Initialize Voiceflow (but don't open it)
+      initializeVoiceflow();
+      
+      // Start polling for API triggers
+      logEvent('Starting API polling (every 3 seconds)');
+      setInterval(checkForTrigger, 3000);
+    });
   </script>
 </body>
 </html>
