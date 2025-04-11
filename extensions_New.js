@@ -37073,21 +37073,21 @@ export const RomAIxWebhookExtension2 = {
     const executionDataEl = form.querySelector('#execution-data')
     
     // Get execution data from window object or from Voiceflow variables
-    let n8n_executionID = null;
-    let n8n_resumeURL = null;
-    
-    // Try to get data from variables passed in trace payload
-    if (trace && trace.payload && trace.payload.n8n_executionID && trace.payload.n8n_resumeURL) {
-      n8n_executionID = trace.payload.n8n_executionID;
-      n8n_resumeURL = trace.payload.n8n_resumeURL;
-      console.log("Retrieved execution data from trace payload:", { n8n_executionID, n8n_resumeURL });
-    } 
-    // Try from global window object where we stored it during initialization
-    else if (window.romaixData && window.romaixData.n8n_executionID && window.romaixData.n8n_resumeURL) {
-      n8n_executionID = window.romaixData.n8n_executionID;
-      n8n_resumeURL = window.romaixData.n8n_resumeURL;
-      console.log("Retrieved execution data from window object:", { n8n_executionID, n8n_resumeURL });
-    }
+let n8n_executionID = null;
+let n8n_resumeURL = null;
+
+// Try to get data from variables passed in trace payload
+if (trace && trace.payload && trace.payload.n8n_executionID && trace.payload.n8n_resumeURL) {
+  n8n_executionID = trace.payload.n8n_executionID;
+  n8n_resumeURL = trace.payload.n8n_resumeURL;
+  console.log("Retrieved execution data from trace payload:", { n8n_executionID, n8n_resumeURL });
+} 
+// Try from global window object where we stored it during initialization
+else if (window.romaixData && window.romaixData.n8n_executionID && window.romaixData.n8n_resumeURL) {
+  n8n_executionID = window.romaixData.n8n_executionID;
+  n8n_resumeURL = window.romaixData.n8n_resumeURL;
+  console.log("Retrieved execution data from window object:", { n8n_executionID, n8n_resumeURL });
+}
     
     // If we have execution data, display it in debug mode
     if (n8n_executionID && n8n_resumeURL) {

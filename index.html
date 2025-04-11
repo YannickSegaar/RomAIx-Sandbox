@@ -86,6 +86,102 @@
     let n8n_resumeURL = null;
     const statusElement = document.getElementById('status');
     const testBtn = document.getElementById('test-btn');
+    
+    // Window object to store data for extensions
+    window.romaixData = { 
+      n8n_executionID: null, 
+      n8n_resumeURL: null 
+    };
+
+    // Function to initialize Voiceflow chat with current data
+    function initializeVoiceflowChat() {
+      console.log("Initializing Voiceflow chat with data:", window.romaixData);
+      
+      return window.voiceflow.chat.load({
+        verify: { projectID: '6798b43c9f655dc50cb7cb58' },
+        url: 'https://general-runtime.voiceflow.com',
+        versionID: 'production',
+        voice: { 
+          url: "https://runtime-api.voiceflow.com" 
+        },
+        user: {
+          name: 'Demo User',
+        },
+        render: {
+          mode: 'overlay',
+        },
+        autostart: false,
+        allowDangerousHTML: true,
+        launch: {
+          event: {
+            type: 'launch',
+            payload: {
+              n8n_executionID: window.romaixData.n8n_executionID,
+              n8n_resumeURL: window.romaixData.n8n_resumeURL
+            }
+          }
+        },
+        assistant: {
+          extensions: [
+            VideoExtension,
+            TimerExtension,
+            FormExtension,
+            MapExtension,
+            FileUploadExtension,
+            KBUploadExtension,
+            DateExtension,
+            ConfettiExtension,
+            GTH_FormExtension,
+            GTH_FeedbackExtension,
+            WaitingAnimationExtension,
+            GiftCardDisplayExtension,
+            DoneAnimationExtension,
+            InvisibleTimerExtension,
+            DisableInputExtension,
+            makeToVoiceflowExtension,
+            RescheduleCancelFormExtension,
+            IframeEmbedExtension,
+            CustomizedIframeExtension,
+            DirectionsWorkflowExtension,
+            DirectionsWorkflowExtension2,
+            DirectionsWorkflowExtension3,
+            DirectionsWorkflowExtension4,
+            DirectionsWorkflowExtension5,
+            DirectionsWorkflowExtension6,
+            DirectionsWorkflowExtension7,
+            DirectionsWorkflowExtension8,
+            DirectionsWorkflowExtension9,
+            DirectionsWorkflowExtension10,
+            DirectionsWorkflowExtension11,
+            DirectionsWorkflowExtension12,
+            DirectionsWorkflowExtension13,
+            DirectionsWorkflowExtension14,
+            DirectionsWorkflowExtension15,
+            DirectionsWorkflowExtension16,
+            DirectionsWorkflowExtension17,
+            DirectionsWorkflowExtension18,
+            DirectionsWorkflowExtension19,
+            DirectionsWorkflowExtension20,
+            DirectionsWorkflowExtension22,
+            GTH_FormExtension2,
+            RomAIxWebhookExtension1,
+            RomAIxWebhookExtension2
+          ],
+          stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_FareHarborCarousel.css",
+        },
+      }).then(() => {
+        console.log("Voiceflow chat initialized successfully with payload:", {
+          n8n_executionID: window.romaixData.n8n_executionID,
+          n8n_resumeURL: window.romaixData.n8n_resumeURL
+        });
+        statusElement.textContent = 'Voiceflow chat initialized successfully. Ready for triggers.';
+        statusElement.className = 'status ready';
+      }).catch((error) => {
+        console.error("Error initializing Voiceflow chat:", error);
+        statusElement.textContent = 'Error initializing Voiceflow chat: ' + error.message;
+        statusElement.className = 'status error';
+      });
+    }
   
     // Function to check if the chat should be opened
     function checkChatTrigger() {
@@ -99,26 +195,37 @@
         .then(data => {
           if (data.triggerId && data.triggerId > lastProcessedTrigger) {
             lastProcessedTrigger = data.triggerId;
+            
+            // Update the global variables and window object
             n8n_executionID = data.n8n_executionID;
             n8n_resumeURL = data.n8n_resumeURL;
+            
+            window.romaixData = {
+              n8n_executionID: n8n_executionID,
+              n8n_resumeURL: n8n_resumeURL
+            };
             
             statusElement.textContent = `Received trigger ID: ${data.triggerId}, opening chat with n8n_executionID: ${n8n_executionID}`;
             statusElement.className = 'status ready';
   
+            console.log('Opening chat due to API trigger with data:', window.romaixData);
+            
             // Make sure Voiceflow is loaded before trying to open
             if (window.voiceflow && window.voiceflow.chat) {
-              console.log('Opening chat due to API trigger with data:', {n8n_executionID, n8n_resumeURL});
-              
-              // Store data in window object to make it accessible to the extension
-              window.romaixData = {
-                n8n_executionID: n8n_executionID,
-                n8n_resumeURL: n8n_resumeURL
-              };
-              
-              window.voiceflow.chat.open(); // Open the chat
-              
-              statusElement.textContent = 'Voiceflow chat opened with execution data.';
-              statusElement.className = 'status ready';
+              // Destroy any existing chat instance (if possible)
+              if (window.voiceflow.chat.destroy) {
+                window.voiceflow.chat.destroy().then(() => {
+                  // Reinitialize with new data
+                  initializeVoiceflowChat().then(() => {
+                    window.voiceflow.chat.open();
+                  });
+                });
+              } else {
+                // If no destroy method, try to reinitialize
+                initializeVoiceflowChat().then(() => {
+                  window.voiceflow.chat.open();
+                });
+              }
             } else {
               console.warn('Voiceflow chat not yet loaded');
               statusElement.textContent = 'Voiceflow chat not yet loaded. Waiting for initialization...';
@@ -212,93 +319,8 @@
         s = d.getElementsByTagName(t)[0];
       v.onload = function () {
         console.log("Voiceflow widget script loaded. Initializing chat...");
-
-        window.voiceflow.chat.load({
-          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Replace with your Voiceflow project ID
-          url: 'https://general-runtime.voiceflow.com',
-          versionID: 'production', // Use 'development' for testing or 'production' for live
-          voice: { 
-            url: "https://runtime-api.voiceflow.com" 
-          },
-          user: {
-            name: 'Demo User',
-          },
-          render: {
-            mode: 'overlay',
-          },
-          autostart: false, // Ensure the chat does not open automatically
-          allowDangerousHTML: true,
-          launch: {
-            event: {
-              type: 'launch',
-              payload: {
-                n8n_executionID: window.romaixData ? window.romaixData.n8n_executionID : null,
-                n8n_resumeURL: window.romaixData ? window.romaixData.n8n_resumeURL : null
-              }
-            }
-          },
-          assistant: {
-            extensions: [
-              VideoExtension,
-              TimerExtension,
-              FormExtension,
-              MapExtension,
-              FileUploadExtension,
-              KBUploadExtension,
-              DateExtension,
-              ConfettiExtension,
-              GTH_FormExtension,
-              GTH_FeedbackExtension,
-              WaitingAnimationExtension,
-              GiftCardDisplayExtension,
-              DoneAnimationExtension,
-              InvisibleTimerExtension,
-              DisableInputExtension,
-              makeToVoiceflowExtension,
-              RescheduleCancelFormExtension,
-              IframeEmbedExtension,
-              CustomizedIframeExtension,
-              DirectionsWorkflowExtension,
-              DirectionsWorkflowExtension2,
-              DirectionsWorkflowExtension3,
-              DirectionsWorkflowExtension4,
-              DirectionsWorkflowExtension5,
-              DirectionsWorkflowExtension6,
-              DirectionsWorkflowExtension7,
-              DirectionsWorkflowExtension8,
-              DirectionsWorkflowExtension9,
-              DirectionsWorkflowExtension10,
-              DirectionsWorkflowExtension11,
-              DirectionsWorkflowExtension12,
-              DirectionsWorkflowExtension13,
-              DirectionsWorkflowExtension14,
-              DirectionsWorkflowExtension15,
-              DirectionsWorkflowExtension16,
-              DirectionsWorkflowExtension17,
-              DirectionsWorkflowExtension18,
-              DirectionsWorkflowExtension19,
-              DirectionsWorkflowExtension20,
-              DirectionsWorkflowExtension22,
-              GTH_FormExtension2,
-              RomAIxWebhookExtension1,
-              RomAIxWebhookExtension2
-            ],
-            stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_FareHarborCarousel.css",
-          },
-        }).then(() => {
-          console.log("Voiceflow chat initialized successfully.");
-          statusElement.textContent = 'Voiceflow chat initialized successfully. Ready for triggers.';
-          statusElement.className = 'status ready';
-          
-          // If we already have a trigger pending, open the chat
-          if (n8n_executionID && n8n_resumeURL && lastProcessedTrigger > 0) {
-            window.voiceflow.chat.open();
-          }
-        }).catch((error) => {
-          console.error("Error initializing Voiceflow chat:", error);
-          statusElement.textContent = 'Error initializing Voiceflow chat: ' + error.message;
-          statusElement.className = 'status error';
-        });
+        // Initial load with empty values
+        initializeVoiceflowChat();
       };
       v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs'; // Updated to the new widget version
       v.type = 'text/javascript';
