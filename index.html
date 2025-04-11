@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voiceflow Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: white;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>My Website</h1>
+    <p>This page includes a Voiceflow chat agent that can be triggered via API.</p>
+  </div>
+
+  <!-- Voiceflow Chat Widget Container -->
+  <div id="voiceflow-chat-frame"></div>
+  
+  <!-- Script for Chat Trigger API -->
+  <script>
+    // This variable will be used to track if we've processed an API trigger
+    let lastProcessedTrigger = 0;
+    
+    // Function to check if the chat should be opened
+    function checkChatTrigger() {
+      fetch('/api/check-chat-trigger?' + new Date().getTime())
+        .then(response => response.json())
+        .then(data => {
+          // If there's a new trigger and it's newer than what we've processed
+          if (data.triggerId && data.triggerId > lastProcessedTrigger) {
+            lastProcessedTrigger = data.triggerId;
+            
+            // Make sure Voiceflow is loaded before trying to open
+            if (window.voiceflow && window.voiceflow.chat) {
+              console.log('Opening chat due to API trigger');
+              window.voiceflow.chat.open();
+            } else {
+              console.warn('Voiceflow chat not yet loaded');
+            }
+          }
+        })
+        .catch(error => console.error('Error checking chat trigger:', error));
+    }
+
+    // Start checking for triggers once the page is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check every 3 seconds
+      setInterval(checkChatTrigger, 3000);
+    });
+  </script>
+
+  <!-- Voiceflow Chat Widget Script -->
+  <script type="text/javascript">
+    console.log("Initializing Voiceflow chat widget...");
+
+    // Load the Voiceflow chat widget
+    (function (d, t) {
+      var v = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+      v.onload = function () {
+        console.log("Voiceflow widget script loaded. Initializing chat...");
+
+        window.voiceflow.chat.load({
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Your Voiceflow project ID
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production',
+          render: {
+            mode: 'overlay',
+          },
+          // Set autostart to false so it doesn't open automatically
+          autostart: false, 
+          allowDangerousHTML: true,
+        }).then(() => {
+          console.log("Voiceflow chat initialized successfully.");
+        }).catch((error) => {
+          console.error("Error initializing Voiceflow chat:", error);
+        });
+      };
+      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
+      v.type = 'text/javascript';
+      s.parentNode.insertBefore(v, s);
+    })(document, 'script');
+  </script>
+</body>
+</html>
