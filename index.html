@@ -6,18 +6,27 @@
   <title>Voiceflow Chat API Trigger</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: white;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background-color: #f9f9f9;
+    }
+    #flat-chat {
+      width: 100vw;
       height: 100vh;
-      text-align: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    #confetti-canvas {
+      position: fixed;
+      z-index: 999;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
     }
     .container {
       max-width: 800px;
+      text-align: center;
     }
     h1 {
       color: #333;
@@ -53,6 +62,10 @@
   </style>
 </head>
 <body>
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Container for Content -->
   <div class="container">
     <h1>RomAIx Voiceflow Integration</h1>
     <p>This page includes a Voiceflow chat agent that can be triggered via API call.</p>
@@ -64,14 +77,14 @@
 
   <!-- Voiceflow Chat Widget Container -->
   <div id="voiceflow-chat-frame"></div>
-  
+
   <!-- Script for Chat Trigger API -->
   <script>
     // This variable will be used to track the last processed trigger
     let lastProcessedTrigger = 0;
     const statusElement = document.getElementById('status');
     const testBtn = document.getElementById('test-btn');
-    
+
     // Function to check if the chat should be opened
     function checkChatTrigger() {
       fetch('/api/check-chat-trigger?' + new Date().getTime())
@@ -86,7 +99,7 @@
             lastProcessedTrigger = data.triggerId;
             statusElement.textContent = `Received trigger ID: ${data.triggerId}, opening chat...`;
             statusElement.className = 'status ready';
-            
+
             // Make sure Voiceflow is loaded before trying to open
             if (window.voiceflow && window.voiceflow.chat) {
               console.log('Opening chat due to API trigger');
@@ -94,15 +107,7 @@
               statusElement.textContent = 'Chat opened successfully!';
             } else {
               console.warn('Voiceflow chat not yet loaded');
-              statusElement.textContent = 'Voiceflow chat not yet loaded, will try again...';
-              
-              // Try again in a second
-              setTimeout(() => {
-                if (window.voiceflow && window.voiceflow.chat) {
-                  window.voiceflow.chat.open();
-                  statusElement.textContent = 'Chat opened successfully!';
-                }
-              }, 1000);
+              statusElement.textContent = 'Voiceflow chat not yet loaded. Waiting for initialization...';
             }
           }
         })
@@ -133,11 +138,60 @@
     });
   </script>
 
-  <!-- Voiceflow Chat Widget Script -->
-  <script type="text/javascript">
-    console.log("Initializing Voiceflow chat widget...");
+  <!-- Canvas Confetti Script -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
-    // Load the Voiceflow chat widget
+  <!-- Voiceflow Chat Widget and Extensions Script -->
+  <script type="module">
+    console.log("Script loaded. Initializing Voiceflow chat widget...");
+
+    // Import extensions from the extensions.js file
+    import {
+      VideoExtension,
+      TimerExtension,
+      FormExtension,
+      MapExtension,
+      FileUploadExtension,
+      KBUploadExtension,
+      DateExtension,
+      ConfettiExtension,
+      GTH_FormExtension,
+      GTH_FeedbackExtension,
+      WaitingAnimationExtension,
+      GiftCardDisplayExtension,
+      DoneAnimationExtension,
+      InvisibleTimerExtension,
+      DisableInputExtension,
+      makeToVoiceflowExtension,
+      RescheduleCancelFormExtension,
+      IframeEmbedExtension,
+      CustomizedIframeExtension,
+      DirectionsWorkflowExtension,
+      DirectionsWorkflowExtension2,
+      DirectionsWorkflowExtension3,
+      DirectionsWorkflowExtension4,
+      DirectionsWorkflowExtension5,
+      DirectionsWorkflowExtension6,
+      DirectionsWorkflowExtension7,
+      DirectionsWorkflowExtension8,
+      DirectionsWorkflowExtension9,
+      DirectionsWorkflowExtension10,
+      DirectionsWorkflowExtension11,
+      DirectionsWorkflowExtension12,
+      DirectionsWorkflowExtension13,
+      DirectionsWorkflowExtension14,
+      DirectionsWorkflowExtension15,
+      DirectionsWorkflowExtension16,
+      DirectionsWorkflowExtension17,
+      DirectionsWorkflowExtension18,
+      DirectionsWorkflowExtension19,
+      DirectionsWorkflowExtension20,
+      DirectionsWorkflowExtension22,
+      GTH_FormExtension2,
+      RomAIxWebhookExtension1
+    } from '/extensions_New.js';
+
+    // Load the Voiceflow chat widget with extensions
     (function (d, t) {
       var v = d.createElement(t),
         s = d.getElementsByTagName(t)[0];
@@ -145,18 +199,70 @@
         console.log("Voiceflow widget script loaded. Initializing chat...");
 
         window.voiceflow.chat.load({
-          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Your Voiceflow project ID
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Replace with your Voiceflow project ID
           url: 'https://general-runtime.voiceflow.com',
-          versionID: 'production',
+          versionID: 'production', // Use 'development' for testing or 'production' for live
+          voice: { 
+            url: "https://runtime-api.voiceflow.com" 
+          },
+          user: {
+            name: 'Demo User',
+          },
           render: {
             mode: 'overlay',
           },
-          // Set autostart to false so it doesn't open automatically
-          autostart: false, 
+          autostart: false, // Ensure the chat does not open automatically
           allowDangerousHTML: true,
+          assistant: {
+            extensions: [
+              VideoExtension,
+              TimerExtension,
+              FormExtension,
+              MapExtension,
+              FileUploadExtension,
+              KBUploadExtension,
+              DateExtension,
+              ConfettiExtension,
+              GTH_FormExtension,
+              GTH_FeedbackExtension,
+              WaitingAnimationExtension,
+              GiftCardDisplayExtension,
+              DoneAnimationExtension,
+              InvisibleTimerExtension,
+              DisableInputExtension,
+              makeToVoiceflowExtension,
+              RescheduleCancelFormExtension,
+              IframeEmbedExtension,
+              CustomizedIframeExtension,
+              DirectionsWorkflowExtension,
+              DirectionsWorkflowExtension2,
+              DirectionsWorkflowExtension3,
+              DirectionsWorkflowExtension4,
+              DirectionsWorkflowExtension5,
+              DirectionsWorkflowExtension6,
+              DirectionsWorkflowExtension7,
+              DirectionsWorkflowExtension8,
+              DirectionsWorkflowExtension9,
+              DirectionsWorkflowExtension10,
+              DirectionsWorkflowExtension11,
+              DirectionsWorkflowExtension12,
+              DirectionsWorkflowExtension13,
+              DirectionsWorkflowExtension14,
+              DirectionsWorkflowExtension15,
+              DirectionsWorkflowExtension16,
+              DirectionsWorkflowExtension17,
+              DirectionsWorkflowExtension18,
+              DirectionsWorkflowExtension19,
+              DirectionsWorkflowExtension20,
+              DirectionsWorkflowExtension22,
+              GTH_FormExtension2,
+              RomAIxWebhookExtension1
+            ],
+            stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_FareHarborCarousel.css",
+          },
         }).then(() => {
           console.log("Voiceflow chat initialized successfully.");
-          statusElement.textContent = 'Voiceflow chat initialized successfully. Ready for API triggers.';
+          statusElement.textContent = 'Voiceflow chat initialized successfully. Ready for triggers.';
           statusElement.className = 'status ready';
         }).catch((error) => {
           console.error("Error initializing Voiceflow chat:", error);
@@ -164,7 +270,7 @@
           statusElement.className = 'status error';
         });
       };
-      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
+      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs'; // Updated to the new widget version
       v.type = 'text/javascript';
       s.parentNode.insertBefore(v, s);
     })(document, 'script');

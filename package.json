@@ -17,9 +17,9 @@
     "url": "https://github.com/YannickSegaar/RomAIx-Sandbox/issues"
   },
   "homepage": "https://github.com/YannickSegaar/RomAIx-Sandbox#readme",
-  "description": "",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0"
-  }
+  },
+  "description": ""
 }
