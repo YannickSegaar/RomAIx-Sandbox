@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launching Voiceflow Webchat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            margin-top: 50px;
+            text-align: center;
+        }
+        .payload-info {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Launching Voiceflow Webchat</h1>
+    
+    <div class="container">
+        <p>Voiceflow webchat will open automatically with your custom payload.</p>
+        <div class="payload-info">
+            <p><strong>Payload Details:</strong></p>
+            <div id="payloadDetails">Loading payload data...</div>
+        </div>
+    </div>
+
+    <!-- Voiceflow Web Chat Widget Script -->
+    <script type="text/javascript">
+        // Fetch the latest payload
+        fetch('/api/get-payload')
+            .then(response => response.json())
+            .then(payload => {
+                // Update the displayed payload information
+                document.getElementById('payloadDetails').innerHTML = `
+                    <p>n8n_executionID: ${payload.n8n_executionID}</p>
+                    <p>n8n_resumeURL: ${payload.n8n_resumeURL}</p>
+                `;
+
+                // Initialize Voiceflow chat
+                (function(d, t) {
+                    var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+                    v.onload = function() {
+                        // Initialize the Voiceflow Web Chat widget
+                        window.voiceflow.chat.load({
+                            verify: { projectID: '6798b43c9f655dc50cb7cb58' },
+                            url: 'https://general-runtime.voiceflow.com',
+                            versionID: 'production',
+                            voice: {
+                                url: "https://runtime-api.voiceflow.com"
+                            }
+                        }).then(() => {
+                            // Wait a short moment then open the chat with the custom payload
+                            setTimeout(() => {
+                                // Open the chat widget
+                                window.voiceflow.chat.open();
+
+                                // Send the custom payload event to Voiceflow
+                                window.voiceflow.chat.interact({
+                                    type: 'event',
+                                    payload: {
+                                        event: {
+                                            name: 'custom_payload',
+                                            data: {
+                                                n8n_executionID: payload.n8n_executionID,
+                                                n8n_resumeURL: payload.n8n_resumeURL
+                                            }
+                                        }
+                                    }
+                                });
+                            }, 1000); // Wait 1 second before opening
+                        });
+                    };
+                    v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
+                    v.type = "text/javascript";
+                    s.parentNode.insertBefore(v, s);
+                })(document, 'script');
+            })
+            .catch(error => {
+                console.error('Error fetching payload:', error);
+                document.getElementById('payloadDetails').innerHTML = `
+                    <p style="color: red;">Error loading payload data. Please try again.</p>
+                `;
+            });
+    </script>
+</body>
+</html>

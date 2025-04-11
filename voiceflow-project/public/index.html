@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voiceflow Webchat API Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .container {
+            margin-top: 30px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Voiceflow Webchat API Demo</h1>
+    
+    <div class="container">
+        <h2>How to Use This API</h2>
+        <p>Send a POST request to <code>/api/set-payload</code> with your custom payload:</p>
+        
+        <pre><code>
+POST http://localhost:3000/api/set-payload
+Content-Type: application/json
+
+{
+    "n8n_executionID": "your-execution-id",
+    "n8n_resumeURL": "your-resume-url"
+}
+        </code></pre>
+        
+        <p>After sending the payload, you'll receive a response with a launch URL:</p>
+        
+        <pre><code>
+{
+    "success": true,
+    "message": "Payload received",
+    "launchUrl": "http://localhost:3000/launch-chat"
+}
+        </code></pre>
+        
+        <p>Open the provided launchUrl to start the Voiceflow chat with your custom payload.</p>
+        
+        <h2>Example with cURL</h2>
+        
+        <pre><code>
+curl -X POST http://localhost:3000/api/set-payload \
+    -H "Content-Type: application/json" \
+    -d '{
+        "n8n_executionID": "dynamic-id-123",
+        "n8n_resumeURL": "https://example.com/resume/456"
+    }'
+        </code></pre>
+    </div>
+</body>
+</html>
