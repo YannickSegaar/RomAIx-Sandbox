@@ -82,8 +82,8 @@
   <script>
     // This variable will be used to track the last processed trigger and store execution data
     let lastProcessedTrigger = 0;
-    let executionId = null;
-    let resumeUrl = null;
+    let n8n_executionID = null;
+    let n8n_resumeURL = null;
     const statusElement = document.getElementById('status');
     const testBtn = document.getElementById('test-btn');
   
@@ -99,20 +99,20 @@
         .then(data => {
           if (data.triggerId && data.triggerId > lastProcessedTrigger) {
             lastProcessedTrigger = data.triggerId;
-            executionId = data.executionId;
-            resumeUrl = data.resumeUrl;
+            n8n_executionID = data.n8n_executionID;
+            n8n_resumeURL = data.n8n_resumeURL;
             
-            statusElement.textContent = `Received trigger ID: ${data.triggerId}, opening chat with executionId: ${executionId}`;
+            statusElement.textContent = `Received trigger ID: ${data.triggerId}, opening chat with n8n_executionID: ${n8n_executionID}`;
             statusElement.className = 'status ready';
   
             // Make sure Voiceflow is loaded before trying to open
             if (window.voiceflow && window.voiceflow.chat) {
-              console.log('Opening chat due to API trigger with data:', {executionId, resumeUrl});
+              console.log('Opening chat due to API trigger with data:', {n8n_executionID, n8n_resumeURL});
               
               // Store data in window object to make it accessible to the extension
               window.romaixData = {
-                executionId: executionId,
-                resumeUrl: resumeUrl
+                n8n_executionID: n8n_executionID,
+                n8n_resumeURL: n8n_resumeURL
               };
               
               window.voiceflow.chat.open(); // Open the chat
@@ -232,8 +232,8 @@
             event: {
               type: 'launch',
               payload: {
-                executionId: window.romaixData ? window.romaixData.executionId : null,
-                resumeUrl: window.romaixData ? window.romaixData.resumeUrl : null
+                n8n_executionID: window.romaixData ? window.romaixData.n8n_executionID : null,
+                n8n_resumeURL: window.romaixData ? window.romaixData.n8n_resumeURL : null
               }
             }
           },
@@ -291,7 +291,7 @@
           statusElement.className = 'status ready';
           
           // If we already have a trigger pending, open the chat
-          if (executionId && resumeUrl && lastProcessedTrigger > 0) {
+          if (n8n_executionID && n8n_resumeURL && lastProcessedTrigger > 0) {
             window.voiceflow.chat.open();
           }
         }).catch((error) => {

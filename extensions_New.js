@@ -36995,7 +36995,7 @@ export const RomAIxWebhookExtension2 = {
             </div>
             
             <div class="romaix-form-row" id="execution-info" style="display:none;">
-              <code id="execution-data">ExecutionID and ResumeURL will appear here</code>
+              <code id="execution-data">n8n_executionID and n8n_resumeURL will appear here</code>
             </div>
             
             <div class="romaix-form-row">
@@ -37073,25 +37073,25 @@ export const RomAIxWebhookExtension2 = {
     const executionDataEl = form.querySelector('#execution-data')
     
     // Get execution data from window object or from Voiceflow variables
-    let executionId = null;
-    let resumeUrl = null;
+    let n8n_executionID = null;
+    let n8n_resumeURL = null;
     
     // Try to get data from variables passed in trace payload
-    if (trace && trace.payload && trace.payload.executionId && trace.payload.resumeUrl) {
-      executionId = trace.payload.executionId;
-      resumeUrl = trace.payload.resumeUrl;
-      console.log("Retrieved execution data from trace payload:", { executionId, resumeUrl });
+    if (trace && trace.payload && trace.payload.n8n_executionID && trace.payload.n8n_resumeURL) {
+      n8n_executionID = trace.payload.n8n_executionID;
+      n8n_resumeURL = trace.payload.n8n_resumeURL;
+      console.log("Retrieved execution data from trace payload:", { n8n_executionID, n8n_resumeURL });
     } 
     // Try from global window object where we stored it during initialization
-    else if (window.romaixData && window.romaixData.executionId && window.romaixData.resumeUrl) {
-      executionId = window.romaixData.executionId;
-      resumeUrl = window.romaixData.resumeUrl;
-      console.log("Retrieved execution data from window object:", { executionId, resumeUrl });
+    else if (window.romaixData && window.romaixData.n8n_executionID && window.romaixData.n8n_resumeURL) {
+      n8n_executionID = window.romaixData.n8n_executionID;
+      n8n_resumeURL = window.romaixData.n8n_resumeURL;
+      console.log("Retrieved execution data from window object:", { n8n_executionID, n8n_resumeURL });
     }
     
     // If we have execution data, display it in debug mode
-    if (executionId && resumeUrl) {
-      executionDataEl.textContent = `ExecutionID: ${executionId}\nResumeURL: ${resumeUrl}`;
+    if (n8n_executionID && n8n_resumeURL) {
+      executionDataEl.textContent = `n8n_executionID: ${n8n_executionID}\nn8n_resumeURL: ${n8n_resumeURL}`;
       // Uncomment the next line to show execution data during development
       // form.querySelector('#execution-info').style.display = 'block';
     }
@@ -37196,16 +37196,16 @@ export const RomAIxWebhookExtension2 = {
           email: emailInput.value.trim(),
           company: companyInput.value.trim(),
           serviceType: serviceSelect.value,
-          executionId: executionId,
-          resumeUrl: resumeUrl
+          n8n_executionID: n8n_executionID,
+          n8n_resumeURL: n8n_resumeURL
         }
         
         console.log("Form data to submit:", formData);
         
-        // Check if we have a resumeUrl to call
-        if (resumeUrl) {
+        // Check if we have a n8n_resumeURL to call
+        if (n8n_resumeURL) {
           // Call the n8n resume webhook with the form data
-          fetch(resumeUrl, {
+          fetch(n8n_resumeURL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -37251,7 +37251,7 @@ export const RomAIxWebhookExtension2 = {
             showState('success');
           });
         } else {
-          // If no resumeUrl, just simulate a wait and submit to Voiceflow
+          // If no n8n_resumeURL, just simulate a wait and submit to Voiceflow
           setTimeout(() => {
             try {
               window.voiceflow.chat.interact({
