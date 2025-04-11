@@ -18,14 +18,14 @@ app.use((req, res, next) => {
 // Store the trigger data
 let triggerData = {
   triggerId: 0,
-  executionId: null,
-  resumeUrl: null
+  n8n_executionID: null,
+  n8n_resumeURL: null
 };
 
 // Endpoint that n8n will call to trigger the chat
 app.post('/api/trigger-chat', (req, res) => {
-  // Extract executionId and resumeUrl from request body
-  const { executionId, resumeUrl } = req.body;
+  // Extract n8n_executionID and n8n_resumeURL from request body
+  const { n8n_executionID, n8n_resumeURL } = req.body;
   
   // Log received data
   console.log('Chat trigger received with data:', req.body);
@@ -33,8 +33,8 @@ app.post('/api/trigger-chat', (req, res) => {
   // Increment trigger ID and store execution data
   triggerData = {
     triggerId: triggerData.triggerId + 1,
-    executionId: executionId || null,
-    resumeUrl: resumeUrl || null
+    n8n_executionID: n8n_executionID || null,
+    n8n_resumeURL: n8n_resumeURL || null
   };
   
   console.log(`Chat trigger updated. New data:`, triggerData);
@@ -64,7 +64,7 @@ app.listen(PORT, () => {
   
   - View the website at: http://localhost:${PORT}
   - n8n should call: http://localhost:${PORT}/api/trigger-chat
-    with JSON body: { "executionId": "your-execution-id", "resumeUrl": "your-resume-url" }
+    with JSON body: { "n8n_executionID": "your-execution-id", "n8n_resumeURL": "your-resume-url" }
   
   The server is now ready to accept connections.
   Press Ctrl+C to stop the server.
