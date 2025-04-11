@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voiceflow Integration Diagnostics</title>
+  <title>Payload Pass Test</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,7 +12,7 @@
       background-color: #f8f9fa;
     }
     .container {
-      max-width: 900px;
+      max-width: 800px;
       margin: 0 auto;
       background-color: white;
       border-radius: 8px;
@@ -21,371 +21,204 @@
     }
     h1 {
       text-align: center;
-      color: #333;
-      margin-top: 0;
     }
-    .debug-section {
+    .status-box {
       margin: 20px 0;
-      padding: 15px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+    }
+    .log-box {
+      margin-top: 20px;
+      padding: 10px;
       border: 1px solid #ddd;
-      border-radius: 5px;
-      background-color: #f5f5f5;
-    }
-    .debug-section h2 {
-      margin-top: 0;
-      font-size: 18px;
-      color: #333;
-    }
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .data-table th {
-      text-align: left;
-      background-color: #eee;
-      padding: 8px;
-      border-bottom: 2px solid #ddd;
-    }
-    .data-table td {
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-      word-break: break-all;
-    }
-    .log-container {
+      border-radius: 4px;
+      background-color: #f8f8f8;
       height: 200px;
       overflow-y: auto;
-      padding: 10px;
-      background-color: #f8f8f8;
-      border: 1px solid #ddd;
-      border-radius: 4px;
       font-family: monospace;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    .log-entry {
-      margin-bottom: 4px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 2px;
-    }
-    .timestamp {
-      color: #666;
-      margin-right: 5px;
-    }
-    .error {
-      color: #d9534f;
-      font-weight: bold;
-    }
-    .success {
-      color: #5cb85c;
-      font-weight: bold;
-    }
-    .warning {
-      color: #f0ad4e;
-      font-weight: bold;
-    }
-    .info {
-      color: #5bc0de;
-    }
-    .btn {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 5px;
-    }
-    .btn:hover {
-      background-color: #0069d9;
-    }
-    .btn-group {
-      margin: 15px 0;
-      text-align: center;
-    }
-    #test-payload {
-      width: 100%;
-      height: 100px;
-      font-family: monospace;
-      margin-top: 10px;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      font-size: 13px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Voiceflow Integration Diagnostics</h1>
+    <h1>Payload Pass Test</h1>
     
-    <div class="debug-section">
-      <h2>API Data Status</h2>
-      <table class="data-table">
-        <tr>
-          <th>Property</th>
-          <th>Value</th>
-        </tr>
-        <tr>
-          <td>Last Trigger ID</td>
-          <td id="trigger-id">None</td>
-        </tr>
-        <tr>
-          <td>Execution ID</td>
-          <td id="execution-id">None</td>
-        </tr>
-        <tr>
-          <td>Resume URL</td>
-          <td id="resume-url">None</td>
-        </tr>
-        <tr>
-          <td>Voiceflow Status</td>
-          <td id="voiceflow-status">Not initialized</td>
-        </tr>
-      </table>
+    <div class="status-box">
+      <strong>Status:</strong> <span id="status">Waiting for API call</span>
     </div>
     
-    <div class="debug-section">
-      <h2>Test Controls</h2>
-      <div class="btn-group">
-        <button id="check-api-btn" class="btn">Check API Now</button>
-        <button id="open-chat-btn" class="btn">Open Chat</button>
-        <button id="test-event-btn" class="btn">Test Event with Payload</button>
-      </div>
-      
-      <h3>Custom Payload for Testing:</h3>
-      <textarea id="test-payload">{
-  "n8n_executionID": "test-manual-123",
-  "n8n_resumeURL": "https://test.webhook/manual"
-}</textarea>
-    </div>
-    
-    <div class="debug-section">
-      <h2>Event Log</h2>
-      <div id="log-container" class="log-container"></div>
-    </div>
+    <div id="log-box" class="log-box"></div>
   </div>
-  
+
   <script>
-    // DOM Elements
-    const triggerIdEl = document.getElementById('trigger-id');
-    const executionIdEl = document.getElementById('execution-id');
-    const resumeUrlEl = document.getElementById('resume-url');
-    const voiceflowStatusEl = document.getElementById('voiceflow-status');
-    const logContainer = document.getElementById('log-container');
-    const testPayloadEl = document.getElementById('test-payload');
-    
-    // Buttons
-    const checkApiBtn = document.getElementById('check-api-btn');
-    const openChatBtn = document.getElementById('open-chat-btn');
-    const testEventBtn = document.getElementById('test-event-btn');
-    
-    // Global state
-    let lastProcessedTrigger = 0;
-    let currentData = {
-      n8n_executionID: null,
-      n8n_resumeURL: null
-    };
-    let isVoiceflowInitialized = false;
-    let pollingInterval = null;
-    
-    // Enhanced logging function with types
-    function log(message, type = 'info') {
-      const now = new Date();
-      const timestamp = now.toLocaleTimeString() + '.' + now.getMilliseconds().toString().padStart(3, '0');
-      
-      const logEntry = document.createElement('div');
-      logEntry.className = `log-entry ${type}`;
-      logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
-      
-      logContainer.appendChild(logEntry);
-      logContainer.scrollTop = logContainer.scrollHeight;
-      
-      console.log(`[${timestamp}][${type}] ${message}`);
+    // Function to log messages
+    function log(message) {
+      const logBox = document.getElementById('log-box');
+      const timestamp = new Date().toLocaleTimeString();
+      logBox.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+      logBox.scrollTop = logBox.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
     }
     
-    // Update UI with current data
-    function updateUI() {
-      triggerIdEl.textContent = lastProcessedTrigger || 'None';
-      executionIdEl.textContent = currentData.n8n_executionID || 'None';
-      resumeUrlEl.textContent = currentData.n8n_resumeURL || 'None';
+    // Function to update status
+    function updateStatus(message) {
+      document.getElementById('status').textContent = message;
+      log(message);
     }
     
-    // Check API for new triggers
-    function checkAPIForTrigger() {
-      log('Checking API for new triggers...', 'info');
-      
+    // Global variables
+    let lastTriggerId = 0;
+    
+    // Function to check for API triggers
+    function checkApiTrigger() {
       fetch(`/api/check-chat-trigger?t=${Date.now()}`)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Server responded with status ${response.status}`);
-          }
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-          log(`API response: ${JSON.stringify(data)}`, 'info');
-          
-          if (data.triggerId) {
-            // Update the UI regardless if it's new or not
-            triggerIdEl.textContent = data.triggerId;
-            executionIdEl.textContent = data.n8n_executionID || 'None';
-            resumeUrlEl.textContent = data.n8n_resumeURL || 'None';
+          // If new trigger detected
+          if (data.triggerId && data.triggerId > lastTriggerId) {
+            lastTriggerId = data.triggerId;
             
-            // If this is a new trigger we haven't processed
-            if (data.triggerId > lastProcessedTrigger) {
-              log(`New trigger detected: ${data.triggerId}`, 'success');
-              lastProcessedTrigger = data.triggerId;
-              
-              // Store the data
-              currentData = {
-                n8n_executionID: data.n8n_executionID,
-                n8n_resumeURL: data.n8n_resumeURL
-              };
-              
-              // Update test payload field
-              testPayloadEl.value = JSON.stringify(currentData, null, 2);
-              
-              // Process if Voiceflow is ready
-              if (isVoiceflowInitialized) {
-                processNewTrigger();
-              } else {
-                log('Voiceflow not ready yet, waiting for initialization...', 'warning');
-              }
+            log(`New trigger detected! ID: ${data.triggerId}`);
+            log(`Payload: n8n_executionID=${data.n8n_executionID}, n8n_resumeURL=${data.n8n_resumeURL}`);
+            
+            // Store data on window object for Voiceflow
+            window.triggerData = {
+              n8n_executionID: data.n8n_executionID,
+              n8n_resumeURL: data.n8n_resumeURL
+            };
+            
+            updateStatus('Processing trigger...');
+            
+            // IMPORTANT: Use this specific sequence to ensure the payload is passed
+            
+            // 1. First, prepare the payload
+            const payload = {
+              n8n_executionID: data.n8n_executionID,
+              n8n_resumeURL: data.n8n_resumeURL
+            };
+            
+            log('Step 1: Prepared payload');
+            
+            if (window.voiceflow && window.voiceflow.chat) {
+              // 2. Reset conversation (optional but helps ensure clean state)
+              window.voiceflow.chat.destroy()
+                .then(() => {
+                  log('Step 2: Destroyed previous chat instance');
+                  
+                  // 3. Initialize with launch payload 
+                  return window.voiceflow.chat.load({
+                    verify: { projectID: '6798b43c9f655dc50cb7cb58' },
+                    url: 'https://general-runtime.voiceflow.com',
+                    versionID: 'production',
+                    autostart: false,
+                    launch: {
+                      event: {
+                        type: 'launch',
+                        payload: payload
+                      }
+                    }
+                  });
+                })
+                .then(() => {
+                  log('Step 3: Initialized with launch payload');
+                  
+                  // 4. Wait briefly to ensure payload is processed
+                  return new Promise(resolve => setTimeout(resolve, 500));
+                })
+                .then(() => {
+                  // 5. Send direct interact with payload again (belt and suspenders approach)
+                  return window.voiceflow.chat.interact({
+                    type: 'launch',
+                    payload: payload
+                  });
+                })
+                .then(() => {
+                  log('Step 4: Sent interact with payload');
+                  
+                  // 6. Finally open the chat
+                  window.voiceflow.chat.open();
+                  log('Step 5: Opened chat with payload');
+                  updateStatus('Chat opened with payload!');
+                })
+                .catch(error => {
+                  log(`Error: ${error.message}`);
+                  updateStatus('Error occurred');
+                });
+            } else {
+              log('Voiceflow not ready yet, trying to initialize...');
+              loadVoiceflow(payload);
             }
           }
         })
         .catch(error => {
-          log(`API error: ${error.message}`, 'error');
+          log(`API check error: ${error.message}`);
         });
     }
     
-    // Process a new trigger
-    function processNewTrigger() {
-      if (!window.voiceflow || !window.voiceflow.chat) {
-        log('Voiceflow not available for sending event', 'error');
-        return;
-      }
+    // Function to load Voiceflow with payload
+    function loadVoiceflow(payload) {
+      log('Loading Voiceflow...');
       
-      log('Processing new trigger with data: ' + JSON.stringify(currentData), 'info');
-      
-      // First, send the payload as a launch event
-      log('STEP 1: Sending launch event with payload', 'info');
-      window.voiceflow.chat.interact({
-        type: 'launch',
-        payload: currentData
-      }).then(() => {
-        log('Launch event sent successfully', 'success');
-        
-        // Then open the chat
-        log('STEP 2: Opening chat window', 'info');
-        window.voiceflow.chat.open();
-        log('Chat opened with payload data!', 'success');
-      }).catch(error => {
-        log(`Error sending launch event: ${error.message}`, 'error');
-      });
-    }
-    
-    // Initialize Voiceflow
-    function initVoiceflow() {
-      log('Starting Voiceflow initialization...', 'info');
-      voiceflowStatusEl.textContent = 'Initializing...';
-      
-      // Create script element
       const script = document.createElement('script');
       script.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
       script.type = 'text/javascript';
       
-      // Set up onload handler
       script.onload = function() {
-        log('Voiceflow script loaded, configuring widget...', 'info');
+        log('Voiceflow script loaded');
         
-        // Initialize with autostart explicitly set to false
+        // Initialize with launch payload
         window.voiceflow.chat.load({
-          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Your project ID
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' },
           url: 'https://general-runtime.voiceflow.com',
           versionID: 'production',
-          autostart: false, // Prevent auto-opening
-          render: { mode: 'overlay' }
-        }).then(() => {
-          isVoiceflowInitialized = true;
-          voiceflowStatusEl.textContent = 'Initialized';
-          log('Voiceflow initialized successfully!', 'success');
-          
-          // Check if we have pending data to process
-          if (lastProcessedTrigger > 0) {
-            log('Processing pending trigger...', 'info');
-            processNewTrigger();
+          autostart: false,
+          launch: {
+            event: {
+              type: 'launch',
+              payload: payload
+            }
           }
+        }).then(() => {
+          log('Voiceflow initialized with launch payload');
+          
+          // Send interact with payload
+          return window.voiceflow.chat.interact({
+            type: 'launch',
+            payload: payload
+          });
+        }).then(() => {
+          log('Sent interact with payload');
+          
+          // Open the chat
+          window.voiceflow.chat.open();
+          log('Opened chat with payload');
+          updateStatus('Chat opened with payload!');
         }).catch(error => {
-          voiceflowStatusEl.textContent = 'Error';
-          log(`Voiceflow initialization error: ${error.message}`, 'error');
+          log(`Voiceflow error: ${error.message}`);
+          updateStatus('Error occurred');
         });
       };
       
-      // Add to document
       document.body.appendChild(script);
     }
     
-    // Button event handlers
-    checkApiBtn.addEventListener('click', () => {
-      log('Manual API check triggered', 'info');
-      checkAPIForTrigger();
-    });
-    
-    openChatBtn.addEventListener('click', () => {
-      if (!isVoiceflowInitialized) {
-        log('Cannot open chat - Voiceflow not initialized', 'error');
-        return;
-      }
+    // Initialize
+    function init() {
+      log('Page loaded, waiting for API triggers...');
+      // Initial load of Voiceflow (without opening)
+      const script = document.createElement('script');
+      script.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
+      script.type = 'text/javascript';
+      document.body.appendChild(script);
       
-      log('Manually opening chat', 'info');
-      window.voiceflow.chat.open();
-    });
-    
-    testEventBtn.addEventListener('click', () => {
-      if (!isVoiceflowInitialized) {
-        log('Cannot send event - Voiceflow not initialized', 'error');
-        return;
-      }
-      
-      try {
-        // Parse the custom payload
-        const payload = JSON.parse(testPayloadEl.value);
-        log(`Sending test event with payload: ${JSON.stringify(payload)}`, 'info');
-        
-        // First send the event
-        window.voiceflow.chat.interact({
-          type: 'launch',
-          payload: payload
-        }).then(() => {
-          log('Test launch event sent successfully', 'success');
-          
-          // Then open the chat
-          window.voiceflow.chat.open();
-          log('Chat opened after test event', 'success');
-        }).catch(error => {
-          log(`Error sending test event: ${error.message}`, 'error');
-        });
-      } catch (error) {
-        log(`Invalid payload JSON: ${error.message}`, 'error');
-      }
-    });
-    
-    // Initialize the application
-    function initApp() {
-      log('Application starting...', 'info');
-      
-      // Initialize Voiceflow
-      initVoiceflow();
-      
-      // Do an initial API check
-      checkAPIForTrigger();
-      
-      // Start polling
-      log('Starting API polling (every 3 seconds)...', 'info');
-      pollingInterval = setInterval(checkAPIForTrigger, 3000);
+      // Start polling for API triggers
+      setInterval(checkApiTrigger, 3000);
     }
     
-    // Start everything when the page loads
-    document.addEventListener('DOMContentLoaded', initApp);
+    // Start when page loads
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
