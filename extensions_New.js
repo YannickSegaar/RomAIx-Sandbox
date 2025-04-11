@@ -36277,3 +36277,468 @@ export const MainMenuButtonExtension = {
     }, 100);
   }
 };
+
+// YRS: N8N Custom Form Webhook Demo (11 April 2025)
+
+export const RomAIxWebhookExtension1 = {
+  name: 'RomAIxWebhookForm',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'romaix_webhook_form1' || trace.payload?.name === 'romaix_webhook_form1',
+  render: ({ trace, element }) => {
+    // Create a container that spans the full width
+    const formWrapper = document.createElement('div')
+    formWrapper.style.cssText = 'width: 100% !important; margin: 0 !important; padding: 0 !important;'
+    
+    formWrapper.innerHTML = `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+        
+        .romaix-form-container {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          font-family: 'Open Sans', sans-serif !important;
+        }
+        
+        .romaix-form {
+          width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
+          border-radius: 10px !important;
+          overflow: hidden !important;
+          box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+          background-color: white !important;
+          position: relative !important;
+        }
+        
+        .romaix-form-header {
+          width: 100% !important;
+          padding: 12px 16px !important;
+          background: linear-gradient(to right, #2F3E46, #587C74) !important;
+          color: white !important;
+          font-weight: 700 !important;
+          font-size: 18px !important;
+          line-height: 1.95em !important;
+          text-align: center !important;
+        }
+        
+        .romaix-form-content {
+          padding: 16px !important;
+        }
+        
+        .romaix-logo-container {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          gap: 16px !important;
+          margin-bottom: 16px !important;
+        }
+        
+        .romaix-logo {
+          width: 40px !important;
+          height: 40px !important;
+          border-radius: 6px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          overflow: hidden !important;
+          background: linear-gradient(to right, #2F3E46, #587C74) !important;
+          color: white !important;
+          font-weight: bold !important;
+          box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+        }
+        
+        .n8n-logo {
+          width: 40px !important;
+          height: 40px !important;
+          border-radius: 6px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background-color: black !important;
+          color: white !important;
+          font-weight: bold !important;
+          font-family: monospace !important;
+          box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+        }
+        
+        .romaix-form-row {
+          margin-bottom: 14px !important;
+          width: 100% !important;
+        }
+        
+        .romaix-form-label {
+          font-size: 14px !important;
+          color: #333 !important;
+          margin-bottom: 6px !important;
+          display: block !important;
+          font-weight: 500 !important;
+          text-align: left !important;
+          font-family: 'Open Sans', sans-serif !important;
+        }
+        
+        .romaix-form-label.required:after {
+          content: ' *' !important;
+          color: #e74c3c !important;
+        }
+        
+        .romaix-form-input,
+        .romaix-form-select {
+          width: 100% !important;
+          border: 1px solid #e0e0e0 !important;
+          padding: 10px 12px !important;
+          font-size: 14px !important;
+          border-radius: 8px !important;
+          background-color: white !important;
+          color: #333 !important;
+          box-sizing: border-box !important;
+          font-family: 'Open Sans', sans-serif !important;
+          transition: border-color 0.2s !important;
+        }
+        
+        .romaix-form-input:focus,
+        .romaix-form-select:focus {
+          outline: none !important;
+          border-color: #587C74 !important;
+        }
+        
+        .romaix-form-button {
+          background: linear-gradient(to right, #2F3E46, #587C74) !important;
+          color: white !important;
+          border: none !important;
+          padding: 12px 24px !important;
+          font-size: 16px !important;
+          font-weight: 500 !important;
+          border-radius: 50px !important;
+          cursor: pointer !important;
+          width: 100% !important;
+          text-transform: none !important;
+          box-shadow: 0px 3.14px 3.14px 0px rgba(0, 0, 0, 0.25) !important;
+          transition: transform 0.2s ease !important;
+          font-family: 'Open Sans', sans-serif !important;
+        }
+        
+        .romaix-form-button:hover {
+          background: linear-gradient(to right, #263238, #4D6D66) !important;
+        }
+        
+        .romaix-form-button:active {
+          transform: translateY(1px) !important;
+        }
+        
+        .romaix-form-input.invalid,
+        .romaix-form-select.invalid {
+          border-color: #e74c3c !important;
+          background-color: rgba(231, 76, 60, 0.05) !important;
+        }
+        
+        .error-message {
+          color: #e74c3c !important;
+          font-size: 12px !important;
+          margin-top: 4px !important;
+          margin-bottom: 0 !important;
+          display: none !important;
+        }
+        
+        .error-message.visible {
+          display: block !important;
+        }
+        
+        /* States */
+        .romaix-form-state {
+          display: none !important;
+          padding: 24px !important;
+          text-align: center !important;
+        }
+        
+        .romaix-form-state.active {
+          display: block !important;
+        }
+        
+        .romaix-form-content.hidden {
+          display: none !important;
+        }
+        
+        /* Spinner */
+        .spinner-container {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 24px 16px !important;
+        }
+        
+        .spinner {
+          width: 48px !important;
+          height: 48px !important;
+          border: 4px solid rgba(88, 124, 116, 0.1) !important;
+          border-radius: 50% !important;
+          border-top: 4px solid #587C74 !important;
+          animation: spin 1s linear infinite !important;
+          margin-bottom: 16px !important;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .success-icon {
+          width: 48px !important;
+          height: 48px !important;
+          background-color: #587C74 !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          margin-bottom: 16px !important;
+          color: white !important;
+          font-size: 24px !important;
+        }
+        
+        .success-title {
+          font-size: 20px !important;
+          font-weight: 600 !important;
+          margin-bottom: 8px !important;
+          color: #333 !important;
+          font-family: 'Open Sans', sans-serif !important;
+        }
+        
+        .success-message {
+          font-size: 14px !important;
+          color: #666 !important;
+          margin-bottom: 20px !important;
+          font-family: 'Open Sans', sans-serif !important;
+        }
+      </style>
+      
+      <div class="romaix-form-container">
+        <form class="romaix-form" id="romaix-webhook-form">
+          <!-- Form Header -->
+          <div class="romaix-form-header">
+            N8N Webhook Demo Form
+          </div>
+          
+          <!-- Form Content -->
+          <div class="romaix-form-content" id="romaix-form-fields">
+            <!-- Logos -->
+            <div class="romaix-logo-container">
+              <div class="romaix-logo">R</div>
+              <div class="n8n-logo">n8n</div>
+            </div>
+            
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Full Name</label>
+              <input type="text" class="romaix-form-input romaix-name" placeholder="John Doe" required>
+              <div class="error-message" data-for="name">Name is required</div>
+            </div>
+            
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Email Address</label>
+              <input type="email" class="romaix-form-input romaix-email" placeholder="youremail@example.com" required>
+              <div class="error-message" data-for="email">Please enter a valid email address</div>
+            </div>
+            
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Company/Organization</label>
+              <input type="text" class="romaix-form-input romaix-company" placeholder="Your company" required>
+              <div class="error-message" data-for="company">Company name is required</div>
+            </div>
+            
+            <div class="romaix-form-row">
+              <label class="romaix-form-label required">Service Type</label>
+              <select class="romaix-form-select romaix-service" required>
+                <option value="" disabled selected>Select service type</option>
+                <option value="chatbot">AI Chatbot Development</option>
+                <option value="automation">Workflow Automation</option>
+                <option value="integration">API Integration</option>
+                <option value="custom">Custom AI Solution</option>
+              </select>
+              <div class="error-message" data-for="service">Please select a service type</div>
+            </div>
+            
+            <div class="romaix-form-row">
+              <button type="submit" class="romaix-form-button" id="romaix-submit-btn">Trigger Webhook</button>
+            </div>
+          </div>
+          
+          <!-- Loading State -->
+          <div class="romaix-form-state" id="romaix-loading-state">
+            <div class="spinner-container">
+              <div class="spinner"></div>
+              <div class="success-title">Sending Webhook to N8N</div>
+              <div class="success-message">Waiting for webhook response...</div>
+            </div>
+          </div>
+          
+          <!-- Success State -->
+          <div class="romaix-form-state" id="romaix-success-state">
+            <div class="spinner-container">
+              <div class="success-icon">✓</div>
+              <div class="success-title">Webhook Response Received!</div>
+              <div class="success-message">The N8N workflow has processed your request successfully.</div>
+              <button type="button" class="romaix-form-button" id="romaix-reset-btn">Try Another Webhook</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    `
+
+    // Get the form
+    const form = formWrapper.querySelector('#romaix-webhook-form')
+    
+    // Find the states
+    const fieldsContainer = form.querySelector('#romaix-form-fields')
+    const loadingState = form.querySelector('#romaix-loading-state')
+    const successState = form.querySelector('#romaix-success-state')
+    
+    // Find the form elements
+    const nameInput = form.querySelector('.romaix-name')
+    const emailInput = form.querySelector('.romaix-email')
+    const companyInput = form.querySelector('.romaix-company')
+    const serviceSelect = form.querySelector('.romaix-service')
+    const submitBtn = form.querySelector('#romaix-submit-btn')
+    const resetBtn = form.querySelector('#romaix-reset-btn')
+    
+    // Helper to show error message
+    const showError = (field, message) => {
+      const input = form.querySelector(`.romaix-${field}`)
+      if (input) {
+        input.classList.add('invalid')
+        const errorEl = form.querySelector(`.error-message[data-for="${field}"]`)
+        if (errorEl) {
+          errorEl.textContent = message
+          errorEl.classList.add('visible')
+        }
+      }
+    }
+    
+    // Helper to clear error
+    const clearError = (field) => {
+      const input = form.querySelector(`.romaix-${field}`)
+      if (input) {
+        input.classList.remove('invalid')
+        const errorEl = form.querySelector(`.error-message[data-for="${field}"]`)
+        if (errorEl) {
+          errorEl.classList.remove('visible')
+        }
+      }
+    }
+    
+    // Helper to check email validity
+    const isEmailValid = (email) => {
+      return /\S+@\S+\.\S+/.test(email)
+    }
+    
+    // Function to show a specific state
+    const showState = (state) => {
+      // Hide all states
+      fieldsContainer.classList.add('hidden')
+      loadingState.classList.remove('active')
+      successState.classList.remove('active')
+      
+      // Show the requested state
+      if (state === 'form') {
+        fieldsContainer.classList.remove('hidden')
+      } else if (state === 'loading') {
+        loadingState.classList.add('active')
+      } else if (state === 'success') {
+        successState.classList.add('active')
+      }
+    }
+    
+    // Add input event listeners to clear errors on type
+    nameInput.addEventListener('input', () => clearError('name'))
+    emailInput.addEventListener('input', () => clearError('email'))
+    companyInput.addEventListener('input', () => clearError('company'))
+    serviceSelect.addEventListener('change', () => clearError('service'))
+    
+    // Add submit event listener
+    form.addEventListener('submit', function(event) {
+      event.preventDefault()
+      
+      // Reset all errors
+      clearError('name')
+      clearError('email')
+      clearError('company')
+      clearError('service')
+      
+      // Validate inputs
+      let isValid = true
+      
+      if (!nameInput.value.trim()) {
+        showError('name', 'Name is required')
+        isValid = false
+      }
+      
+      if (!emailInput.value.trim()) {
+        showError('email', 'Email is required')
+        isValid = false
+      } else if (!isEmailValid(emailInput.value.trim())) {
+        showError('email', 'Please enter a valid email address')
+        isValid = false
+      }
+      
+      if (!companyInput.value.trim()) {
+        showError('company', 'Company name is required')
+        isValid = false
+      }
+      
+      if (!serviceSelect.value) {
+        showError('service', 'Please select a service type')
+        isValid = false
+      }
+      
+      // If form is valid, submit
+      if (isValid) {
+        // Show loading state
+        showState('loading')
+        
+        // Gather form data
+        const formData = {
+          name: nameInput.value.trim(),
+          email: emailInput.value.trim(),
+          company: companyInput.value.trim(),
+          serviceType: serviceSelect.value
+        }
+        
+        console.log("Sending webhook to N8N:", formData)
+        
+        // Simulate webhook call
+        setTimeout(() => {
+          // In a real implementation, you would send this data to your webhook endpoint
+          
+          // Submit form data to Voiceflow
+          try {
+            window.voiceflow.chat.interact({
+              type: 'complete',
+              payload: formData
+            })
+          } catch (error) {
+            console.error('Error submitting webhook form:', error)
+          }
+          
+          // Show success state
+          showState('success')
+        }, 3000)
+      }
+    })
+    
+    // Add reset button event listener
+    resetBtn.addEventListener('click', function() {
+      // Reset form fields
+      nameInput.value = ''
+      emailInput.value = ''
+      companyInput.value = ''
+      serviceSelect.value = ''
+      
+      // Show form state
+      showState('form')
+    })
+    
+    // Append the form wrapper to the element
+    element.appendChild(formWrapper)
+  }
+}
