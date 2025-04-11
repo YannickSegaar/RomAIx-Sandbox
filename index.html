@@ -3,194 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>N8n Voiceflow Integration</title>
+  <title>API-Triggered Voiceflow Chat</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
       background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .container {
       max-width: 800px;
-      margin: 0 auto;
       text-align: center;
-      padding: 20px;
     }
     .status {
       margin: 20px 0;
-      padding: 10px;
+      padding: 10px 20px;
       border-radius: 4px;
-      background-color: #f0f0f0;
       display: inline-block;
+      font-size: 16px;
     }
-    .status.ready { background-color: #e8f5e9; color: #2e7d32; }
-    .status.error { background-color: #ffebee; color: #c62828; }
-    
-    .control-panel {
+    .idle {
+      background-color: #f0f0f0;
+      color: #666;
+    }
+    .ready {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+    .data-display {
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      padding: 10px;
       margin-top: 20px;
-      padding: 15px;
-      background-color: #eee;
-      border-radius: 8px;
       text-align: left;
-    }
-    .form-group {
-      margin-bottom: 10px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input[type="text"] {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
+      max-width: 600px;
     }
-    button {
-      background-color: #587C74;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 10px;
+    .data-row {
+      display: flex;
+      margin-bottom: 8px;
     }
-    button:hover {
-      background-color: #2F3E46;
+    .data-label {
+      font-weight: bold;
+      width: 120px;
+    }
+    .data-value {
+      flex: 1;
+      word-break: break-all;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>N8n - Voiceflow Integration</h1>
-    <p>This page demonstrates passing variables from N8n to Voiceflow</p>
+    <h1>API-Triggered Voiceflow Chat</h1>
+    <p>Send a POST request to <strong>/api/trigger-chat</strong> with executionID and resumeURL to open the chat</p>
     
-    <div id="status" class="status">Initializing...</div>
+    <div id="status" class="status idle">Waiting for API trigger...</div>
     
-    <div class="control-panel">
-      <h3>Manual Testing Panel</h3>
-      <div class="form-group">
-        <label for="executionId">Execution ID:</label>
-        <input type="text" id="executionId" placeholder="Enter n8n execution ID">
+    <div class="data-display">
+      <h3>Last Trigger Data:</h3>
+      <div class="data-row">
+        <div class="data-label">Trigger ID:</div>
+        <div id="triggerId" class="data-value">None</div>
       </div>
-      <div class="form-group">
-        <label for="resumeUrl">Resume URL:</label>
-        <input type="text" id="resumeUrl" placeholder="Enter n8n resume URL">
+      <div class="data-row">
+        <div class="data-label">Execution ID:</div>
+        <div id="executionId" class="data-value">None</div>
       </div>
-      <button id="manualTrigger">Manually Trigger with These Values</button>
-      <button id="openChat">Open Chat</button>
+      <div class="data-row">
+        <div class="data-label">Resume URL:</div>
+        <div id="resumeUrl" class="data-value">None</div>
+      </div>
+      <div class="data-row">
+        <div class="data-label">Status:</div>
+        <div id="apiStatus" class="data-value">No API calls received</div>
+      </div>
     </div>
   </div>
-  
+
   <script>
-    // Global variables
+    // DOM elements
     const statusElement = document.getElementById('status');
-    const executionIdInput = document.getElementById('executionId');
-    const resumeUrlInput = document.getElementById('resumeUrl');
-    const manualTriggerBtn = document.getElementById('manualTrigger');
-    const openChatBtn = document.getElementById('openChat');
+    const triggerIdElement = document.getElementById('triggerId');
+    const executionIdElement = document.getElementById('executionId');
+    const resumeUrlElement = document.getElementById('resumeUrl');
+    const apiStatusElement = document.getElementById('apiStatus');
     
-    // Create global window object to store execution data
-    window.romaixData = {
+    // Variables to track state
+    let lastProcessedTrigger = 0;
+    let isVoiceflowLoaded = false;
+    
+    // Store API data in window object
+    window.apiData = {
       n8n_executionID: null,
       n8n_resumeURL: null
     };
     
-    // Track if Voiceflow has been initialized
-    let voiceflowInitialized = false;
-    
-    // Initialize Voiceflow
-    function initializeVoiceflow(withValues = false) {
-      // If already initialized and we want to update with new values, we need to destroy and recreate
-      if (voiceflowInitialized && withValues && window.voiceflow && window.voiceflow.chat) {
-        console.log("Reinitializing Voiceflow with new values:", window.romaixData);
+    // Load Voiceflow widget but don't open it yet
+    function loadVoiceflowWidget() {
+      const script = document.createElement('script');
+      script.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
+      script.type = "text/javascript";
+      script.onload = function() {
+        console.log("Voiceflow widget script loaded");
         
-        // If the chat has a destroy method, use it (might not be available in all versions)
-        if (typeof window.voiceflow.chat.destroy === 'function') {
-          window.voiceflow.chat.destroy().then(() => {
-            loadVoiceflow();
-          });
-        } else {
-          // Otherwise just reinitialize
-          loadVoiceflow();
-        }
-      } else if (!voiceflowInitialized) {
-        // Initial load
-        loadVoiceflow();
-      }
-    }
-    
-    // Load Voiceflow chat
-    function loadVoiceflow() {
-      console.log("Loading Voiceflow chat with data:", window.romaixData);
-      
-      window.voiceflow.chat.load({
-        verify: { projectID: '6798b43c9f655dc50cb7cb58' },
-        url: 'https://general-runtime.voiceflow.com',
-        versionID: 'production',
-        voice: { 
-          url: "https://runtime-api.voiceflow.com" 
-        },
-        user: {
-          name: 'Demo User',
-        },
-        render: {
-          mode: 'overlay',
-        },
-        autostart: false, // Important: Don't open automatically
-        allowDangerousHTML: true,
-        launch: {
-          event: {
-            type: 'launch',
-            payload: {
-              n8n_executionID: window.romaixData.n8n_executionID,
-              n8n_resumeURL: window.romaixData.n8n_resumeURL
-            }
-          }
-        }
-      }).then(() => {
-        console.log("Voiceflow initialized successfully with payload:", {
-          n8n_executionID: window.romaixData.n8n_executionID,
-          n8n_resumeURL: window.romaixData.n8n_resumeURL
+        window.voiceflow.chat.load({
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' },
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production',
+          voice: { url: "https://runtime-api.voiceflow.com" },
+          user: { name: 'API User' },
+          render: { mode: 'overlay' },
+          autostart: false, // Very important - don't open automatically
+          allowDangerousHTML: true
+        }).then(() => {
+          console.log("Voiceflow chat initialized and ready");
+          isVoiceflowLoaded = true;
+          checkForTrigger(); // Check immediately in case we missed a trigger
+        }).catch(error => {
+          console.error("Error initializing Voiceflow chat:", error);
+          statusElement.textContent = "Error loading Voiceflow chat: " + error.message;
+          statusElement.className = "status error";
         });
-        
-        voiceflowInitialized = true;
-        statusElement.textContent = 'Voiceflow ready. Variables will be passed on chat open.';
-        statusElement.className = 'status ready';
-      }).catch(error => {
-        console.error("Error initializing Voiceflow:", error);
-        statusElement.textContent = 'Error: ' + error.message;
-        statusElement.className = 'status error';
-      });
+      };
+      
+      document.body.appendChild(script);
     }
     
     // Function to check for API triggers
-    function checkApiTrigger() {
+    function checkForTrigger() {
       fetch('/api/check-chat-trigger?' + new Date().getTime())
         .then(response => response.json())
         .then(data => {
-          if (data.triggerId && data.n8n_executionID) {
-            console.log("API Trigger received:", data);
+          // Update display with latest data regardless of processing status
+          triggerIdElement.textContent = data.triggerId || 'None';
+          executionIdElement.textContent = data.n8n_executionID || 'None';
+          resumeUrlElement.textContent = data.n8n_resumeURL || 'None';
+          
+          // If this is a new trigger (higher ID than last processed)
+          if (data.triggerId && data.triggerId > lastProcessedTrigger) {
+            console.log("New API trigger detected:", data);
+            apiStatusElement.textContent = `New trigger received at ${new Date().toLocaleTimeString()}`;
             
-            // Update global data
-            window.romaixData = {
-              n8n_executionID: data.n8n_executionID,
-              n8n_resumeURL: data.n8n_resumeURL
-            };
+            // Update last processed ID
+            lastProcessedTrigger = data.triggerId;
             
-            statusElement.textContent = `API Trigger received with execution ID: ${data.n8n_executionID}`;
-            statusElement.className = 'status ready';
+            // Store data in the window object
+            window.apiData.n8n_executionID = data.n8n_executionID;
+            window.apiData.n8n_resumeURL = data.n8n_resumeURL;
             
-            // Update input fields for visibility
-            executionIdInput.value = data.n8n_executionID || '';
-            resumeUrlInput.value = data.n8n_resumeURL || '';
+            // Update display
+            statusElement.textContent = "API trigger received! Opening chat...";
+            statusElement.className = "status ready";
             
-            // If Voiceflow is already initialized, just open the chat
-            // The variables will be accessible via last_event in Voiceflow
-            if (voiceflowInitialized && window.voiceflow && window.voiceflow.chat) {
+            // Open chat with the payload if Voiceflow is loaded
+            if (isVoiceflowLoaded && window.voiceflow && window.voiceflow.chat) {
+              // Send the payload and open chat
               window.voiceflow.chat.interact({
                 type: 'launch',
                 payload: {
@@ -198,90 +174,32 @@
                   n8n_resumeURL: data.n8n_resumeURL
                 }
               }).then(() => {
+                console.log("Interact payload sent, opening chat");
                 window.voiceflow.chat.open();
+              }).catch(error => {
+                console.error("Error sending payload:", error);
               });
             } else {
-              // Initialize with values and then open
-              initializeVoiceflow(true);
-              // We'll open the chat once initialization is complete
-              setTimeout(() => {
-                if (window.voiceflow && window.voiceflow.chat) {
-                  window.voiceflow.chat.open();
-                }
-              }, 1000); // Give it a second to initialize
+              console.warn("Voiceflow not ready yet, will retry...");
             }
           }
         })
         .catch(error => {
-          console.error("API check error:", error);
+          console.error("Error checking for triggers:", error);
+          apiStatusElement.textContent = "Error: " + error.message;
         });
     }
     
-    // Manual trigger button
-    manualTriggerBtn.addEventListener('click', () => {
-      const executionId = executionIdInput.value.trim();
-      const resumeUrl = resumeUrlInput.value.trim();
+    // Start the application
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load Voiceflow widget (but don't open it)
+      loadVoiceflowWidget();
       
-      if (!executionId) {
-        alert("Please enter an Execution ID");
-        return;
-      }
+      // Start polling for triggers
+      setInterval(checkForTrigger, 2000);
       
-      window.romaixData = {
-        n8n_executionID: executionId,
-        n8n_resumeURL: resumeUrl
-      };
-      
-      statusElement.textContent = `Manual values set: ${executionId}`;
-      statusElement.className = 'status ready';
-      
-      // Reinitialize Voiceflow with these values
-      initializeVoiceflow(true);
+      console.log("App initialized, waiting for API triggers");
     });
-    
-    // Open chat button
-    openChatBtn.addEventListener('click', () => {
-      if (window.voiceflow && window.voiceflow.chat) {
-        // If we have values, send them with interact before opening
-        if (window.romaixData.n8n_executionID) {
-          window.voiceflow.chat.interact({
-            type: 'launch',
-            payload: {
-              n8n_executionID: window.romaixData.n8n_executionID,
-              n8n_resumeURL: window.romaixData.n8n_resumeURL
-            }
-          }).then(() => {
-            window.voiceflow.chat.open();
-          });
-        } else {
-          window.voiceflow.chat.open();
-        }
-        
-        statusElement.textContent = 'Chat opened manually';
-      } else {
-        statusElement.textContent = 'Error: Voiceflow not initialized';
-        statusElement.className = 'status error';
-      }
-    });
-    
-    // Start API polling
-    setInterval(checkApiTrigger, 3000);
-    
-    // Load Voiceflow widget 
-    (function(d, t) {
-      var v = d.createElement(t),
-        s = d.getElementsByTagName(t)[0];
-      
-      v.onload = function() {
-        console.log("Voiceflow script loaded");
-        // Initialize with empty values first
-        initializeVoiceflow();
-      };
-      
-      v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
-      v.type = "text/javascript";
-      s.parentNode.insertBefore(v, s);
-    })(document, 'script');
   </script>
 </body>
 </html>
