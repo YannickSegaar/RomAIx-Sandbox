@@ -94,65 +94,134 @@
 <div id="flat-chat"></div>
 <div id="voiceflow-chat-frame"></div>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-<script type="module">
-import { VideoExtension,
+
+  <!-- Voiceflow Chat Widget and Extensions Script -->
+  <script type="module">
+    console.log("Script loaded. Initializing Voiceflow chat widget...");
+
+    // Import extensions from the extensions.js file
+    import {
+      VideoExtension,
+         TimerExtension,
+         FormExtension,
+         MapExtension,
+         FileUploadExtension,
+         KBUploadExtension,
+         DateExtension,
+         ConfettiExtension,
+         GTH_FormExtension,
+         GTH_FeedbackExtension,
          WaitingAnimationExtension,
+         GiftCardDisplayExtension,
+         DoneAnimationExtension,
          InvisibleTimerExtension,
-         DoneAnimationExtension
-        } from '/extensions_New.js';
+         DisableInputExtension,
+         makeToVoiceflowExtension,
+         RescheduleCancelFormExtension,
+         IframeEmbedExtension,
+         CustomizedIframeExtension,
+         DirectionsWorkflowExtension,
+         DirectionsWorkflowExtension2,
+         DirectionsWorkflowExtension3,
+         DirectionsWorkflowExtension4,
+         DirectionsWorkflowExtension5,
+         DirectionsWorkflowExtension6,
+         DirectionsWorkflowExtension7,
+         DirectionsWorkflowExtension8,
+         DirectionsWorkflowExtension9,
+         DirectionsWorkflowExtension10,
+         DirectionsWorkflowExtension11,
+         DirectionsWorkflowExtension12,
+         DirectionsWorkflowExtension13,
+         DirectionsWorkflowExtension14,
+         DirectionsWorkflowExtension15,
+         DirectionsWorkflowExtension16,
+         DirectionsWorkflowExtension17,
+         DirectionsWorkflowExtension18,
+         DirectionsWorkflowExtension19,
+         DirectionsWorkflowExtension20,
+         DirectionsWorkflowExtension22,
+         GTH_FormExtension2
+    } from '/extensions_New.js';
 
-(function (d, t) {
- var v = d.createElement(t),
-   s = d.getElementsByTagName(t)[0];
- v.onload = function () {
-   window.voiceflow.chat.load({
-     verify: { projectID: '66ed54695ee859bfb84fe587' },
-     url: 'https://general-runtime.voiceflow.com',
-     versionID: 'production',
-     user: {
-       name: 'Demo User',
-     },
-     render: {
-         mode: 'overlay',
-     },
-     autostart: false,
-     allowDangerousHTML: true,
-     assistant: {
-       extensions: [
-         VideoExtension,
+    // Load the Voiceflow chat widget with extensions
+    (function (d, t) {
+      var v = d.createElement(t),
+        s = d.getElementsByTagName(t)[0];
+      v.onload = function () {
+        console.log("Voiceflow widget script loaded. Initializing chat...");
+
+        window.voiceflow.chat.load({
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Replace with your Voiceflow project ID
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production', // Use 'development' for testing or 'production' for live
+          voice: { 
+            url: "https://runtime-api.voiceflow.com" 
+          },
+          user: {
+            name: 'Demo User',
+          },
+          render: {
+            mode: 'overlay',
+          },
+          autostart: true,
+          allowDangerousHTML: true,
+          assistant: {
+            extensions: [
+            VideoExtension,
+         TimerExtension,
+         FormExtension,
+         MapExtension,
+         FileUploadExtension,
+         KBUploadExtension,
+         DateExtension,
+         ConfettiExtension,
+         GTH_FormExtension,
+         GTH_FeedbackExtension,
          WaitingAnimationExtension,
+         GiftCardDisplayExtension,
+         DoneAnimationExtension,
          InvisibleTimerExtension,
-         DoneAnimationExtension
-       ],
-       stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_GTH.css", // link to your hosted stylesheet
-     },
-   }).then(() => {
-     window.voiceflow.chat.proactive.clear(); // clear all previous messages
-
-     // Delay the first proactive message
-     setTimeout(function() {
-       window.voiceflow.chat.proactive.push(
-         { type: 'text', payload: { message: "Aloha! 🌺" } }
-       );
-     }, 2000); // milliseconds delay for the first message adjust as needed
-
-     // Delay the second proactive message
-     setTimeout(function() {
-       window.voiceflow.chat.proactive.push(
-         { type: 'text', payload: { message: "Looking for the perfect tour? 😊" } }
-       );
-     }, 4500); // Additional milliseconds delay for the second message adjust as needed
-
-     // Delay opening the chat window to ensure the proactive messages are loaded
-     setTimeout(function() {
-       window.voiceflow.chat.open();
-     }, 6500); // Adjust this delay if needed to open the chat after messages
-   });
- };
- v.src = 'https://yannicksegaar.github.io/VF-extensions/RomAIx_bundle_MainMenuButton.mjs';
- v.type = 'text/javascript';
- s.parentNode.insertBefore(v, s);
-})(document, 'script');
-</script>
+         DisableInputExtension,
+         makeToVoiceflowExtension,
+         RescheduleCancelFormExtension,
+         IframeEmbedExtension,
+         CustomizedIframeExtension,
+         DirectionsWorkflowExtension,
+         DirectionsWorkflowExtension2,
+         DirectionsWorkflowExtension3,
+         DirectionsWorkflowExtension4,
+         DirectionsWorkflowExtension5,
+         DirectionsWorkflowExtension6,
+         DirectionsWorkflowExtension7,
+         DirectionsWorkflowExtension8,
+         DirectionsWorkflowExtension9,
+         DirectionsWorkflowExtension10,
+         DirectionsWorkflowExtension11,
+         DirectionsWorkflowExtension12,
+         DirectionsWorkflowExtension13,
+         DirectionsWorkflowExtension14,
+         DirectionsWorkflowExtension15,
+         DirectionsWorkflowExtension16,
+         DirectionsWorkflowExtension17,
+         DirectionsWorkflowExtension18,
+         DirectionsWorkflowExtension19,
+         DirectionsWorkflowExtension20,
+         DirectionsWorkflowExtension22,
+         GTH_FormExtension2
+            ],
+            stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_FareHarborCarousel.css",
+          },
+        }).then(() => {
+          console.log("Voiceflow chat initialized successfully.");
+        }).catch((error) => {
+          console.error("Error initializing Voiceflow chat:", error);
+        });
+      };
+      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs'; // Updated to the new widget version
+      v.type = 'text/javascript';
+      s.parentNode.insertBefore(v, s);
+    })(document, 'script');
+  </script>
 </body>
 </html>
