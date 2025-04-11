@@ -9,82 +9,112 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background-color: #f5f5f5;
     }
     .container {
       max-width: 800px;
+      margin: 0 auto;
       text-align: center;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .status-container {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      text-align: left;
     }
     .status {
-      margin: 20px 0;
-      padding: 10px 20px;
-      border-radius: 4px;
-      display: inline-block;
       font-size: 16px;
-    }
-    .idle {
-      background-color: #f0f0f0;
-      color: #666;
-    }
-    .ready {
-      background-color: #e8f5e9;
-      color: #2e7d32;
-    }
-    .error {
-      background-color: #ffebee;
-      color: #c62828;
-    }
-    .data-display {
-      background-color: #f0f0f0;
-      border-radius: 5px;
       padding: 10px;
-      margin-top: 20px;
-      text-align: left;
+      margin: 10px 0;
+      border-radius: 5px;
+      background-color: #eee;
+    }
+    .status.waiting { background-color: #f0f0f0; color: #333; }
+    .status.success { background-color: #e8f5e9; color: #2e7d32; }
+    .status.error { background-color: #ffebee; color: #c62828; }
+    
+    .data-table {
       width: 100%;
-      max-width: 600px;
+      border-collapse: collapse;
+      margin-top: 15px;
     }
-    .data-row {
-      display: flex;
-      margin-bottom: 8px;
+    .data-table th {
+      text-align: left;
+      padding: 8px;
+      background-color: #f0f0f0;
+      border-bottom: 1px solid #ddd;
     }
-    .data-label {
-      font-weight: bold;
-      width: 120px;
-    }
-    .data-value {
-      flex: 1;
+    .data-table td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
       word-break: break-all;
       font-family: monospace;
+      font-size: 14px;
+    }
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      height: 150px;
+      overflow-y: auto;
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 12px;
+      text-align: left;
+      color: #333;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 3px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .timestamp {
+      color: #666;
+      margin-right: 8px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>API-Triggered Voiceflow Chat</h1>
-    <p>Send a POST request to <strong>/api/trigger-chat</strong> with executionID and resumeURL to open the chat</p>
+    <h1>N8n-Voiceflow Integration</h1>
+    <p>This page waits for API triggers to open the Voiceflow chat with payload data.</p>
     
-    <div id="status" class="status idle">Waiting for API trigger...</div>
-    
-    <div class="data-display">
-      <h3>Last Trigger Data:</h3>
-      <div class="data-row">
-        <div class="data-label">Trigger ID:</div>
-        <div id="triggerId" class="data-value">None</div>
-      </div>
-      <div class="data-row">
-        <div class="data-label">Execution ID:</div>
-        <div id="executionId" class="data-value">None</div>
-      </div>
-      <div class="data-row">
-        <div class="data-label">Resume URL:</div>
-        <div id="resumeUrl" class="data-value">None</div>
-      </div>
-      <div class="data-row">
-        <div class="data-label">Status:</div>
-        <div id="apiStatus" class="data-value">No API calls received</div>
+    <div class="status-container">
+      <h3>Status</h3>
+      <div id="status" class="status waiting">Waiting for API trigger...</div>
+      
+      <h3>Last API Trigger Data</h3>
+      <table class="data-table">
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Trigger ID</td>
+          <td id="trigger-id">None</td>
+        </tr>
+        <tr>
+          <td>Execution ID</td>
+          <td id="execution-id">None</td>
+        </tr>
+        <tr>
+          <td>Resume URL</td>
+          <td id="resume-url">None</td>
+        </tr>
+      </table>
+      
+      <h3>Event Log</h3>
+      <div id="log" class="log">
+        <div class="log-entry">
+          <span class="timestamp">[00:00:00]</span>
+          Page loaded, waiting for API triggers...
+        </div>
       </div>
     </div>
   </div>
@@ -92,113 +122,124 @@
   <script>
     // DOM elements
     const statusElement = document.getElementById('status');
-    const triggerIdElement = document.getElementById('triggerId');
-    const executionIdElement = document.getElementById('executionId');
-    const resumeUrlElement = document.getElementById('resumeUrl');
-    const apiStatusElement = document.getElementById('apiStatus');
+    const triggerIdElement = document.getElementById('trigger-id');
+    const executionIdElement = document.getElementById('execution-id');
+    const resumeUrlElement = document.getElementById('resume-url');
+    const logElement = document.getElementById('log');
     
-    // Variables to track state
+    // Track state
     let lastProcessedTrigger = 0;
-    let isVoiceflowLoaded = false;
+    let voiceflowReady = false;
     
-    // Store API data in window object
-    window.apiData = {
-      n8n_executionID: null,
-      n8n_resumeURL: null
-    };
+    // Logger function
+    function logEvent(message) {
+      const now = new Date();
+      const timestamp = now.toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry';
+      logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+      logElement.appendChild(logEntry);
+      logElement.scrollTop = logElement.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
     
-    // Load Voiceflow widget but don't open it yet
-    function loadVoiceflowWidget() {
+    // Update status display
+    function updateStatus(message, type = 'waiting') {
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+      logEvent(message);
+    }
+    
+    // Initialize Voiceflow chat widget
+    function initializeVoiceflow() {
+      // Create script element
       const script = document.createElement('script');
-      script.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
-      script.type = "text/javascript";
+      script.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
+      script.type = 'text/javascript';
+      
+      // When script loads
       script.onload = function() {
-        console.log("Voiceflow widget script loaded");
+        logEvent('Voiceflow script loaded');
         
+        // Initialize chat but don't open it
         window.voiceflow.chat.load({
-          verify: { projectID: '6798b43c9f655dc50cb7cb58' },
+          verify: { projectID: '6798b43c9f655dc50cb7cb58' }, // Replace with your project ID
           url: 'https://general-runtime.voiceflow.com',
           versionID: 'production',
-          voice: { url: "https://runtime-api.voiceflow.com" },
-          user: { name: 'API User' },
-          render: { mode: 'overlay' },
           autostart: false, // Very important - don't open automatically
-          allowDangerousHTML: true
+          render: { mode: 'overlay' }
         }).then(() => {
-          console.log("Voiceflow chat initialized and ready");
-          isVoiceflowLoaded = true;
-          checkForTrigger(); // Check immediately in case we missed a trigger
+          voiceflowReady = true;
+          updateStatus('Voiceflow chat initialized and ready for API triggers', 'success');
         }).catch(error => {
-          console.error("Error initializing Voiceflow chat:", error);
-          statusElement.textContent = "Error loading Voiceflow chat: " + error.message;
-          statusElement.className = "status error";
+          updateStatus(`Error initializing Voiceflow: ${error.message}`, 'error');
         });
       };
       
+      // Add script to page
       document.body.appendChild(script);
     }
     
-    // Function to check for API triggers
-    function checkForTrigger() {
-      fetch('/api/check-chat-trigger?' + new Date().getTime())
-        .then(response => response.json())
+    // Check for API triggers
+    function checkForApiTrigger() {
+      fetch(`/api/check-chat-trigger?t=${Date.now()}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
-          // Update display with latest data regardless of processing status
-          triggerIdElement.textContent = data.triggerId || 'None';
-          executionIdElement.textContent = data.n8n_executionID || 'None';
-          resumeUrlElement.textContent = data.n8n_resumeURL || 'None';
-          
-          // If this is a new trigger (higher ID than last processed)
-          if (data.triggerId && data.triggerId > lastProcessedTrigger) {
-            console.log("New API trigger detected:", data);
-            apiStatusElement.textContent = `New trigger received at ${new Date().toLocaleTimeString()}`;
+          // Update display with latest data
+          if (data.triggerId) {
+            triggerIdElement.textContent = data.triggerId;
+            executionIdElement.textContent = data.n8n_executionID || 'Not provided';
+            resumeUrlElement.textContent = data.n8n_resumeURL || 'Not provided';
             
-            // Update last processed ID
-            lastProcessedTrigger = data.triggerId;
-            
-            // Store data in the window object
-            window.apiData.n8n_executionID = data.n8n_executionID;
-            window.apiData.n8n_resumeURL = data.n8n_resumeURL;
-            
-            // Update display
-            statusElement.textContent = "API trigger received! Opening chat...";
-            statusElement.className = "status ready";
-            
-            // Open chat with the payload if Voiceflow is loaded
-            if (isVoiceflowLoaded && window.voiceflow && window.voiceflow.chat) {
-              // Send the payload and open chat
-              window.voiceflow.chat.interact({
-                type: 'launch',
-                payload: {
-                  n8n_executionID: data.n8n_executionID,
-                  n8n_resumeURL: data.n8n_resumeURL
-                }
-              }).then(() => {
-                console.log("Interact payload sent, opening chat");
-                window.voiceflow.chat.open();
-              }).catch(error => {
-                console.error("Error sending payload:", error);
-              });
-            } else {
-              console.warn("Voiceflow not ready yet, will retry...");
+            // Check if this is a new trigger
+            if (data.triggerId > lastProcessedTrigger) {
+              lastProcessedTrigger = data.triggerId;
+              logEvent(`New API trigger detected: ID ${data.triggerId}`);
+              
+              // Only try to open chat if Voiceflow is ready
+              if (voiceflowReady && window.voiceflow && window.voiceflow.chat) {
+                updateStatus('Opening chat with payload data...', 'success');
+                
+                // First send payload data
+                window.voiceflow.chat.interact({
+                  type: 'launch',
+                  payload: {
+                    n8n_executionID: data.n8n_executionID,
+                    n8n_resumeURL: data.n8n_resumeURL
+                  }
+                }).then(() => {
+                  // Then open the chat
+                  logEvent('Payload sent successfully, opening chat');
+                  window.voiceflow.chat.open();
+                }).catch(error => {
+                  updateStatus(`Error sending payload: ${error.message}`, 'error');
+                });
+              } else {
+                updateStatus('Voiceflow not ready yet, will try again shortly...', 'waiting');
+              }
             }
           }
         })
         .catch(error => {
-          console.error("Error checking for triggers:", error);
-          apiStatusElement.textContent = "Error: " + error.message;
+          updateStatus(`API check error: ${error.message}`, 'error');
         });
     }
     
-    // Start the application
+    // Initialize when page loads
     document.addEventListener('DOMContentLoaded', () => {
-      // Load Voiceflow widget (but don't open it)
-      loadVoiceflowWidget();
+      updateStatus('Page loaded, initializing Voiceflow (will not open until triggered)');
       
-      // Start polling for triggers
-      setInterval(checkForTrigger, 2000);
+      // Initialize Voiceflow
+      initializeVoiceflow();
       
-      console.log("App initialized, waiting for API triggers");
+      // Start polling for API triggers
+      logEvent('Starting API polling (checking every 3 seconds)');
+      setInterval(checkForApiTrigger, 3000);
     });
   </script>
 </body>
