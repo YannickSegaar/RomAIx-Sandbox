@@ -3,333 +3,283 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voiceflow Chat API Trigger</title>
+  <title>N8n Voiceflow Integration</title>
   <style>
     body {
-      background-color: #f9f9f9;
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-    }
-    #flat-chat {
-      width: 100vw;
-      height: 100vh;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-    #confetti-canvas {
-      position: fixed;
-      z-index: 999;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
+      background-color: #f9f9f9;
     }
     .container {
       max-width: 800px;
       margin: 0 auto;
       text-align: center;
-    }
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
+      padding: 20px;
     }
     .status {
-      margin-top: 20px;
+      margin: 20px 0;
       padding: 10px;
-      border-radius: 5px;
-      background-color: #f5f5f5;
+      border-radius: 4px;
+      background-color: #f0f0f0;
       display: inline-block;
     }
-    .status.ready {
-      background-color: #e8f5e9;
-      color: #2e7d32;
+    .status.ready { background-color: #e8f5e9; color: #2e7d32; }
+    .status.error { background-color: #ffebee; color: #c62828; }
+    
+    .control-panel {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #eee;
+      border-radius: 8px;
+      text-align: left;
     }
-    .status.error {
-      background-color: #ffebee;
-      color: #c62828;
+    .form-group {
+      margin-bottom: 10px;
     }
-    .btn {
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
       background-color: #587C74;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
+      padding: 10px 15px;
+      border-radius: 4px;
       cursor: pointer;
-      margin-top: 20px;
-      font-size: 16px;
+      margin-top: 10px;
     }
-    .btn:hover {
+    button:hover {
       background-color: #2F3E46;
     }
   </style>
 </head>
 <body>
-  <!-- Confetti Canvas -->
-  <canvas id="confetti-canvas"></canvas>
-
-  <!-- Container for Content -->
   <div class="container">
-    <h1>RomAIx Voiceflow Integration</h1>
-    <p>This page includes a Voiceflow chat agent that can be triggered via API call.</p>
-    <div id="status" class="status">Loading Voiceflow chat widget...</div>
+    <h1>N8n - Voiceflow Integration</h1>
+    <p>This page demonstrates passing variables from N8n to Voiceflow</p>
     
-    <!-- Test button (for manual testing) -->
-    <button id="test-btn" class="btn">Test Open Chat</button>
+    <div id="status" class="status">Initializing...</div>
+    
+    <div class="control-panel">
+      <h3>Manual Testing Panel</h3>
+      <div class="form-group">
+        <label for="executionId">Execution ID:</label>
+        <input type="text" id="executionId" placeholder="Enter n8n execution ID">
+      </div>
+      <div class="form-group">
+        <label for="resumeUrl">Resume URL:</label>
+        <input type="text" id="resumeUrl" placeholder="Enter n8n resume URL">
+      </div>
+      <button id="manualTrigger">Manually Trigger with These Values</button>
+      <button id="openChat">Open Chat</button>
+    </div>
   </div>
-
-  <!-- Voiceflow Chat Widget Container -->
-  <div id="voiceflow-chat-frame"></div>
-
-  <!-- Canvas Confetti Script -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-
-  <!-- Main Script -->
+  
   <script>
     // Global variables
-    let lastProcessedTrigger = 0;
-    let n8n_executionID = null;
-    let n8n_resumeURL = null;
     const statusElement = document.getElementById('status');
-    const testBtn = document.getElementById('test-btn');
+    const executionIdInput = document.getElementById('executionId');
+    const resumeUrlInput = document.getElementById('resumeUrl');
+    const manualTriggerBtn = document.getElementById('manualTrigger');
+    const openChatBtn = document.getElementById('openChat');
     
-    // Initialize romaixData in the window object
+    // Create global window object to store execution data
     window.romaixData = {
       n8n_executionID: null,
       n8n_resumeURL: null
     };
-
-    // Function to check if the chat should be opened
-    function checkChatTrigger() {
-      fetch('/api/check-chat-trigger?' + new Date().getTime())
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+    
+    // Track if Voiceflow has been initialized
+    let voiceflowInitialized = false;
+    
+    // Initialize Voiceflow
+    function initializeVoiceflow(withValues = false) {
+      // If already initialized and we want to update with new values, we need to destroy and recreate
+      if (voiceflowInitialized && withValues && window.voiceflow && window.voiceflow.chat) {
+        console.log("Reinitializing Voiceflow with new values:", window.romaixData);
+        
+        // If the chat has a destroy method, use it (might not be available in all versions)
+        if (typeof window.voiceflow.chat.destroy === 'function') {
+          window.voiceflow.chat.destroy().then(() => {
+            loadVoiceflow();
+          });
+        } else {
+          // Otherwise just reinitialize
+          loadVoiceflow();
+        }
+      } else if (!voiceflowInitialized) {
+        // Initial load
+        loadVoiceflow();
+      }
+    }
+    
+    // Load Voiceflow chat
+    function loadVoiceflow() {
+      console.log("Loading Voiceflow chat with data:", window.romaixData);
+      
+      window.voiceflow.chat.load({
+        verify: { projectID: '6798b43c9f655dc50cb7cb58' },
+        url: 'https://general-runtime.voiceflow.com',
+        versionID: 'production',
+        voice: { 
+          url: "https://runtime-api.voiceflow.com" 
+        },
+        user: {
+          name: 'Demo User',
+        },
+        render: {
+          mode: 'overlay',
+        },
+        autostart: false, // Important: Don't open automatically
+        allowDangerousHTML: true,
+        launch: {
+          event: {
+            type: 'launch',
+            payload: {
+              n8n_executionID: window.romaixData.n8n_executionID,
+              n8n_resumeURL: window.romaixData.n8n_resumeURL
+            }
           }
-          return response.json();
-        })
+        }
+      }).then(() => {
+        console.log("Voiceflow initialized successfully with payload:", {
+          n8n_executionID: window.romaixData.n8n_executionID,
+          n8n_resumeURL: window.romaixData.n8n_resumeURL
+        });
+        
+        voiceflowInitialized = true;
+        statusElement.textContent = 'Voiceflow ready. Variables will be passed on chat open.';
+        statusElement.className = 'status ready';
+      }).catch(error => {
+        console.error("Error initializing Voiceflow:", error);
+        statusElement.textContent = 'Error: ' + error.message;
+        statusElement.className = 'status error';
+      });
+    }
+    
+    // Function to check for API triggers
+    function checkApiTrigger() {
+      fetch('/api/check-chat-trigger?' + new Date().getTime())
+        .then(response => response.json())
         .then(data => {
-          if (data.triggerId && data.triggerId > lastProcessedTrigger) {
-            lastProcessedTrigger = data.triggerId;
-            n8n_executionID = data.n8n_executionID;
-            n8n_resumeURL = data.n8n_resumeURL;
+          if (data.triggerId && data.n8n_executionID) {
+            console.log("API Trigger received:", data);
             
-            // Update the global data object
+            // Update global data
             window.romaixData = {
-              n8n_executionID: n8n_executionID,
-              n8n_resumeURL: n8n_resumeURL
+              n8n_executionID: data.n8n_executionID,
+              n8n_resumeURL: data.n8n_resumeURL
             };
             
-            statusElement.textContent = `Received trigger ID: ${data.triggerId}, opening chat with n8n_executionID: ${n8n_executionID}`;
+            statusElement.textContent = `API Trigger received with execution ID: ${data.n8n_executionID}`;
             statusElement.className = 'status ready';
             
-            console.log('Opening chat due to API trigger with data:', window.romaixData);
-  
-            // Make sure Voiceflow is loaded before trying to open
-            if (window.voiceflow && window.voiceflow.chat) {
-              window.voiceflow.chat.open();
-              statusElement.textContent = 'Voiceflow chat opened with execution data.';
-              statusElement.className = 'status ready';
+            // Update input fields for visibility
+            executionIdInput.value = data.n8n_executionID || '';
+            resumeUrlInput.value = data.n8n_resumeURL || '';
+            
+            // If Voiceflow is already initialized, just open the chat
+            // The variables will be accessible via last_event in Voiceflow
+            if (voiceflowInitialized && window.voiceflow && window.voiceflow.chat) {
+              window.voiceflow.chat.interact({
+                type: 'launch',
+                payload: {
+                  n8n_executionID: data.n8n_executionID,
+                  n8n_resumeURL: data.n8n_resumeURL
+                }
+              }).then(() => {
+                window.voiceflow.chat.open();
+              });
             } else {
-              console.warn('Voiceflow chat not yet loaded');
-              statusElement.textContent = 'Voiceflow chat not yet loaded. Waiting for initialization...';
+              // Initialize with values and then open
+              initializeVoiceflow(true);
+              // We'll open the chat once initialization is complete
+              setTimeout(() => {
+                if (window.voiceflow && window.voiceflow.chat) {
+                  window.voiceflow.chat.open();
+                }
+              }, 1000); // Give it a second to initialize
             }
           }
         })
         .catch(error => {
-          console.error('Error checking chat trigger:', error);
-          statusElement.textContent = 'Error checking API: ' + error.message;
-          statusElement.className = 'status error';
+          console.error("API check error:", error);
         });
     }
-  
-    // Test button to manually open chat
-    testBtn.addEventListener('click', () => {
+    
+    // Manual trigger button
+    manualTriggerBtn.addEventListener('click', () => {
+      const executionId = executionIdInput.value.trim();
+      const resumeUrl = resumeUrlInput.value.trim();
+      
+      if (!executionId) {
+        alert("Please enter an Execution ID");
+        return;
+      }
+      
+      window.romaixData = {
+        n8n_executionID: executionId,
+        n8n_resumeURL: resumeUrl
+      };
+      
+      statusElement.textContent = `Manual values set: ${executionId}`;
+      statusElement.className = 'status ready';
+      
+      // Reinitialize Voiceflow with these values
+      initializeVoiceflow(true);
+    });
+    
+    // Open chat button
+    openChatBtn.addEventListener('click', () => {
       if (window.voiceflow && window.voiceflow.chat) {
-        window.voiceflow.chat.open();
+        // If we have values, send them with interact before opening
+        if (window.romaixData.n8n_executionID) {
+          window.voiceflow.chat.interact({
+            type: 'launch',
+            payload: {
+              n8n_executionID: window.romaixData.n8n_executionID,
+              n8n_resumeURL: window.romaixData.n8n_resumeURL
+            }
+          }).then(() => {
+            window.voiceflow.chat.open();
+          });
+        } else {
+          window.voiceflow.chat.open();
+        }
+        
         statusElement.textContent = 'Chat opened manually';
-        statusElement.className = 'status ready';
       } else {
-        statusElement.textContent = 'Voiceflow chat not loaded yet';
+        statusElement.textContent = 'Error: Voiceflow not initialized';
         statusElement.className = 'status error';
       }
     });
-  
-    // Start checking for triggers once the page is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      statusElement.textContent = 'Page loaded, connecting to API...';
-      // Check every 3 seconds
-      setInterval(checkChatTrigger, 3000);
-    });
-  </script>
-
-  <!-- Simple placeholder extensions -->
-  <script>
-    // Simple placeholder extensions to prevent undefined errors
-    window.VideoExtension = { name: 'Video', type: 'response', match: () => false, render: () => {} };
-    window.TimerExtension = { name: 'Timer', type: 'response', match: () => false, render: () => {} };
-    window.FormExtension = { name: 'Form', type: 'response', match: () => false, render: () => {} };
-    window.MapExtension = { name: 'Map', type: 'response', match: () => false, render: () => {} };
-    window.FileUploadExtension = { name: 'FileUpload', type: 'response', match: () => false, render: () => {} };
-    window.KBUploadExtension = { name: 'KBUpload', type: 'response', match: () => false, render: () => {} };
-    window.DateExtension = { name: 'Date', type: 'response', match: () => false, render: () => {} };
-    window.ConfettiExtension = { name: 'Confetti', type: 'response', match: () => false, render: () => {} };
-    window.GTH_FormExtension = { name: 'GTH_Form', type: 'response', match: () => false, render: () => {} };
-    window.GTH_FeedbackExtension = { name: 'GTH_Feedback', type: 'response', match: () => false, render: () => {} };
-    window.WaitingAnimationExtension = { name: 'WaitingAnimation', type: 'response', match: () => false, render: () => {} };
-    window.GiftCardDisplayExtension = { name: 'GiftCardDisplay', type: 'response', match: () => false, render: () => {} };
-    window.DoneAnimationExtension = { name: 'DoneAnimation', type: 'response', match: () => false, render: () => {} };
-    window.InvisibleTimerExtension = { name: 'InvisibleTimer', type: 'response', match: () => false, render: () => {} };
-    window.DisableInputExtension = { name: 'DisableInput', type: 'response', match: () => false, render: () => {} };
-    window.makeToVoiceflowExtension = { name: 'makeToVoiceflow', type: 'response', match: () => false, render: () => {} };
-    window.RescheduleCancelFormExtension = { name: 'RescheduleCancelForm', type: 'response', match: () => false, render: () => {} };
-    window.IframeEmbedExtension = { name: 'IframeEmbed', type: 'response', match: () => false, render: () => {} };
-    window.CustomizedIframeExtension = { name: 'CustomizedIframe', type: 'response', match: () => false, render: () => {} };
     
-    // Direction workflow extensions
-    window.DirectionsWorkflowExtension = { name: 'DirectionsWorkflow', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension2 = { name: 'DirectionsWorkflow2', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension3 = { name: 'DirectionsWorkflow3', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension4 = { name: 'DirectionsWorkflow4', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension5 = { name: 'DirectionsWorkflow5', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension6 = { name: 'DirectionsWorkflow6', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension7 = { name: 'DirectionsWorkflow7', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension8 = { name: 'DirectionsWorkflow8', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension9 = { name: 'DirectionsWorkflow9', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension10 = { name: 'DirectionsWorkflow10', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension11 = { name: 'DirectionsWorkflow11', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension12 = { name: 'DirectionsWorkflow12', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension13 = { name: 'DirectionsWorkflow13', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension14 = { name: 'DirectionsWorkflow14', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension15 = { name: 'DirectionsWorkflow15', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension16 = { name: 'DirectionsWorkflow16', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension17 = { name: 'DirectionsWorkflow17', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension18 = { name: 'DirectionsWorkflow18', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension19 = { name: 'DirectionsWorkflow19', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension20 = { name: 'DirectionsWorkflow20', type: 'response', match: () => false, render: () => {} };
-    window.DirectionsWorkflowExtension22 = { name: 'DirectionsWorkflow22', type: 'response', match: () => false, render: () => {} };
-    window.GTH_FormExtension2 = { name: 'GTH_Form2', type: 'response', match: () => false, render: () => {} };
-    window.RomAIxWebhookExtension1 = { name: 'RomAIxWebhookExtension1', type: 'response', match: () => false, render: () => {} };
-    window.RomAIxWebhookExtension2 = { name: 'RomAIxWebhookExtension2', type: 'response', match: () => false, render: () => {} };
-  </script>
-
-  <!-- Script to fetch the RomAIxWebhookExtension2 -->
-  <script>
-    // Fetch the extension implementation
-    fetch('/extensions_New.js')
-      .then(response => response.text())
-      .then(code => {
-        // Create a script element
-        const script = document.createElement('script');
-        script.textContent = code;
-        document.head.appendChild(script);
-        console.log('Successfully loaded extensions_New.js');
-      })
-      .catch(error => {
-        console.error('Error loading extensions_New.js:', error);
-      });
-  </script>
-
-  <!-- Voiceflow Chat Widget Script -->
-  <script>
-    // Load the Voiceflow chat widget
-    (function (d, t) {
+    // Start API polling
+    setInterval(checkApiTrigger, 3000);
+    
+    // Load Voiceflow widget 
+    (function(d, t) {
       var v = d.createElement(t),
         s = d.getElementsByTagName(t)[0];
-      v.onload = function () {
-        console.log("Voiceflow widget script loaded. Initializing chat...");
-
-        window.voiceflow.chat.load({
-          verify: { projectID: '6798b43c9f655dc50cb7cb58' },
-          url: 'https://general-runtime.voiceflow.com',
-          versionID: 'production',
-          voice: { 
-            url: "https://runtime-api.voiceflow.com" 
-          },
-          user: {
-            name: 'Demo User',
-          },
-          render: {
-            mode: 'overlay',
-          },
-          autostart: false,
-          allowDangerousHTML: true,
-          launch: {
-            event: {
-              type: 'launch',
-              payload: {
-                n8n_executionID: window.romaixData ? window.romaixData.n8n_executionID : null,
-                n8n_resumeURL: window.romaixData ? window.romaixData.n8n_resumeURL : null
-              }
-            }
-          },
-          assistant: {
-            extensions: [
-              window.VideoExtension,
-              window.TimerExtension,
-              window.FormExtension,
-              window.MapExtension,
-              window.FileUploadExtension,
-              window.KBUploadExtension,
-              window.DateExtension,
-              window.ConfettiExtension,
-              window.GTH_FormExtension,
-              window.GTH_FeedbackExtension,
-              window.WaitingAnimationExtension,
-              window.GiftCardDisplayExtension,
-              window.DoneAnimationExtension,
-              window.InvisibleTimerExtension,
-              window.DisableInputExtension,
-              window.makeToVoiceflowExtension,
-              window.RescheduleCancelFormExtension,
-              window.IframeEmbedExtension,
-              window.CustomizedIframeExtension,
-              window.DirectionsWorkflowExtension,
-              window.DirectionsWorkflowExtension2,
-              window.DirectionsWorkflowExtension3,
-              window.DirectionsWorkflowExtension4,
-              window.DirectionsWorkflowExtension5,
-              window.DirectionsWorkflowExtension6,
-              window.DirectionsWorkflowExtension7,
-              window.DirectionsWorkflowExtension8,
-              window.DirectionsWorkflowExtension9,
-              window.DirectionsWorkflowExtension10,
-              window.DirectionsWorkflowExtension11,
-              window.DirectionsWorkflowExtension12,
-              window.DirectionsWorkflowExtension13,
-              window.DirectionsWorkflowExtension14,
-              window.DirectionsWorkflowExtension15,
-              window.DirectionsWorkflowExtension16,
-              window.DirectionsWorkflowExtension17,
-              window.DirectionsWorkflowExtension18,
-              window.DirectionsWorkflowExtension19,
-              window.DirectionsWorkflowExtension20,
-              window.DirectionsWorkflowExtension22,
-              window.GTH_FormExtension2,
-              window.RomAIxWebhookExtension1,
-              window.RomAIxWebhookExtension2
-            ],
-            stylesheet: "https://yannicksegaar.github.io/VF-extensions/chat-widget-custom_FareHarborCarousel.css",
-          },
-        }).then(() => {
-          console.log("Voiceflow chat initialized successfully with data:", window.romaixData);
-          statusElement.textContent = 'Voiceflow chat initialized successfully. Ready for triggers.';
-          statusElement.className = 'status ready';
-          
-          // If we already have a trigger pending, open the chat
-          if (window.romaixData.n8n_executionID && window.romaixData.n8n_resumeURL && lastProcessedTrigger > 0) {
-            window.voiceflow.chat.open();
-          }
-        }).catch((error) => {
-          console.error("Error initializing Voiceflow chat:", error);
-          statusElement.textContent = 'Error initializing Voiceflow chat: ' + error.message;
-          statusElement.className = 'status error';
-        });
+      
+      v.onload = function() {
+        console.log("Voiceflow script loaded");
+        // Initialize with empty values first
+        initializeVoiceflow();
       };
-      v.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
-      v.type = 'text/javascript';
+      
+      v.src = "https://cdn.voiceflow.com/widget-next/bundle.mjs";
+      v.type = "text/javascript";
       s.parentNode.insertBefore(v, s);
     })(document, 'script');
   </script>
