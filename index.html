@@ -1,224 +1,851 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payload Pass Test</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f8f9fa;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .status-box {
-      margin: 20px 0;
-      padding: 10px;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-    }
-    .log-box {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background-color: #f8f8f8;
-      height: 200px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 13px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tour Builder</title>
+    <style>
+        /* ==================== Reset & Base Styles ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #2c7be5;
+            --primary-light: #d2e3fc;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --gray-color: #e9ecef;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ==================== Container Styles ==================== */
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* ==================== Progress Indicator ==================== */
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 40px;
+            position: relative;
+        }
+
+        .progress-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 4px;
+            width: 100%;
+            background-color: var(--gray-color);
+            z-index: 0;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 4px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+            z-index: 1;
+        }
+
+        .step {
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border: 4px solid var(--gray-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step.active {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .step.completed {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+
+        .step.active .step-label, 
+        .step.completed .step-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* ==================== Form Elements ==================== */
+        .form-container {
+            padding: 30px 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Range Slider */
+        .range-container {
+            position: relative;
+            padding-bottom: 30px;
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .range-value {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .range-value::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--primary-color) transparent transparent transparent;
+        }
+
+        /* Checkbox Styles */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1a68d1;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e6ea;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* ==================== Step 2 (Results) Styles ==================== */
+        #step2 {
+            display: none;
+            padding-bottom: 40px;
+        }
+
+        .tour-overview {
+            background-color: var(--primary-light);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .tour-overview h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .dates, .travelers {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .price-tag {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .day-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .day-card h3 {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+        }
+
+        .day-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            .day-content {
+                flex-direction: row;
+            }
+        }
+
+        .day-content img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        @media (min-width: 768px) {
+            .day-content img {
+                width: 250px;
+                height: auto;
+            }
+        }
+
+        .day-details {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .day-details p {
+            margin-bottom: 15px;
+        }
+
+        .activities {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .activities li {
+            margin-bottom: 5px;
+        }
+
+        .accommodation {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--gray-color);
+        }
+
+        .booking-section {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .booking-section h3 {
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .booking-button {
+            display: inline-block;
+            background-color: var(--success-color);
+            color: white;
+            padding: 14px 30px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+        }
+
+        .booking-button:hover {
+            background-color: #218838;
+        }
+
+        .booking-note {
+            color: var(--secondary-color);
+            font-size: 14px;
+        }
+
+        /* ==================== Loading & Error States ==================== */
+        #loadingIndicator {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #errorMessage {
+            display: none;
+            background-color: #f8d7da;
+            color: var(--danger-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 767px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .progress-container {
+                margin: 20px;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Payload Pass Test</h1>
-    
-    <div class="status-box">
-      <strong>Status:</strong> <span id="status">Waiting for API call</span>
-    </div>
-    
-    <div id="log-box" class="log-box"></div>
-  </div>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>AI Tour Builder</h1>
+            <p>Create your personalized travel experience</p>
+        </div>
 
-  <script>
-    // Function to log messages
-    function log(message) {
-      const logBox = document.getElementById('log-box');
-      const timestamp = new Date().toLocaleTimeString();
-      logBox.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-      logBox.scrollTop = logBox.scrollHeight;
-      console.log(`[${timestamp}] ${message}`);
-    }
-    
-    // Function to update status
-    function updateStatus(message) {
-      document.getElementById('status').textContent = message;
-      log(message);
-    }
-    
-    // Global variables
-    let lastTriggerId = 0;
-    
-    // Function to check for API triggers
-    function checkApiTrigger() {
-      fetch(`/api/check-chat-trigger?t=${Date.now()}`)
-        .then(response => response.json())
-        .then(data => {
-          // If new trigger detected
-          if (data.triggerId && data.triggerId > lastTriggerId) {
-            lastTriggerId = data.triggerId;
-            
-            log(`New trigger detected! ID: ${data.triggerId}`);
-            log(`Payload: n8n_executionID=${data.n8n_executionID}, n8n_resumeURL=${data.n8n_resumeURL}`);
-            
-            // Store data on window object for Voiceflow
-            window.triggerData = {
-              n8n_executionID: data.n8n_executionID,
-              n8n_resumeURL: data.n8n_resumeURL
-            };
-            
-            updateStatus('Processing trigger...');
-            
-            // IMPORTANT: Use this specific sequence to ensure the payload is passed
-            
-            // 1. First, prepare the payload
-            const payload = {
-              n8n_executionID: data.n8n_executionID,
-              n8n_resumeURL: data.n8n_resumeURL
-            };
-            
-            log('Step 1: Prepared payload');
-            
-            if (window.voiceflow && window.voiceflow.chat) {
-              // 2. Reset conversation (optional but helps ensure clean state)
-              window.voiceflow.chat.destroy()
-                .then(() => {
-                  log('Step 2: Destroyed previous chat instance');
-                  
-                  // 3. Initialize with launch payload 
-                  return window.voiceflow.chat.load({
-                    verify: { projectID: '6798b43c9f655dc50cb7cb58' },
-                    url: 'https://general-runtime.voiceflow.com',
-                    versionID: 'production',
-                    autostart: false,
-                    launch: {
-                      event: {
-                        type: 'launch',
-                        payload: payload
-                      }
-                    }
-                  });
-                })
-                .then(() => {
-                  log('Step 3: Initialized with launch payload');
-                  
-                  // 4. Wait briefly to ensure payload is processed
-                  return new Promise(resolve => setTimeout(resolve, 500));
-                })
-                .then(() => {
-                  // 5. Send direct interact with payload again (belt and suspenders approach)
-                  return window.voiceflow.chat.interact({
-                    type: 'launch',
-                    payload: payload
-                  });
-                })
-                .then(() => {
-                  log('Step 4: Sent interact with payload');
-                  
-                  // 6. Finally open the chat
-                  window.voiceflow.chat.open();
-                  log('Step 5: Opened chat with payload');
-                  updateStatus('Chat opened with payload!');
-                })
-                .catch(error => {
-                  log(`Error: ${error.message}`);
-                  updateStatus('Error occurred');
+        <!-- Progress Indicator -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+            <div class="step active" id="step1Indicator">
+                1
+                <span class="step-label">Tour Preferences</span>
+            </div>
+            <div class="step" id="step2Indicator">
+                2
+                <span class="step-label">Your Itinerary</span>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage"></div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Generating your personalized tour itinerary...</p>
+        </div>
+
+        <!-- Step 1: Tour Preferences Form -->
+        <div id="step1" class="form-container">
+            <form id="preferenceForm">
+                <!-- Hidden Fields for n8n Integration -->
+                <input type="hidden" id="customerId" name="customerId">
+                <input type="hidden" id="executionId" name="executionId">
+                <input type="hidden" id="resumeUrl" name="resumeUrl">
+
+                <!-- Destination Selection -->
+                <div class="form-group">
+                    <label for="destination">Destination</label>
+                    <select id="destination" name="destination" required>
+                        <option value="" disabled selected>Select your destination</option>
+                        <option value="Bali">Bali, Indonesia</option>
+                        <option value="Barcelona">Barcelona, Spain</option>
+                        <option value="Cape Town">Cape Town, South Africa</option>
+                        <option value="Kyoto">Kyoto, Japan</option>
+                        <option value="New York">New York, USA</option>
+                        <option value="Paris">Paris, France</option>
+                        <option value="Rio de Janeiro">Rio de Janeiro, Brazil</option>
+                        <option value="Sydney">Sydney, Australia</option>
+                        <option value="Thailand">Thailand</option>
+                        <option value="Rome">Rome, Italy</option>
+                    </select>
+                </div>
+
+                <!-- Date Range Selection -->
+                <div class="form-group">
+                    <div style="display: flex; gap: 20px;">
+                        <div style="flex: 1;">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" required min="">
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" name="endDate" required min="">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Number of Travelers -->
+                <div class="form-group">
+                    <label for="travelers">Number of Travelers</label>
+                    <input type="number" id="travelers" name="travelers" min="1" max="20" value="2" required>
+                </div>
+
+                <!-- Budget Range -->
+                <div class="form-group">
+                    <label for="budget">Budget Range (USD)</label>
+                    <div class="range-container">
+                        <input type="range" id="budget" name="budget" min="500" max="10000" step="500" value="3000">
+                        <div id="budgetValue" class="range-value">$3,000</div>
+                        <div class="range-labels">
+                            <span>$500</span>
+                            <span>$10,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activities Selection -->
+                <div class="form-group">
+                    <label>What activities are you interested in?</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="adventure" name="activities" value="Adventure">
+                            <label for="adventure">Adventure</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="cultural" name="activities" value="Cultural">
+                            <label for="cultural">Cultural</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="relaxation" name="activities" value="Relaxation">
+                            <label for="relaxation">Relaxation</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="foodie" name="activities" value="Food & Dining">
+                            <label for="foodie">Food & Dining</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="nature" name="activities" value="Nature">
+                            <label for="nature">Nature</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="shopping" name="activities" value="Shopping">
+                            <label for="shopping">Shopping</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="nightlife" name="activities" value="Nightlife">
+                            <label for="nightlife">Nightlife</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="history" name="activities" value="History">
+                            <label for="history">History</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Requirements -->
+                <div class="form-group">
+                    <label for="specialRequests">Special Requirements or Preferences</label>
+                    <textarea id="specialRequests" name="specialRequests" rows="4" placeholder="Tell us about any dietary restrictions, accessibility needs, or special interests..."></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary btn-block">Generate My Personalized Tour</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Step 2: Results Display -->
+        <div id="step2" class="form-container">
+            <div id="itineraryContainer">
+                <!-- This will be populated by JavaScript -->
+            </div>
+
+            <!-- Actions Buttons -->
+            <div class="button-group" style="margin-top: 30px;">
+                <button id="backToForm" class="btn btn-secondary">Start Over</button>
+                <button id="printItinerary" class="btn btn-primary">Print Itinerary</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').min = today;
+            document.getElementById('endDate').min = today;
+
+            // Extract URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const customerId = urlParams.get('customerId');
+            const executionId = urlParams.get('executionId');
+            const resumeUrl = urlParams.get('resumeUrl');
+
+            // Store in form as hidden fields
+            if (customerId) document.getElementById('customerId').value = customerId;
+            if (executionId) document.getElementById('executionId').value = executionId;
+            if (resumeUrl) document.getElementById('resumeUrl').value = resumeUrl;
+
+            // Budget slider functionality
+            const budgetSlider = document.getElementById('budget');
+            const budgetValue = document.getElementById('budgetValue');
+
+            budgetSlider.addEventListener('input', function() {
+                budgetValue.textContent = '$' + parseInt(this.value).toLocaleString();
+                // Position the value bubble
+                const percent = ((this.value - this.min) / (this.max - this.min)) * 100;
+                budgetValue.style.left = percent + '%';
+            });
+
+            // Send "wake up" notification when page loads
+            if (resumeUrl) {
+                fetch(resumeUrl.replace('/webhook/', '/webhook/wake-up/'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        customerId: customerId,
+                        action: 'pageOpened'
+                    })
+                }).catch(error => {
+                    console.error('Error sending wake-up notification:', error);
                 });
-            } else {
-              log('Voiceflow not ready yet, trying to initialize...');
-              loadVoiceflow(payload);
             }
-          }
-        })
-        .catch(error => {
-          log(`API check error: ${error.message}`);
-        });
-    }
-    
-    // Function to load Voiceflow with payload
-    function loadVoiceflow(payload) {
-      log('Loading Voiceflow...');
-      
-      const script = document.createElement('script');
-      script.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
-      script.type = 'text/javascript';
-      
-      script.onload = function() {
-        log('Voiceflow script loaded');
-        
-        // Initialize with launch payload
-        window.voiceflow.chat.load({
-          verify: { projectID: '6798b43c9f655dc50cb7cb58' },
-          url: 'https://general-runtime.voiceflow.com',
-          versionID: 'production',
-          autostart: false,
-          launch: {
-            event: {
-              type: 'launch',
-              payload: payload
+
+            // Form validation for dates
+            document.getElementById('startDate').addEventListener('change', function() {
+                document.getElementById('endDate').min = this.value;
+                // If end date is before start date, update it
+                if (document.getElementById('endDate').value < this.value) {
+                    document.getElementById('endDate').value = this.value;
+                }
+            });
+
+            // Form submission handler
+            document.getElementById('preferenceForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Validate at least one activity is selected
+                const activities = document.querySelectorAll('input[name="activities"]:checked');
+                if (activities.length === 0) {
+                    alert('Please select at least one activity you\'re interested in.');
+                    return;
+                }
+
+                // Show loading indicator
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('step1').style.display = 'none';
+                
+                // Update progress indicator
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('step1Indicator').classList.add('completed');
+                document.getElementById('step2Indicator').classList.add('active');
+
+                // Collect form data
+                const formData = {
+                    customerId: document.getElementById('customerId').value,
+                    executionId: document.getElementById('executionId').value,
+                    destination: document.getElementById('destination').value,
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    travelers: document.getElementById('travelers').value,
+                    budget: document.getElementById('budget').value,
+                    activities: getSelectedActivities(),
+                    specialRequests: document.getElementById('specialRequests').value
+                };
+                
+                // Send data to n8n via resumeUrl
+                try {
+                    // Extract the resume URL from the form
+                    const resumeUrl = document.getElementById('resumeUrl').value;
+                    
+                    if (!resumeUrl) {
+                        throw new Error('No resume URL found. Please check the form link.');
+                    }
+                    
+                    const response = await fetch(resumeUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Server responded with status: ${response.status}`);
+                    }
+                    
+                    const responseData = await response.json();
+                    
+                    // Hide loading, show step 2 with results
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    document.getElementById('step2').style.display = 'block';
+                    
+                    // Populate step 2 with AI-generated itinerary
+                    displayItinerary(responseData);
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    document.getElementById('errorMessage').textContent = 'An error occurred while generating your itinerary. Please try again or contact support.';
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('step1').style.display = 'block';
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    
+                    // Reset progress indicator
+                    document.getElementById('progressBar').style.width = '0%';
+                    document.getElementById('step1Indicator').classList.remove('completed');
+                    document.getElementById('step2Indicator').classList.remove('active');
+                }
+            });
+
+            // Helper function to get selected activities
+            function getSelectedActivities() {
+                const checkboxes = document.querySelectorAll('input[name="activities"]:checked');
+                return Array.from(checkboxes).map(checkbox => checkbox.value);
             }
-          }
-        }).then(() => {
-          log('Voiceflow initialized with launch payload');
-          
-          // Send interact with payload
-          return window.voiceflow.chat.interact({
-            type: 'launch',
-            payload: payload
-          });
-        }).then(() => {
-          log('Sent interact with payload');
-          
-          // Open the chat
-          window.voiceflow.chat.open();
-          log('Opened chat with payload');
-          updateStatus('Chat opened with payload!');
-        }).catch(error => {
-          log(`Voiceflow error: ${error.message}`);
-          updateStatus('Error occurred');
+
+            // Function to display itinerary in step 2
+            function displayItinerary(data) {
+                const itineraryContainer = document.getElementById('itineraryContainer');
+                
+                // Display tour overview
+                const overviewHtml = `
+                    <div class="tour-overview">
+                        <h2>${data.destination} Adventure</h2>
+                        <p class="dates">${formatDate(data.startDate)} - ${formatDate(data.endDate)}</p>
+                        <p class="travelers">${data.travelers} Travelers</p>
+                        <div class="price-tag">$${data.totalPrice.toLocaleString()} USD</div>
+                        <p style="margin-top: 15px;">${data.overview}</p>
+                    </div>
+                `;
+                
+                // Display day-by-day itinerary
+                let daysHtml = '';
+                data.itinerary.forEach(day => {
+                    // Generate meals HTML if available
+                    let mealsHtml = '';
+                    if (day.meals && day.meals.length > 0) {
+                        mealsHtml = `
+                            <div class="meals">
+                                <strong>Meals:</strong>
+                                <ul>
+                                    ${day.meals.map(meal => `<li>${meal}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                    
+                    daysHtml += `
+                        <div class="day-card">
+                            <h3>Day ${day.day}: ${day.title}</h3>
+                            <div class="day-content">
+                                <img src="${day.image}" alt="${day.title}" onerror="this.src='https://placehold.co/600x400/e9ecef/6c757d?text=Day+${day.day}';">
+                                <div class="day-details">
+                                    <p>${day.description}</p>
+                                    <strong>Activities:</strong>
+                                    <ul class="activities">
+                                        ${day.activities.map(activity => `<li>${activity}</li>`).join('')}
+                                    </ul>
+                                    ${mealsHtml}
+                                    <p class="accommodation"><strong>Accommodation:</strong> ${day.accommodation}</p>
+                                    ${day.dailyCost ? `<p><strong>Estimated Cost:</strong> $${day.dailyCost.toLocaleString()} USD</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Display booking section
+                const bookingHtml = `
+                    <div class="booking-section">
+                        <h3>Ready to Book This Amazing Tour?</h3>
+                        <p>Secure your spot now with our easy booking process.</p>
+                        <a href="${data.bookingLink}" class="booking-button">Book Now</a>
+                        <p class="booking-note">* Prices may vary based on availability and season</p>
+                    </div>
+                `;
+                
+                // Combine all sections
+                itineraryContainer.innerHTML = overviewHtml + daysHtml + bookingHtml;
+            }
+
+            // Helper function to format dates
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString(undefined, options);
+            }
+
+            // Back to form button
+            document.getElementById('backToForm').addEventListener('click', function() {
+                document.getElementById('step2').style.display = 'none';
+                document.getElementById('step1').style.display = 'block';
+                
+                // Reset progress indicator
+                document.getElementById('progressBar').style.width = '0%';
+                document.getElementById('step1Indicator').classList.remove('completed');
+                document.getElementById('step2Indicator').classList.remove('active');
+                document.getElementById('step1Indicator').classList.add('active');
+            });
+
+            // Print itinerary button
+            document.getElementById('printItinerary').addEventListener('click', function() {
+                window.print();
+            });
         });
-      };
-      
-      document.body.appendChild(script);
-    }
-    
-    // Initialize
-    function init() {
-      log('Page loaded, waiting for API triggers...');
-      // Initial load of Voiceflow (without opening)
-      const script = document.createElement('script');
-      script.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
-      script.type = 'text/javascript';
-      document.body.appendChild(script);
-      
-      // Start polling for API triggers
-      setInterval(checkApiTrigger, 3000);
-    }
-    
-    // Start when page loads
-    document.addEventListener('DOMContentLoaded', init);
-  </script>
+    </script>
 </body>
 </html>
