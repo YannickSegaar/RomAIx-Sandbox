@@ -17,25 +17,56 @@
         body {
             font-family: 'Open Sans', sans-serif;
             /* --- Background Image --- */
-            /* Instructions: Replace 'YOUR_BACKGROUND_IMAGE.png' with the actual path/URL to your image */
             background-image: url('LinkedInBackground.png'); /* Placeholder */
-            /* background-color: #eef2f5; /* Fallback color if image doesn't load */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             /* Add a subtle overlay to improve text readability over background */
             /* background-blend-mode: overlay;
-            /* background-color: rgba(255, 255, 255, 0.85); /* Adjust opacity (0.0 to 1.0) as needed */
+            /* background-color: rgba(255, 255, 255, 0.85); /* Adjust opacity */
 
             display: flex;
-            /* Changed to column layout to accommodate explainer */
             flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden; /* Prevent scrollbars from body */
-            padding: 20px; /* Add some padding for smaller screens */
+            padding: 20px; /* Add some padding */
         }
+
+        /* --- Explainer Section (Moved to Top) --- */
+        .explainer-section {
+            width: 100%;
+            max-width: 950px; /* Match laptop width */
+            padding: 15px 25px;
+            background-color: rgba(47, 62, 70, 0.85); /* Secondary color, semi-transparent */
+            color: #ffffff;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0; /* Prevent shrinking */
+            min-height: 50px; /* Ensure space */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease; /* Smooth transition */
+            margin-bottom: 20px; /* Space below explainer, above laptop */
+        }
+        .explainer-section strong {
+            color: #a7d0c8; /* Lighter shade of primary color */
+            font-weight: 700;
+        }
+        .explainer-text {
+             opacity: 0;
+             transition: opacity 0.5s ease-in-out;
+             max-width: 800px; /* Limit text width */
+        }
+         .explainer-text.show {
+             opacity: 1;
+         }
+
 
         /* --- Laptop Mockup --- */
         .laptop-mockup {
@@ -48,7 +79,7 @@
             perspective: 1500px;
             transform-style: preserve-3d;
             transform: rotateX(5deg) rotateY(0deg); /* Subtle 3D tilt */
-            margin-bottom: 20px; /* Space between laptop and explainer */
+           /* margin-bottom: 20px; /* Removed margin-bottom as explainer is no longer below */
             flex-shrink: 0; /* Prevent shrinking */
         }
 
@@ -260,7 +291,7 @@
             height: 14px;
         }
 
-        /* --- Step Indicator Banner --- */
+        /* --- Step Indicator Banner (Inside Email Client) --- */
         .step-indicator-banner {
             background-color: #e9ecef; /* Light grey background */
             padding: 10px 15px;
@@ -271,6 +302,13 @@
             flex-shrink: 0;
             z-index: 9; /* Below header, above content */
             overflow-x: auto; /* Allow horizontal scroll on small screens if needed */
+            /* Remove positioning styles added previously */
+            width: auto;
+            max-width: none;
+            margin-bottom: 0;
+            box-shadow: none;
+            border-radius: 0;
+            justify-content: flex-start; /* Align left */
         }
 
         .step-indicator {
@@ -308,17 +346,16 @@
             background-color: #587C74; /* Primary color background for active step */
         }
 
+
         /* Incoming Email Summary */
         .incoming-email-summary {
             position: absolute;
-            top: 71px; /* Below status bar + step indicator (30+41) */
+            top: 71px; /* Below status bar (30px) + step indicator (~41px) */
             left: 0;
             right: 0;
             bottom: 0; /* Take full height below */
             background-color: rgba(255, 255, 255, 0.98); /* Slightly transparent white */
             padding: 20px;
-           /* border: 1px solid #ddd; */ /* Optional: remove border if desired */
-            /* border-radius: 8px; */ /* Optional: remove radius */
             margin: 0; /* Remove margin */
             z-index: 5; /* Above iframe, below modal */
             opacity: 0;
@@ -391,7 +428,6 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             position: absolute; /* Position relative to email-display-area */
-            /* Centering is handled by flexbox on email-display-area */
             z-index: 3; /* Above iframe, below summary/modal */
             opacity: 0;
             visibility: hidden;
@@ -632,39 +668,6 @@
             animation: success-pop 0.5s ease-out;
         }
 
-        /* --- Explainer Section --- */
-        .explainer-section {
-            width: 100%;
-            max-width: 950px; /* Match laptop width */
-            padding: 15px 25px;
-            background-color: rgba(47, 62, 70, 0.85); /* Secondary color, semi-transparent */
-            color: #ffffff;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 15px;
-            line-height: 1.5;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            flex-shrink: 0; /* Prevent shrinking */
-            min-height: 50px; /* Ensure space */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s ease; /* Smooth transition */
-        }
-        .explainer-section strong {
-            color: #a7d0c8; /* Lighter shade of primary color */
-            font-weight: 700;
-        }
-        .explainer-text {
-             opacity: 0;
-             transition: opacity 0.5s ease-in-out;
-             max-width: 800px; /* Limit text width */
-        }
-         .explainer-text.show {
-             opacity: 1;
-         }
-
-
         /* --- Animations --- */
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -720,10 +723,13 @@
                 align-items: center; /* Center content vertically */
                 padding-top: 20px; /* Reset padding */
             }
+             /* Adjust explainer section */
+            .explainer-section { padding: 12px 20px; font-size: 14px; min-height: 40px; margin-bottom: 15px;}
+
             .laptop-mockup {
                 transform: rotateX(0deg) rotateY(0deg); /* Less tilt on mobile */
                 min-height: 500px;
-                margin-bottom: 15px;
+               /* margin-bottom: 15px; */ /* Removed */
             }
             .email-header { height: 45px; padding: 0 10px; }
             .email-header-title { font-size: 14px; gap: 8px; }
@@ -734,7 +740,7 @@
             .sidebar-item-icon { width: 14px; height: 14px; }
             .notification { right: 10px; min-width: 16px; height: 16px; font-size: 9px; }
             .status-bar { padding: 6px 10px; font-size: 11px; min-height: 25px; }
-            /* Adjust step indicator for smaller screens */
+            /* Adjust step indicator inside email client */
             .step-indicator-banner { padding: 8px 10px; gap: 10px; }
             .step-indicator { font-size: 11px; gap: 4px; }
             .step-number { width: 16px; height: 16px; font-size: 9px; }
@@ -748,7 +754,6 @@
             .feedback-modal { padding: 20px; }
             .feedback-modal-title { font-size: 16px; margin-bottom: 15px; }
             .feedback-modal textarea { font-size: 13px; min-height: 80px; }
-            .explainer-section { padding: 12px 20px; font-size: 14px; min-height: 40px; }
             .sending-container { padding: 25px 40px; }
             .sending-message { font-size: 16px; }
             .sending-icon-container { width: 80px; height: 80px; }
@@ -757,21 +762,26 @@
             .success-icon { font-size: 30px; }
         }
          @media screen and (max-width: 480px) {
-             .email-sidebar { display: none; } /* Hide sidebar on very small screens */
+             /* Hide step text on very small screens, show only numbers */
+             .step-text { display: none; }
+             .step-indicator-banner { gap: 8px; justify-content: center; } /* Center numbers */
+             .explainer-section { font-size: 13px; padding: 10px 15px; }
+
+             .email-sidebar { display: none; } /* Hide sidebar */
              .email-content { margin-left: 0; } /* Content takes full width */
              .laptop-mockup { perspective: 1000px; } /* Reduce perspective */
              .feedback-modal { width: 95%; padding: 15px; }
              .incoming-email-summary { margin: 5px; padding: 10px; top: 55px; /* Further adjust top */ }
              .loading-spinner { width: 35px; height: 35px; border-width: 3px; }
-             .explainer-section { font-size: 13px; padding: 10px 15px; }
-             /* Hide step text on very small screens, show only numbers */
-             .step-text { display: none; }
-             .step-indicator-banner { gap: 8px; justify-content: center; }
          }
 
     </style>
 </head>
 <body>
+    <div class="explainer-section" id="explainer-section">
+        <span class="explainer-text" id="explainer-text">Initializing Animation...</span>
+    </div>
+
     <div class="laptop-mockup">
         <div class="laptop-screen">
             <div class="display">
@@ -823,7 +833,7 @@
                             <span id="status-text">Initializing...</span>
                         </div>
 
-                        <div class="step-indicator-banner" id="step-indicator-banner">
+                         <div class="step-indicator-banner" id="step-indicator-banner">
                             <div class="step-indicator" id="step-1">
                                 <span class="step-number">1</span>
                                 <span class="step-text">AI Drafts</span>
@@ -879,10 +889,6 @@
             </div>
         </div>
         <div class="laptop-base"></div>
-        </div>
-
-    <div class="explainer-section" id="explainer-section">
-        <span class="explainer-text" id="explainer-text">Initializing Animation...</span>
     </div>
 
     <div class="feedback-modal-overlay" id="feedback-modal-overlay">
@@ -921,13 +927,13 @@
     </div>
 
     <script>
-        // --- CONFIGURATION (Timings adjusted slightly for smoother flow) ---
+        // --- CONFIGURATION ---
         const CONFIG = {
             typingSpeed: 39,
             feedbackTypingSpeed: 50,
-            initialDelay: 600,      // Slightly longer start delay
-            stepDelay: 2100,        // Delay between major steps
-            summaryDisplayTime: 3000, // Reduced summary time slightly
+            initialDelay: 600,
+            stepDelay: 2100,
+            summaryDisplayTime: 3000,
             draftGenerationTime: 2600,
             revisionTime: 3000,
             sendingTime: 2200,
@@ -943,7 +949,6 @@
         };
 
         // --- EMAIL TEMPLATES ---
-        // Placeholder image URLs added for robustness
         const DRAFT_EMAIL_TEMPLATE = `
             <!DOCTYPE html>
             <html lang="en">
@@ -965,12 +970,24 @@
 
         // --- DOM Elements ---
         const elements = {
+            // Explainer Section (now at top)
+            explainerText: document.getElementById('explainer-text'),
+            // Laptop and Email Client Elements
             statusBar: document.getElementById('status-bar'),
             statusText: document.getElementById('status-text'),
             statusIconRobot: document.getElementById('status-icon-robot'),
             statusIconHuman: document.getElementById('status-icon-human'),
             statusIconEdit: document.getElementById('status-icon-edit'),
             statusIconSending: document.getElementById('status-icon-sending'),
+            // Step Indicator Elements (now inside email client)
+            stepIndicatorBanner: document.getElementById('step-indicator-banner'),
+            stepIndicators: [
+                document.getElementById('step-1'),
+                document.getElementById('step-2'),
+                document.getElementById('step-3'),
+                document.getElementById('step-4'),
+                document.getElementById('step-5'),
+            ],
             emailIframe: document.getElementById('email-iframe'),
             actionButtons: document.getElementById('action-buttons'),
             approveBtn: document.getElementById('approve-btn'),
@@ -994,16 +1011,6 @@
             feedbackTextarea: document.getElementById('feedback-textarea'),
             submitFeedbackBtn: document.getElementById('submit-feedback-btn'),
             loadingSpinner: document.getElementById('loading-spinner'),
-            explainerText: document.getElementById('explainer-text'),
-            // Step Indicator Elements
-            stepIndicatorBanner: document.getElementById('step-indicator-banner'),
-            stepIndicators: [
-                document.getElementById('step-1'),
-                document.getElementById('step-2'),
-                document.getElementById('step-3'),
-                document.getElementById('step-4'),
-                document.getElementById('step-5'),
-            ]
         };
 
         // --- Utility Functions ---
@@ -1011,10 +1018,12 @@
 
         function updateStatus(text, icon = 'robot') {
             elements.statusText.textContent = text;
+            // Hide all icons first
             elements.statusIconRobot.style.display = 'none';
             elements.statusIconHuman.style.display = 'none';
             elements.statusIconEdit.style.display = 'none';
             elements.statusIconSending.style.display = 'none';
+            // Show the correct icon
             if (icon === 'robot') elements.statusIconRobot.style.display = 'inline-block';
             if (icon === 'human') elements.statusIconHuman.style.display = 'inline-block';
             if (icon === 'edit') elements.statusIconEdit.style.display = 'inline-block';
@@ -1031,7 +1040,6 @@
                 }
             });
         }
-
 
         // --- Explainer Text Update Function ---
         async function updateExplainer(htmlContent) {
@@ -1327,7 +1335,7 @@
 
         // --- Start Animation on Load ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Add error handlers for background and logo images
+            // Add error handlers for background image
             const body = document.body;
             const currentBg = body.style.backgroundImage;
             if (currentBg && currentBg !== 'none') {
