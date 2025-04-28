@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RomAIx - HITL Feedback Step</title>
+    <style>
+        /* Using Open Sans font */
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            /* Simple background for thumbnail clarity */
+            background-color: #eef2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrollbars */
+            padding: 20px;
+        }
+
+        /* --- Laptop Mockup --- */
+        .laptop-mockup {
+            width: 100%;
+            max-width: 800px; /* Slightly smaller for thumbnail focus */
+            height: auto;
+            aspect-ratio: 800 / 680; /* Adjusted aspect ratio */
+            min-height: 500px;
+            position: relative;
+            perspective: 1200px; /* Reduced perspective */
+            transform-style: preserve-3d;
+            transform: rotateX(5deg) rotateY(0deg);
+        }
+
+        .laptop-screen {
+            width: 100%;
+            height: calc(100% - 25px); /* Adjusted base height */
+            background-color: #1a1a1a;
+            border-radius: 15px 15px 0 0; /* Adjusted radius */
+            padding: 12px; /* Adjusted padding */
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-style: preserve-3d;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            display: flex;
+        }
+
+        .laptop-base {
+            width: calc(100% + 30px); /* Adjusted width */
+            height: 25px; /* Adjusted height */
+            background: linear-gradient(to bottom, #333, #1a1a1a);
+            position: absolute;
+            bottom: 0;
+            left: -15px; /* Adjusted offset */
+            transform: rotateX(80deg);
+            transform-origin: top;
+            border-radius: 0 0 8px 8px; /* Adjusted radius */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Email Client Display --- */
+        .display {
+            width: 100%;
+            height: 100%;
+            background-color: #f9f9f9;
+            border-radius: 10px; /* Adjusted radius */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative; /* Needed for overlay */
+        }
+
+        /* Header */
+        .email-header {
+            width: 100%;
+            height: 45px; /* Adjusted height */
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            padding: 0 12px; /* Adjusted padding */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            z-index: 2; /* Above content */
+        }
+
+        .email-header-title {
+            font-size: 14px; /* Adjusted size */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-svg {
+            width: 28px; /* Adjusted size */
+            height: 28px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-svg img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .email-toolbar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-icon {
+            width: 18px; /* Adjusted size */
+            height: 18px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content Area */
+        .email-main {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative; /* For modal positioning */
+        }
+
+        /* Sidebar */
+        .email-sidebar {
+            width: 140px; /* Adjusted width */
+            background-color: rgba(241, 242, 242, 0.7);
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 12px 0; /* Adjusted padding */
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1;
+        }
+
+        .sidebar-item {
+            padding: 8px 12px; /* Adjusted padding */
+            /* Add padding-right to prevent text collision with notification */
+            padding-right: 30px;
+            font-size: 12px; /* Adjusted size */
+            color: rgba(47, 62, 70, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            cursor: default;
+        }
+        /* Highlight the "Needs Review" item statically */
+        .sidebar-item.static-active {
+             background-color: rgba(88, 124, 116, 0.15);
+             color: #2F3E46;
+             font-weight: 600;
+        }
+        .sidebar-item-icon {
+            width: 14px; /* Adjusted size */
+            height: 14px;
+            fill: currentColor;
+            flex-shrink: 0; /* Prevent icon shrinking */
+        }
+        .sidebar-item-text {
+            /* Allow text to wrap if needed, though unlikely with padding */
+             overflow: hidden;
+             text-overflow: ellipsis;
+             white-space: nowrap;
+        }
+        .notification { /* Static display for review notification */
+            min-width: 16px; height: 16px;
+            background-color: #e74c3c; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 9px; font-weight: 700;
+            position: absolute; right: 12px; top: 50%;
+            transform: translateY(-50%); padding: 0 3px;
+            opacity: 1; /* Always visible */
+        }
+
+
+        /* Email Content Area */
+        .email-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: #ffffff;
+            position: relative; /* Needed for overlay */
+        }
+
+        /* Status Bar */
+        .status-bar {
+            padding: 6px 12px; /* Adjusted */
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 11px; /* Adjusted */
+            color: #555;
+            text-align: center;
+            flex-shrink: 0;
+            min-height: 25px; /* Adjusted */
+            display: flex;
+            align-items: center;
+            /* Justify start to only show icon */
+            justify-content: flex-start;
+            gap: 6px;
+            z-index: 2;
+        }
+         .status-icon { /* Show edit icon statically */
+            width: 12px; height: 12px;
+            display: inline-block !important; /* Override JS */
+            fill: #d9a40d;
+         }
+         /* Hide other status icons */
+         #status-icon-robot, #status-icon-human, #status-icon-sending { display: none !important; }
+
+        /* Step Indicator Banner */
+        .step-indicator-banner {
+            background-color: #e9ecef; padding: 8px 12px;
+            border-bottom: 1px solid #dee2e6; display: flex;
+            align-items: center; gap: 12px; flex-shrink: 0;
+            z-index: 9; overflow-x: auto;
+        }
+        .step-indicator {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 11px; color: #6c757d; font-weight: 600;
+            white-space: nowrap; opacity: 0.6;
+        }
+        /* Highlight Step 3 statically */
+        .step-indicator.static-active { color: #2F3E46; opacity: 1; }
+        .step-number {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%;
+            background-color: #adb5bd; color: white;
+            font-size: 9px; font-weight: 700;
+        }
+        .step-indicator.static-active .step-number { background-color: #587C74; }
+
+        /* Email Display Area */
+        .email-display-area {
+            flex-grow: 1; padding: 12px; overflow-y: auto;
+            position: relative; z-index: 1;
+            /* Apply blur/dim effect to background content */
+            filter: blur(2px) brightness(0.9);
+            background-color: #f0f0f0; /* Add a light bg behind blurred content */
+        }
+
+        /* --- Feedback Modal Overlay (Statically Visible) --- */
+        .feedback-modal-overlay {
+            position: absolute; /* Position over email content */
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Slightly less dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100; /* Above blurred content */
+            opacity: 1; /* Always visible */
+            visibility: visible; /* Always visible */
+            padding: 20px; /* Padding for centering */
+        }
+
+        .feedback-modal {
+            background-color: #fff;
+            padding: 20px 25px; /* Adjusted padding */
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 450px; /* Adjusted max width */
+            transform: scale(1); /* No animation */
+        }
+
+        .feedback-modal-title {
+            font-size: 16px; /* Adjusted size */
+            font-weight: 700;
+            color: #2F3E46;
+            margin-bottom: 15px; /* Adjusted margin */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+         .feedback-modal-title svg {
+             width: 18px; /* Adjusted size */
+             height: 18px;
+             fill: #d9a40d; /* Match edit icon color */
+         }
+
+        .feedback-modal textarea {
+            width: 100%;
+            min-height: 80px; /* Adjusted height */
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 13px; /* Adjusted size */
+            line-height: 1.5;
+            resize: none; /* No resize for static image */
+        }
+
+         .feedback-modal-actions {
+             text-align: right;
+             margin-top: 15px; /* Adjusted margin */
+         }
+
+        /* Action Button Styles (Copied from main animation for consistency) */
+        .action-btn {
+            background: linear-gradient(to right, #2F3E46, #587C74); color: white;
+            border: none; border-radius: 6px; padding: 7px 15px; /* Adjusted padding */
+            font-weight: 600; font-size: 12px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+         .action-btn svg { width: 12px; height: 12px; fill: currentColor; }
+         .submit-feedback-btn { /* Style for the modal button */
+             background: linear-gradient(to right, #587C74, #2F3E46);
+         }
+
+        /* --- Responsive Adjustments --- */
+        @media screen and (max-width: 768px) {
+            .laptop-mockup { transform: rotateX(0deg) rotateY(0deg); }
+        }
+         @media screen and (max-width: 480px) {
+             .email-sidebar { display: none; }
+             .email-content { margin-left: 0; }
+             .step-text { display: none; }
+             .step-indicator-banner { gap: 8px; justify-content: center; }
+             .feedback-modal { padding: 15px 20px; }
+             .feedback-modal-title { font-size: 14px; }
+             .feedback-modal textarea { font-size: 12px; min-height: 60px;}
+             .action-btn { padding: 6px 12px; font-size: 11px; }
+         }
+
+    </style>
+</head>
+<body>
+    <div class="laptop-mockup">
+        <div class="laptop-screen">
+            <div class="display">
+                <div class="email-header">
+                    <div class="email-header-title">
+                        <div class="logo-svg">
+                            <img src="https://yannicksegaar.github.io/RomAIx-Logo/RomAIx_Favicon.png" alt="App Logo"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/28x28/ffffff/000000?text=L';">
+                        </div>
+                        <span>AI Email Assistant</span>
+                    </div>
+                    <div class="email-toolbar">
+                        <div class="toolbar-icon"></div>
+                        <div class="toolbar-icon"></div>
+                        <div class="toolbar-icon"></div>
+                    </div>
+                </div>
+
+                <div class="email-main">
+                    <div class="email-sidebar">
+                        <div class="sidebar-item">
+                             <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            <span class="sidebar-item-text">Inbox</span>
+                        </div>
+                        <div class="sidebar-item">
+                            <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M21.41 6.34l-3.75-3.75L16.25 1 12 5.25 7.75 1 6.34 2.59 2.59 6.34 1 7.75 5.25 12 1 16.25l1.59 1.41 3.75 3.75L7.75 23 12 18.75 16.25 23l1.41-1.59 3.75-3.75L23 16.25 18.75 12 23 7.75l-1.59-1.41zM12 16.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
+                            <span class="sidebar-item-text">Drafts</span>
+                        </div>
+                         <div class="sidebar-item static-active">
+                             <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            <span class="sidebar-item-text">Needs Review</span>
+                            <div class="notification">1</div>
+                        </div>
+                        <div class="sidebar-item">
+                            <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                            <span class="sidebar-item-text">Sent</span>
+                        </div>
+                    </div>
+
+                    <div class="email-content">
+                        <div class="status-bar">
+                             <svg class="status-icon" id="status-icon-edit" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                             <span id="status-text" style="display: none;"></span>
+                        </div>
+
+                         <div class="step-indicator-banner">
+                            <div class="step-indicator" id="step-1"> <span class="step-number">1</span> <span class="step-text">AI Drafts</span> </div>
+                            <div class="step-indicator" id="step-2"> <span class="step-number">2</span> <span class="step-text">Human Review</span> </div>
+                            <div class="step-indicator static-active" id="step-3"> <span class="step-number">3</span> <span class="step-text">Feedback & Revise</span> </div>
+                            <div class="step-indicator" id="step-4"> <span class="step-number">4</span> <span class="step-text">Final Approval</span> </div>
+                            <div class="step-indicator" id="step-5"> <span class="step-number">5</span> <span class="step-text">Send</span> </div>
+                        </div>
+
+                        <div class="email-display-area">
+                           <p style="color: #aaa; font-style: italic;">(Email draft content blurred)</p>
+                        </div>
+
+                         <div class="feedback-modal-overlay">
+                            <div class="feedback-modal">
+                                <div class="feedback-modal-title">
+                                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 12H5v-2h14v2zm-3-3H5V9h11v2zm0-3H5V6h11v2z"/></svg>
+                                    Provide Revision Feedback
+                                </div>
+                                <textarea id="feedback-textarea" readonly>Please recommend the Turtle Snorkel Safari instead of the Pearl Harbor tour.</textarea>
+                                <div class="feedback-modal-actions">
+                                    <button class="action-btn submit-feedback-btn">
+                                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                        Submit Feedback
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="laptop-base"></div>
+    </div>
+
+    </body>
+</html>
