@@ -17,15 +17,11 @@
         body {
             font-family: 'Open Sans', sans-serif;
             /* --- Background Image --- */
-            background-image: url('https://placehold.co/1920x1080/aabbcc/778899?text=Background+Placeholder'); /* Placeholder with different colors */
+            background-image: url('LinkedInBackground.png'); /* Placeholder with different colors */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            /* Overlay removed for potentially better contrast with solid elements */
-            /* background-blend-mode: overlay; */
-            /* background-color: rgba(255, 255, 255, 0.85); */
-            background-color: #eef2f5; /* Fallback solid color */
-
+            /* background-color: #eef2f5; /* Fallback solid color */
 
             display: flex;
             flex-direction: column;
@@ -36,38 +32,7 @@
             padding: 20px; /* Add some padding */
         }
 
-        /* --- Explainer Section (Moved to Top & Improved Contrast) --- */
-        .explainer-section {
-            width: 100%;
-            max-width: 950px; /* Match laptop width */
-            padding: 12px 20px; /* Slightly adjusted padding */
-            background-color: #2F3E46; /* Solid dark background (Theme Secondary) */
-            color: #ffffff; /* White text */
-            border-radius: 8px;
-            text-align: center;
-            font-size: 15px;
-            line-height: 1.5;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            flex-shrink: 0;
-            min-height: 45px; /* Adjusted min-height */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s ease;
-            margin-bottom: 20px; /* Space below explainer, above laptop */
-        }
-        .explainer-section strong {
-            color: #88c0b8; /* Adjusted lighter shade for contrast */
-            font-weight: 700;
-        }
-        .explainer-text {
-             opacity: 0;
-             transition: opacity 0.5s ease-in-out;
-             max-width: 800px; /* Limit text width */
-        }
-         .explainer-text.show {
-             opacity: 1;
-         }
+        /* --- Explainer Section CSS Removed --- */
 
 
         /* --- Laptop Mockup --- */
@@ -82,6 +47,8 @@
             transform-style: preserve-3d;
             transform: rotateX(5deg) rotateY(0deg); /* Subtle 3D tilt */
             flex-shrink: 0; /* Prevent shrinking */
+            /* Margin-top added to center vertically now that explainer is gone */
+            margin-top: 20px;
         }
 
         .laptop-screen {
@@ -723,12 +690,11 @@
                 align-items: center; /* Center content vertically */
                 padding-top: 20px; /* Reset padding */
             }
-             /* Adjust explainer section */
-            .explainer-section { padding: 12px 20px; font-size: 14px; min-height: 40px; margin-bottom: 15px;}
 
             .laptop-mockup {
                 transform: rotateX(0deg) rotateY(0deg); /* Less tilt on mobile */
                 min-height: 500px;
+                margin-top: 15px; /* Adjust margin */
             }
             .email-header { height: 45px; padding: 0 10px; }
             .email-header-title { font-size: 14px; gap: 8px; }
@@ -764,7 +730,6 @@
              /* Hide step text on very small screens, show only numbers */
              .step-text { display: none; }
              .step-indicator-banner { gap: 8px; justify-content: center; } /* Center numbers */
-             .explainer-section { font-size: 13px; padding: 10px 15px; }
 
              .email-sidebar { display: none; } /* Hide sidebar */
              .email-content { margin-left: 0; } /* Content takes full width */
@@ -777,10 +742,6 @@
     </style>
 </head>
 <body>
-    <div class="explainer-section" id="explainer-section">
-        <span class="explainer-text" id="explainer-text">Initializing Animation...</span>
-    </div>
-
     <div class="laptop-mockup">
         <div class="laptop-screen">
             <div class="display">
@@ -825,7 +786,7 @@
 
                     <div class="email-content">
                         <div class="status-bar" id="status-bar">
-                            <span id="status-text">AI Email Assistant Status</span> </div>
+                            <span id="status-text">AI Email Assistant Workflow Steps:</span> </div>
 
                          <div class="step-indicator-banner" id="step-indicator-banner">
                             <div class="step-indicator" id="step-1">
@@ -932,7 +893,7 @@
             revisionTime: 3000,
             sendingTime: 2200,
             successMessageTime: 1650,
-            explainerFadeDuration: 500
+            explainerFadeDuration: 500 // Keep for potential re-use, but function is removed
         };
 
         // --- INCOMING EMAIL DATA ---
@@ -964,8 +925,7 @@
 
         // --- DOM Elements ---
         const elements = {
-            // Explainer Section (now at top)
-            explainerText: document.getElementById('explainer-text'),
+            // Explainer Section related elements removed
             // Laptop and Email Client Elements
             statusText: document.getElementById('status-text'), // Only need text element now
             // Step Indicator Elements (now inside email client)
@@ -1006,7 +966,6 @@
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         // --- Status Bar Update Function (REMOVED - No longer needed) ---
-        // function updateStatus(text, icon = 'robot') { ... }
 
         // --- Step Indicator Update Function ---
         function updateStepIndicator(activeStepNumber) {
@@ -1019,19 +978,8 @@
             });
         }
 
-        // --- Explainer Text Update Function ---
-        async function updateExplainer(htmlContent) {
-            // Fade out current text
-            elements.explainerText.classList.remove('show');
-            await delay(CONFIG.explainerFadeDuration / 2); // Wait half the fade duration
-
-            // Update content
-            elements.explainerText.innerHTML = htmlContent;
-
-            // Fade in new text
-            elements.explainerText.classList.add('show');
-            await delay(CONFIG.explainerFadeDuration / 2); // Wait for fade in
-        }
+        // --- Explainer Text Update Function (REMOVED) ---
+        // async function updateExplainer(htmlContent) { ... }
 
         function showEmail(template) {
             elements.emailIframe.srcdoc = template;
@@ -1177,7 +1125,6 @@
         // --- Animation Sequence ---
         async function startAnimation() {
             // --- Initial State ---
-            // Status bar text is now static (set in HTML), no update needed here
             setActiveSidebar(elements.sidebarInbox);
             updateNotification(elements.inboxNotification, 1);
             updateNotification(elements.draftsNotification, 0);
@@ -1189,17 +1136,15 @@
             hideActionButtons();
             hideSpinner();
             updateStepIndicator(0); // No active step initially
-            await updateExplainer('Waiting for incoming customer email...');
+            // await updateExplainer('Waiting for incoming customer email...'); // Removed
             await delay(CONFIG.initialDelay);
 
             // --- Step 1: Email Arrives & AI Drafts ---
             updateStepIndicator(1);
-            // updateStatus('Incoming email received', 'human'); // Removed
-            await updateExplainer('<strong>Step 1:</strong> New email arrives. AI reads & generates a draft.');
+            // await updateExplainer('<strong>Step 1:</strong> New email arrives. AI reads & generates a draft.'); // Removed
             showIncomingSummary(); // Show customer email first
             await delay(CONFIG.summaryDisplayTime); // Wait while summary is shown
             hideIncomingSummary(); // Hide summary before AI starts
-            // updateStatus('AI drafting email...', 'robot'); // Removed
             setActiveSidebar(null); // No active item while AI works
             updateNotification(elements.inboxNotification, 0); // "Read" the email
             showSpinner(); // Show spinner while AI works
@@ -1207,32 +1152,27 @@
             hideSpinner(); // Hide spinner
             await showEmail(DRAFT_EMAIL_TEMPLATE); // Show the generated draft
             updateNotification(elements.draftsNotification, 1); // Add to drafts
-            // updateStatus('Draft ready for review', 'robot'); // Removed
             setActiveSidebar(elements.sidebarDrafts); // Highlight drafts
             await delay(CONFIG.stepDelay);
 
             // --- Step 2: Human Review ---
             updateStepIndicator(2);
-            // updateStatus('Sending draft for human review...', 'robot'); // Removed
-            await updateExplainer('<strong>Step 2:</strong> AI draft sent to a <strong>Human Agent</strong> for review (Human-in-the-Loop).');
+            // await updateExplainer('<strong>Step 2:</strong> AI draft sent to a <strong>Human Agent</strong> for review (Human-in-the-Loop).'); // Removed
             await delay(CONFIG.stepDelay / 2);
             updateNotification(elements.draftsNotification, 0); // Remove from drafts
             updateNotification(elements.reviewNotification, 1); // Add to review queue
             setActiveSidebar(elements.sidebarReview); // Highlight review
-            // updateStatus('Awaiting human review...', 'human'); // Removed
             showActionButtons(true, true, false); // Show Approve/Reject buttons
             await delay(CONFIG.stepDelay);
 
             // --- Step 3: Feedback & Revise ---
             updateStepIndicator(3);
-            // updateStatus('Human reviewing draft...', 'human'); // Removed
-            await updateExplainer('<strong>Step 3:</strong> Agent reviews, requests revision & provides feedback.');
+            // await updateExplainer('<strong>Step 3:</strong> Agent reviews, requests revision & provides feedback.'); // Removed
             elements.rejectBtn.classList.add('click-animation');
             await delay(300);
             elements.rejectBtn.classList.remove('click-animation');
             hideActionButtons();
             hideEmail(); // Hide draft while feedback is given
-            // updateStatus('Human providing feedback...', 'human'); // Removed
             showFeedbackModal();
             await typeText(elements.feedbackTextarea, AGENT_FEEDBACK, CONFIG.feedbackTypingSpeed);
             await delay(CONFIG.stepDelay / 2);
@@ -1243,12 +1183,10 @@
             await delay(CONFIG.stepDelay / 3); // Shorter delay before AI revision starts
 
             // AI Revises
-            // updateStatus('Sending feedback for AI revision...', 'human'); // Removed
             await delay(CONFIG.stepDelay / 3);
             updateNotification(elements.reviewNotification, 0); // Leaves review queue temporarily
             setActiveSidebar(null); // No active item
-            // updateStatus('AI revising draft...', 'edit'); // Removed
-            await updateExplainer('<strong>Step 3:</strong> AI incorporates feedback and revises the draft.');
+            // await updateExplainer('<strong>Step 3:</strong> AI incorporates feedback and revises the draft.'); // Removed
             showSpinner(); // Show spinner while AI revises
             await delay(CONFIG.revisionTime); // Simulate AI work
             hideSpinner(); // Hide spinner
@@ -1257,29 +1195,25 @@
             // --- Step 4: Final Human Approval ---
             updateStepIndicator(4);
             await showEmail(REVISED_EMAIL_TEMPLATE); // Show the revised draft
-            // updateStatus('Revised draft ready for final review', 'robot'); // Removed
-            await updateExplainer('<strong>Step 4:</strong> AI presents the revised draft for final human approval.');
+            // await updateExplainer('<strong>Step 4:</strong> AI presents the revised draft for final human approval.'); // Removed
             updateNotification(elements.reviewNotification, 1); // Back to review queue
             setActiveSidebar(elements.sidebarReview); // Highlight review again
             showActionButtons(true, true, false); // Show Approve/Reject again
             await delay(CONFIG.stepDelay);
 
             // Simulate Approve click
-            // updateStatus('Human reviewing revised draft...', 'human'); // Removed
             await delay(CONFIG.stepDelay / 2);
             elements.approveBtn.classList.add('click-animation');
             await delay(300);
             elements.approveBtn.classList.remove('click-animation');
-            // updateStatus('Draft approved by human!', 'human'); // Removed
-            await updateExplainer('<strong>Step 4:</strong> Agent reviews the improved draft and approves it.');
+            // await updateExplainer('<strong>Step 4:</strong> Agent reviews the improved draft and approves it.'); // Removed
             hideActionButtons();
             showActionButtons(false, false, true); // Show only Send button
             await delay(CONFIG.stepDelay);
 
             // --- Step 5: Send Email ---
             updateStepIndicator(5);
-            // updateStatus('Sending email...', 'sending'); // Removed
-            await updateExplainer('<strong>Step 5:</strong> The approved email is sent to the customer.');
+            // await updateExplainer('<strong>Step 5:</strong> The approved email is sent to the customer.'); // Removed
             elements.sendBtn.classList.add('click-animation');
             await delay(300);
             elements.sendBtn.classList.remove('click-animation');
@@ -1296,13 +1230,11 @@
             elements.sendingMessage.textContent = 'Email sent successfully!';
             elements.paperPlaneContainer.style.display = 'none';
             elements.successIcon.classList.add('show');
-            // updateStatus('Email sent!', 'sending'); // Removed
-            await updateExplainer('<strong>Step 5:</strong> Email successfully sent! Workflow complete.');
+            // await updateExplainer('<strong>Step 5:</strong> Email successfully sent! Workflow complete.'); // Removed
             await delay(CONFIG.successMessageTime);
             elements.emailSendingOverlay.classList.remove('show');
             updateNotification(elements.sentNotification, 1); // Update sent count
             setActiveSidebar(elements.sidebarSent); // Highlight sent
-            // updateStatus('Process Complete', 'human'); // Removed - Status bar is static
             hideEmail();
 
             // Optional: Restart animation after a pause
