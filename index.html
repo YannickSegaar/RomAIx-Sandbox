@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Agent - HITL Workflow - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            /* --- Background Image --- */
+            /* Instructions: Replace 'YOUR_BACKGROUND_IMAGE.png' with the actual path/URL to your image */
+            background-image: url('LinkedInBackground.png');
+            background-color: #eef2f5; /* Fallback color if image doesn't load */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Add a subtle overlay to improve text readability over background */
+            background-blend-mode: overlay;
+            background-color: rgba(255, 255, 255, 0.85); /* Adjust opacity (0.0 to 1.0) as needed */
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrollbars from body */
+            padding: 20px; /* Add some padding for smaller screens */
+        }
+
+        /* --- Laptop Mockup --- */
+        .laptop-mockup {
+            width: 100%; /* Responsive width */
+            max-width: 950px; /* Max width */
+            height: auto; /* Adjust height automatically */
+            aspect-ratio: 950 / 820; /* Maintain aspect ratio */
+            min-height: 600px; /* Minimum height */
+            position: relative;
+            perspective: 1500px;
+            transform-style: preserve-3d;
+            transform: rotateX(5deg) rotateY(0deg); /* Subtle 3D tilt */
+        }
+
+        .laptop-screen {
+            width: 100%;
+            height: calc(100% - 30px); /* Screen height relative to base */
+            background-color: #1a1a1a; /* Dark grey screen bezel */
+            border-radius: 20px 20px 0 0;
+            padding: 15px; /* Inner padding for the display */
+            position: absolute; /* Position relative to mockup */
+            top: 0;
+            left: 0;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex; /* Use flexbox for centering display */
+        }
+
+        /* Glossy effect */
+        .laptop-screen::after {
+            content: '';
+            position: absolute;
+            width: calc(100% - 30px); /* Match inner padding */
+            height: calc(100% - 30px);
+            background: rgba(255, 255, 255, 0.03); /* Very subtle gloss */
+            border-radius: 12px 12px 0 0; /* Match display radius */
+            top: 15px;
+            left: 15px;
+            transform: translateZ(2px);
+            pointer-events: none;
+        }
+
+        .laptop-base {
+            width: calc(100% + 40px); /* Slightly wider than screen */
+            height: 30px;
+            background: linear-gradient(to bottom, #333, #1a1a1a); /* Dark base */
+            position: absolute;
+            bottom: 0; /* Position at the bottom */
+            left: -20px; /* Center the base */
+            transform: rotateX(80deg); /* Tilt the base */
+            transform-origin: top;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- Email Client Display --- */
+        .display {
+            width: 100%;
+            height: 100%;
+            background-color: #f9f9f9; /* Light grey display background */
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative; /* Needed for absolute positioning of summary */
+        }
+
+        /* Header */
+        .email-header {
+            width: 100%;
+            height: 50px; /* Slightly smaller header */
+            background: linear-gradient(to right, #2F3E46, #587C74); /* Secondary to Primary color */
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            flex-shrink: 0; /* Prevent header shrinking */
+        }
+
+        .email-header-title {
+            font-size: 16px; /* Slightly smaller title */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-svg {
+            width: 32px; /* Smaller logo */
+            height: 32px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Ensure image fits */
+        }
+
+        .logo-svg img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .email-toolbar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toolbar-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content Area (Sidebar + Content) */
+        .email-main {
+            display: flex;
+            flex-grow: 1; /* Take remaining height */
+            overflow: hidden; /* Prevent overflow */
+            position: relative; /* For summary overlay */
+        }
+
+        /* Sidebar */
+        .email-sidebar {
+            width: 160px; /* Slightly narrower sidebar */
+            background-color: rgba(241, 242, 242, 0.7); /* Slightly more transparent */
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 15px 0;
+            flex-shrink: 0; /* Prevent sidebar shrinking */
+            display: flex;
+            flex-direction: column;
+            gap: 5px; /* Space between items */
+            z-index: 1; /* Keep sidebar above summary */
+        }
+
+        .sidebar-item {
+            padding: 10px 15px;
+            font-size: 13px; /* Slightly smaller font */
+            color: rgba(47, 62, 70, 0.8); /* Use secondary color, slightly faded */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            cursor: default; /* Not interactive in animation */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-item-active {
+            background-color: rgba(88, 124, 116, 0.15); /* Use primary color, faded */
+            color: #2F3E46; /* Use secondary color */
+            font-weight: 600;
+        }
+
+        .sidebar-item-icon { /* Using SVG for icons */
+            width: 16px;
+            height: 16px;
+            fill: currentColor; /* Icon color matches text */
+        }
+
+        .notification {
+            min-width: 18px; /* Ensure circle shape even for 1 digit */
+            height: 18px;
+            background-color: #e74c3c; /* Red notification */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.3s ease;
+            padding: 0 4px; /* Add padding for multi-digit numbers */
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+         .notification.pulse {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        /* Email Content Area */
+        .email-content {
+            flex-grow: 1; /* Take remaining width */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent content overflow */
+            background-color: #ffffff; /* White content background */
+            position: relative; /* For summary overlay and spinner */
+        }
+
+        /* Status Bar */
+        .status-bar {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #555;
+            text-align: center;
+            flex-shrink: 0; /* Prevent shrinking */
+            min-height: 30px; /* Ensure visibility */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            z-index: 2; /* Keep status bar above summary and spinner */
+        }
+         .status-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Incoming Email Summary */
+        .incoming-email-summary {
+            position: absolute;
+            top: 30px; /* Below status bar */
+            left: 0;
+            right: 0;
+            bottom: 0; /* Take full height below status */
+            background-color: rgba(255, 255, 255, 0.98); /* Slightly transparent white */
+            padding: 20px;
+           /* border: 1px solid #ddd; */ /* Optional: remove border if desired */
+            /* border-radius: 8px; */ /* Optional: remove radius */
+            margin: 0; /* Remove margin */
+            z-index: 5; /* Above iframe, below modal */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .incoming-email-summary.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .summary-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2F3E46;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+         .summary-title svg {
+             width: 18px;
+             height: 18px;
+             fill: #587C74;
+         }
+        .summary-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+         .summary-content strong {
+             color: #2F3E46;
+         }
+
+        /* Email Display Area (iframe container) */
+        .email-display-area {
+            flex-grow: 1; /* Take remaining space */
+            padding: 15px;
+            overflow-y: auto; /* Allow scrolling for email content */
+            position: relative; /* For positioning feedback */
+            z-index: 1; /* Below summary overlay */
+            display: flex; /* Added for spinner centering */
+            justify-content: center; /* Added for spinner centering */
+            align-items: center; /* Added for spinner centering */
+        }
+
+        .email-iframe {
+            width: 100%;
+            height: 100%; /* Default height, JS might adjust */
+            min-height: 400px; /* Ensure minimum space for email */
+            border: 1px solid #ddd; /* Subtle border for the iframe */
+            border-radius: 8px;
+            display: block; /* Remove potential bottom space */
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.5s ease;
+        }
+         .email-iframe.show {
+            opacity: 1;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(47, 62, 70, 0.2); /* Secondary color, faded */
+            border-top-color: #587C74; /* Primary color */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute; /* Position relative to email-display-area */
+            /* Centering is handled by flexbox on email-display-area */
+            z-index: 3; /* Above iframe, below summary/modal */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .loading-spinner.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+
+        /* Action Buttons (Approve/Reject/Send) */
+        .action-buttons {
+            padding: 10px 15px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end; /* Align buttons to the right */
+            gap: 10px;
+            background-color: #f9f9f9;
+            flex-shrink: 0; /* Prevent shrinking */
+            opacity: 0; /* Start hidden */
+            transition: opacity 0.5s ease;
+            z-index: 2; /* Keep buttons above summary and spinner */
+        }
+         .action-buttons.show {
+            opacity: 1;
+        }
+
+        .action-btn {
+            background: linear-gradient(to right, #2F3E46, #587C74); /* Default: Secondary to Primary */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px; /* Slightly smaller buttons */
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex; /* For icon alignment */
+            align-items: center;
+            gap: 5px;
+        }
+         .action-btn svg {
+             width: 14px;
+             height: 14px;
+             fill: currentColor;
+         }
+
+        .action-btn:hover {
+            background: linear-gradient(to right, #3a4f5a, #6b9b91); /* Darker gradient on hover */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Specific button styles */
+        .approve-btn { }
+        .reject-btn {
+            background: linear-gradient(to right, #8c8c8c, #6b6b6b); /* Grey gradient */
+            color: #fff;
+        }
+        .reject-btn:hover { background: linear-gradient(to right, #a1a1a1, #7d7d7d); }
+        .send-btn { display: none; /* Hidden initially */ }
+         .submit-feedback-btn { /* Style for the modal button */
+             background: linear-gradient(to right, #587C74, #2F3E46); /* Primary to Secondary */
+             margin-top: 15px;
+         }
+         .submit-feedback-btn:hover { background: linear-gradient(to right, #6b9b91, #3a4f5a); }
+
+
+        /* --- Feedback Modal --- */
+        .feedback-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Darker overlay for modal */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000; /* Highest */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .feedback-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .feedback-modal {
+            background-color: #fff;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .feedback-modal-overlay.show .feedback-modal {
+            transform: scale(1);
+        }
+        .feedback-modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2F3E46;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+         .feedback-modal-title svg {
+             width: 20px;
+             height: 20px;
+             fill: #d9a40d; /* Match edit icon color */
+         }
+        .feedback-modal textarea {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical; /* Allow vertical resize */
+        }
+         .feedback-modal-actions {
+             text-align: right;
+         }
+
+
+        /* --- Sending Overlay --- */
+        .email-sending {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Below modal */
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .email-sending.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .sending-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.98); /* Almost opaque white */
+            border-radius: 15px;
+            padding: 30px 50px; /* Adjusted padding */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .sending-message {
+            font-size: 18px; /* Slightly smaller */
+            font-weight: 600;
+            color: #2F3E46; /* Secondary color */
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .sending-icon-container { /* Renamed for clarity */
+            width: 100px; /* Smaller icon area */
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .paper-plane-container {
+            width: 80px; /* Smaller plane */
+            height: 80px;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .paper-plane {
+            position: absolute;
+            width: 40px; /* Smaller plane SVG */
+            height: 40px;
+            top: 20px; /* Center */
+            left: 0;
+            animation: fly-plane 2.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; /* Faster animation */
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        .paper-plane svg {
+            width: 100%;
+            height: 100%;
+            fill: #587C74; /* Primary color */
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
+        }
+
+        .send-path {
+            stroke: #587C74; /* Primary color */
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-dasharray: 80; /* Adjusted for smaller size */
+            stroke-dashoffset: 80;
+            animation: draw-path 2.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; /* Faster */
+            opacity: 0.3;
+        }
+
+        .success-icon {
+            display: none; /* Hidden initially */
+            color: #587C74; /* Primary color */
+            font-size: 40px; /* Smaller checkmark */
+            font-weight: bold;
+        }
+
+        .success-icon.show {
+            display: block;
+            animation: success-pop 0.5s ease-out;
+        }
+
+        /* --- Animations --- */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .cursor {
+            display: inline-block;
+            animation: blink 1s infinite;
+            margin-left: 1px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        @keyframes click {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); }
+            100% { transform: scale(1); }
+        }
+        .click-animation {
+            animation: click 0.3s ease;
+        }
+
+        @keyframes draw-path {
+            0% { stroke-dashoffset: 80; opacity: 0.15; }
+            40% { stroke-dashoffset: 0; opacity: 0.4; }
+            80% { stroke-dashoffset: 0; opacity: 0.15; }
+            100% { stroke-dashoffset: 0; opacity: 0.05; }
+        }
+
+        @keyframes fly-plane {
+             /* Simplified path for faster animation */
+            0% { transform: translateX(0px) translateY(0px) rotateZ(0deg) scale(0.9); }
+            50% { transform: translateX(40px) translateY(-5px) rotateZ(5deg) scale(1); }
+            100% { transform: translateX(0px) translateY(0px) rotateZ(0deg) scale(0.9); }
+        }
+
+        @keyframes success-pop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) translateY(-50%); opacity: 0.7; }
+            50% { transform: scale(1.15) translateY(-50%); opacity: 1; }
+            100% { transform: scale(1) translateY(-50%); opacity: 0.7; }
+        }
+
+        /* --- RomAIx Logo --- */
+        .romaix-logo {
+            position: absolute;
+            bottom: -50px; /* Position below the laptop base */
+            right: 0px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2F3E46; /* Secondary color */
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .romaix-logo-icon {
+            width: 35px;
+            height: 35px;
+            background-color: #587C74; /* Primary color */
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white; /* White text on primary */
+            font-weight: bold;
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media screen and (max-width: 768px) {
+            body {
+                align-items: flex-start; /* Align to top on smaller screens */
+                padding-top: 5vh;
+            }
+            .laptop-mockup {
+                transform: rotateX(0deg) rotateY(0deg); /* Less tilt on mobile */
+                min-height: 500px;
+            }
+            .email-header { height: 45px; padding: 0 10px; }
+            .email-header-title { font-size: 14px; gap: 8px; }
+            .logo-svg { width: 28px; height: 28px; }
+            .toolbar-icon { width: 18px; height: 18px; }
+            .email-sidebar { width: 130px; padding: 10px 0; }
+            .sidebar-item { padding: 8px 10px; font-size: 12px; gap: 6px; }
+            .sidebar-item-icon { width: 14px; height: 14px; }
+            .notification { right: 10px; min-width: 16px; height: 16px; font-size: 9px; }
+            .status-bar { padding: 6px 10px; font-size: 11px; min-height: 25px; }
+            .incoming-email-summary { padding: 15px; margin: 10px; top: 25px; bottom: 45px; }
+            .summary-title { font-size: 14px; margin-bottom: 10px; }
+            .summary-content { font-size: 13px; }
+            .email-display-area { padding: 10px; }
+             .loading-spinner { width: 40px; height: 40px; border-width: 4px; }
+            .action-buttons { padding: 8px 10px; gap: 8px; }
+            .action-btn { padding: 7px 15px; font-size: 12px; }
+            .feedback-modal { padding: 20px; }
+            .feedback-modal-title { font-size: 16px; margin-bottom: 15px; }
+            .feedback-modal textarea { font-size: 13px; min-height: 80px; }
+            .romaix-logo { font-size: 16px; gap: 8px; bottom: -40px; }
+            .romaix-logo-icon { width: 30px; height: 30px; font-size: 14px; }
+            .sending-container { padding: 25px 40px; }
+            .sending-message { font-size: 16px; }
+            .sending-icon-container { width: 80px; height: 80px; }
+            .paper-plane-container { width: 60px; height: 60px; }
+            .paper-plane { width: 30px; height: 30px; top: 15px; }
+            .success-icon { font-size: 30px; }
+        }
+         @media screen and (max-width: 480px) {
+             .email-sidebar { display: none; } /* Hide sidebar on very small screens */
+             .email-content { margin-left: 0; } /* Content takes full width */
+             .laptop-mockup { perspective: 1000px; } /* Reduce perspective */
+             .romaix-logo { display: none; } /* Hide logo if too cramped */
+             .feedback-modal { width: 95%; padding: 15px; }
+             .incoming-email-summary { margin: 5px; padding: 10px; }
+             .loading-spinner { width: 35px; height: 35px; border-width: 3px; }
+         }
+
+    </style>
+</head>
+<body>
+    <div class="laptop-mockup">
+        <div class="laptop-screen">
+            <div class="display">
+                <div class="email-header">
+                    <div class="email-header-title">
+                        <div class="logo-svg">
+                            <img src="https://yannicksegaar.github.io/RomAIx-Logo/RomAIx_Favicon.png" alt="App Logo">
+                        </div>
+                        <span>AI Email Assistant</span>
+                    </div>
+                    <div class="email-toolbar">
+                        <div class="toolbar-icon"></div>
+                        <div class="toolbar-icon"></div>
+                        <div class="toolbar-icon"></div>
+                    </div>
+                </div>
+
+                <div class="email-main">
+                    <div class="email-sidebar">
+                        <div class="sidebar-item sidebar-item-active" id="sidebar-inbox">
+                             <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            Inbox
+                            <div class="notification" id="inbox-notification">1</div>
+                        </div>
+                        <div class="sidebar-item" id="sidebar-drafts">
+                            <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M21.41 6.34l-3.75-3.75L16.25 1 12 5.25 7.75 1 6.34 2.59 2.59 6.34 1 7.75 5.25 12 1 16.25l1.59 1.41 3.75 3.75L7.75 23 12 18.75 16.25 23l1.41-1.59 3.75-3.75L23 16.25 18.75 12 23 7.75l-1.59-1.41zM12 16.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
+                            Drafts
+                            <div class="notification" id="drafts-notification">0</div>
+                        </div>
+                         <div class="sidebar-item" id="sidebar-review">
+                             <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            Needs Review
+                            <div class="notification" id="review-notification">0</div>
+                        </div>
+                        <div class="sidebar-item" id="sidebar-sent">
+                            <svg class="sidebar-item-icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                            Sent
+                            <div class="notification" id="sent-notification">0</div>
+                        </div>
+                    </div>
+
+                    <div class="email-content">
+                        <div class="status-bar" id="status-bar">
+                            <svg class="status-icon" id="status-icon-robot" viewBox="0 0 24 24" style="display: none;" fill="#587C74"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+                            <svg class="status-icon" id="status-icon-human" viewBox="0 0 24 24" style="display: none;" fill="#2F3E46"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                             <svg class="status-icon" id="status-icon-edit" viewBox="0 0 24 24" style="display: none;" fill="#d9a40d"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                             <svg class="status-icon" id="status-icon-sending" viewBox="0 0 24 24" style="display: none;" fill="#587C74"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                            <span id="status-text">Initializing...</span>
+                        </div>
+
+                        <div class="incoming-email-summary" id="incoming-email-summary">
+                            <div class="summary-title">
+                                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-.4 4.25l-7.07 4.42c-.32.2-.74.2-1.06 0L4.4 8.25A.995.995 0 0 1 4 7.37V6c0-.11.03-.21.07-.3l7.93 4.96 7.93-4.95c.04.09.07.19.07.3v1.37c0 .34-.17.65-.4.83z"/></svg>
+                                Incoming Customer Email:
+                            </div>
+                            <div class="summary-content" id="summary-content">
+                                </div>
+                        </div>
+
+                        <div class="email-display-area" id="email-display-area">
+                            <div class="loading-spinner" id="loading-spinner"></div>
+                            <iframe id="email-iframe" srcdoc="" frameborder="0" class="email-iframe"></iframe>
+                        </div>
+
+                        <div class="action-buttons" id="action-buttons">
+                             <button class="action-btn reject-btn" id="reject-btn">
+                                 <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                                 Request Revision
+                             </button>
+                             <button class="action-btn approve-btn" id="approve-btn">
+                                 <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                 Approve Draft
+                             </button>
+                             <button class="action-btn send-btn" id="send-btn">
+                                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                 Send Email
+                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="laptop-base"></div>
+    </div>
+
+    <div class="feedback-modal-overlay" id="feedback-modal-overlay">
+        <div class="feedback-modal">
+            <div class="feedback-modal-title">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 12H5v-2h14v2zm-3-3H5V9h11v2zm0-3H5V6h11v2z"/></svg>
+                Provide Revision Feedback
+            </div>
+            <textarea id="feedback-textarea" placeholder="Enter feedback for the AI..."></textarea>
+            <div class="feedback-modal-actions">
+                <button class="action-btn submit-feedback-btn" id="submit-feedback-btn">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    Submit Feedback
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="email-sending" id="email-sending">
+        <div class="sending-container">
+            <div class="sending-icon-container">
+                <div class="paper-plane-container" id="paper-plane-container">
+                    <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path class="send-path" d="M10,50 C30,30 70,70 90,50" fill="none"/>
+                    </svg>
+                    <div class="paper-plane">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21.7071 2.29289C21.9788 2.56476 22.0701 2.96965 21.9389 3.33039L15.9389 21.3304C15.8077 21.6911 15.4853 21.9404 15.1035 21.9923C14.7217 22.0442 14.3458 21.8893 14.1179 21.5858L9.35687 15.4329L3.20402 10.6719C2.90047 10.444 2.74559 10.0681 2.79748 9.68638C2.84937 9.30461 3.09873 8.98218 3.45938 8.85098L21.4594 2.85098C21.8201 2.71975 22.225 2.8111 22.4969 3.08279L21.7071 2.29289ZM5.64722 9.98022L10.4486 13.7942C10.5691 13.8899 10.6709 14.0053 10.7497 14.135L14.5637 18.9364L19.3924 4.60761L5.64722 9.98022Z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div id="success-icon" class="success-icon">✓</div>
+            </div>
+            <div class="sending-message" id="sending-message">Sending email...</div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION (Timings increased by ~10%) ---
+        const CONFIG = {
+            typingSpeed: 39,        // Milliseconds per character (was 35)
+            feedbackTypingSpeed: 50,// Milliseconds per character (was 45)
+            initialDelay: 550,      // Delay before animation starts (was 500)
+            stepDelay: 1980,        // Delay between major steps (was 1800)
+            summaryDisplayTime: 3300, // How long the summary stays visible (was 3000)
+            draftGenerationTime: 2750, // Time AI takes to "generate" draft (was 2500)
+            revisionTime: 3300,     // Time AI takes to "revise" draft (was 3000)
+            sendingTime: 2200,      // Duration of the sending overlay before success (was 2000)
+            successMessageTime: 1650 // How long success message shows in overlay (was 1500)
+        };
+
+        // --- INCOMING EMAIL DATA ---
+        const INCOMING_CUSTOMER_EMAIL = {
+            subject: "Quick Question about Hawaii Tours",
+            sender: "john.visitor@email.com",
+            body: "Hi Aloha Acme Tours,\n\nPlanning my first trip to Hawaii! Interested in ocean activities and maybe some cultural sights. What do you recommend?\n\nThanks,\nJohn"
+        };
+
+        // --- EMAIL TEMPLATES (Updated Greeting) ---
+        const DRAFT_EMAIL_TEMPLATE = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Aloha Acme Tours - Recommended Tours</title> <style type="text/css"> body, html { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333333; } * { box-sizing: border-box; } table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; } img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; display: block; max-width: 100%; } p { margin: 0 0 15px 0; } .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; } .header { background-color: #587C74; color: #ffffff; padding: 20px; text-align: center; } .logo { margin-bottom: 15px; } .header-text { font-size: 26px; font-weight: bold; } .content { padding: 20px; } .greeting { font-size: 18px; font-weight: bold; margin-bottom: 15px; } .tour-item { margin-bottom: 20px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 5px; } .tour-title { font-size: 20px; font-weight: bold; color: #2F3E46; margin-bottom: 10px; } .tour-image { width: 100%; margin-bottom: 15px; border-radius: 4px; } .tour-pricing { margin-bottom: 15px; font-size: 14px; } .tour-price-item { margin-bottom: 5px; } .book-now-btn { display: inline-block; background-color: #587C74; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 14px; } .footer { background-color: #2F3E46; color: #ffffff; padding: 20px; text-align: center; font-size: 12px; } .footer-nav { margin: 10px 0; } .footer-link { color: #ffffff; text-decoration: none; margin: 0 8px; font-size: 13px; } .address { margin-top: 10px; font-style: normal; line-height: 1.4; } @media screen and (max-width: 600px) { .header-text { font-size: 22px; } .greeting { font-size: 16px; } .tour-title { font-size: 18px; } .book-now-btn { padding: 8px 16px; } } </style></head>
+            <body> <table cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#f2f2f2"> <tr> <td align="center"> <table class="container" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px;"> <tr> <td class="header"> <div style="display: inline-block; vertical-align: middle; margin-right: 10px;"> <img src="https://yannicksegaar.github.io/RomAIx-Logo/RomAIx_Favicon.png" alt="Acme AIX Logo" width="40" height="40" style="display: inline-block; border-radius: 50%;"> </div> <div style="display: inline-block; vertical-align: middle;"> <span class="header-text">Acme Aloha Tours</span> </div> </td> </tr> <tr> <td class="content"> <p class="greeting">Aloha John,</p> <p>Mahalo for reaching out! I'm thrilled to help plan your first trip to Hawaii. Here are a couple of top recommendations combining ocean views and island culture:</p> <div class="tour-item"> <div class="tour-title">1. Pearl Harbor Remembrance Tour</div> <img class="tour-image" src="https://yannicksegaar.github.io/RomAIx-Logo/PearlHarbor.png" alt="Pearl Harbor Tour"> <div class="tour-pricing"> <div class="tour-price-item">- Adult: $119.95 | Senior (70+): $109.95 | Child (under 3): Free</div> <div class="tour-price-item">- Availability: Daily (except Dec 25)</div> </div> <p>A respectful and comprehensive experience at Pearl Harbor.</p> <a href="#" class="book-now-btn">Book Pearl Harbor</a> </div> <div class="tour-item"> <div class="tour-title">2. Oahu Grand Circle Island Adventure</div> <img class="tour-image" src="https://yannicksegaar.github.io/RomAIx-Logo/CircleIsland.png" alt="Circle Island Tour"> <div class="tour-pricing"> <div class="tour-price-item">- Adult: $139.95 | Child: $109.95 | Senior: $129.95</div> <div class="tour-price-item">- Availability: Daily</div> </div> <p>Explore Oahu's stunning landscapes and cultural landmarks.</p> <a href="#" class="book-now-btn">Book Circle Island</a> </div> <p>These tours offer a great immersion into Hawaii's beauty and heritage. Let me know if you need more details or have other interests!</p> <p>Mahalo,<br> Kelly<br> Guest Services, Aloha Acme Tours</p> </td> </tr> <tr> <td class="footer"> <div class="footer-nav"> <a href="#" class="footer-link">Home</a> <a href="#" class="footer-link">Tours</a> <a href="#" class="footer-link">Contact</a> </div> <div class="address"> Aloha Acme Tours | 123 Waikiki Beach Dr, Honolulu, HI 96815 | (808) 555-1234 </div> <div style="margin-top: 10px;"> &copy; ${new Date().getFullYear()} Aloha Acme Tours. All rights reserved. </div> </td> </tr> </table> </td> </tr> </table> </body>
+            </html>
+        `;
+
+        const REVISED_EMAIL_TEMPLATE = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Aloha Acme Tours - Recommended Tours</title> <style type="text/css"> body, html { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333333; } * { box-sizing: border-box; } table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; } img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; display: block; max-width: 100%; } p { margin: 0 0 15px 0; } .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; } .header { background-color: #587C74; color: #ffffff; padding: 20px; text-align: center; } .logo { margin-bottom: 15px; } .header-text { font-size: 26px; font-weight: bold; } .content { padding: 20px; } .greeting { font-size: 18px; font-weight: bold; margin-bottom: 15px; } .tour-item { margin-bottom: 20px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 5px; } .tour-title { font-size: 20px; font-weight: bold; color: #2F3E46; margin-bottom: 10px; } .tour-image { width: 100%; margin-bottom: 15px; border-radius: 4px; } .tour-pricing { margin-bottom: 15px; font-size: 14px; } .tour-price-item { margin-bottom: 5px; } .book-now-btn { display: inline-block; background-color: #587C74; color: #ffffff !important; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 14px; } .footer { background-color: #2F3E46; color: #ffffff; padding: 20px; text-align: center; font-size: 12px; } .footer-nav { margin: 10px 0; } .footer-link { color: #ffffff; text-decoration: none; margin: 0 8px; font-size: 13px; } .address { margin-top: 10px; font-style: normal; line-height: 1.4; } @media screen and (max-width: 600px) { .header-text { font-size: 22px; } .greeting { font-size: 16px; } .tour-title { font-size: 18px; } .book-now-btn { padding: 8px 16px; } } </style></head>
+            <body> <table cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#f2f2f2"> <tr> <td align="center"> <table class="container" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px;"> <tr> <td class="header"> <div style="display: inline-block; vertical-align: middle; margin-right: 10px;"> <img src="https://yannicksegaar.github.io/RomAIx-Logo/RomAIx_Favicon.png" alt="Acme AIX Logo" width="40" height="40" style="display: inline-block; border-radius: 50%;"> </div> <div style="display: inline-block; vertical-align: middle;"> <span class="header-text">Acme Aloha Tours</span> </div> </td> </tr> <tr> <td class="content"> <p class="greeting">Aloha John,</p> <p>Mahalo for reaching out! I'm thrilled to help plan your first trip to Hawaii. Here are a couple of top recommendations combining ocean adventures and island culture:</p> <div class="tour-item"> <div class="tour-title">1. Turtle Snorkel Safari Tour 🐢</div> <img class="tour-image" src="https://yannicksegaar.github.io/RomAIx-Logo/TurtleSnorkel.png" alt="Turtle Snorkel Tour"> <div class="tour-pricing"> <div class="tour-price-item">- Adult: $129.95 | Senior (70+): $119.95 | Child (8-12): $99.95</div> <div class="tour-price-item">- Availability: Daily (weather permitting)</div> </div> <p>Swim with majestic Hawaiian green sea turtles! Equipment provided.</p> <a href="#" class="book-now-btn">Book Turtle Snorkel</a> </div> <div class="tour-item"> <div class="tour-title">2. Oahu Grand Circle Island Adventure</div> <img class="tour-image" src="https://yannicksegaar.github.io/RomAIx-Logo/CircleIsland.png" alt="Circle Island Tour"> <div class="tour-pricing"> <div class="tour-price-item">- Adult: $139.95 | Child: $109.95 | Senior: $129.95</div> <div class="tour-price-item">- Availability: Daily</div> </div> <p>Explore Oahu's stunning landscapes and cultural landmarks.</p> <a href="#" class="book-now-btn">Book Circle Island</a> </div> <p>These tours offer a great immersion into Hawaii's beauty and heritage. Let me know if you need more details or have other interests!</p> <p>Mahalo,<br> Kelly<br> Guest Services, Aloha Acme Tours</p> </td> </tr> <tr> <td class="footer"> <div class="footer-nav"> <a href="#" class="footer-link">Home</a> <a href="#" class="footer-link">Tours</a> <a href="#" class="footer-link">Contact</a> </div> <div class="address"> Aloha Acme Tours | 123 Waikiki Beach Dr, Honolulu, HI 96815 | (808) 555-1234 </div> <div style="margin-top: 10px;"> &copy; ${new Date().getFullYear()} Aloha Acme Tours. All rights reserved. </div> </td> </tr> </table> </td> </tr> </table> </body>
+            </html>
+        `;
+
+        // --- AGENT FEEDBACK TEXT ---
+        const AGENT_FEEDBACK = "Please recommend the Turtle Snorkel Safari instead of the Pearl Harbor tour.";
+
+        // --- DOM Elements ---
+        const elements = {
+            // Existing elements
+            statusBar: document.getElementById('status-bar'),
+            statusText: document.getElementById('status-text'),
+            statusIconRobot: document.getElementById('status-icon-robot'),
+            statusIconHuman: document.getElementById('status-icon-human'),
+            statusIconEdit: document.getElementById('status-icon-edit'),
+            statusIconSending: document.getElementById('status-icon-sending'),
+            emailIframe: document.getElementById('email-iframe'),
+            actionButtons: document.getElementById('action-buttons'),
+            approveBtn: document.getElementById('approve-btn'),
+            rejectBtn: document.getElementById('reject-btn'),
+            sendBtn: document.getElementById('send-btn'),
+            emailSendingOverlay: document.getElementById('email-sending'),
+            sendingMessage: document.getElementById('sending-message'),
+            paperPlaneContainer: document.getElementById('paper-plane-container'),
+            successIcon: document.getElementById('success-icon'),
+            inboxNotification: document.getElementById('inbox-notification'),
+            draftsNotification: document.getElementById('drafts-notification'),
+            reviewNotification: document.getElementById('review-notification'),
+            sentNotification: document.getElementById('sent-notification'),
+            sidebarInbox: document.getElementById('sidebar-inbox'),
+            sidebarDrafts: document.getElementById('sidebar-drafts'),
+            sidebarReview: document.getElementById('sidebar-review'),
+            sidebarSent: document.getElementById('sidebar-sent'),
+            // New elements
+            incomingEmailSummary: document.getElementById('incoming-email-summary'),
+            summaryContent: document.getElementById('summary-content'),
+            feedbackModalOverlay: document.getElementById('feedback-modal-overlay'),
+            feedbackTextarea: document.getElementById('feedback-textarea'),
+            submitFeedbackBtn: document.getElementById('submit-feedback-btn'),
+            loadingSpinner: document.getElementById('loading-spinner'), // Added spinner
+        };
+
+        // --- Utility Functions ---
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        function updateStatus(text, icon = 'robot') {
+            elements.statusText.textContent = text;
+            elements.statusIconRobot.style.display = 'none';
+            elements.statusIconHuman.style.display = 'none';
+            elements.statusIconEdit.style.display = 'none';
+            elements.statusIconSending.style.display = 'none';
+            if (icon === 'robot') elements.statusIconRobot.style.display = 'inline-block';
+            if (icon === 'human') elements.statusIconHuman.style.display = 'inline-block';
+            if (icon === 'edit') elements.statusIconEdit.style.display = 'inline-block';
+             if (icon === 'sending') elements.statusIconSending.style.display = 'inline-block';
+        }
+
+        function showEmail(template) {
+            elements.emailIframe.srcdoc = template;
+            return new Promise(resolve => {
+                // Ensure iframe is loaded before showing
+                elements.emailIframe.onload = () => {
+                    elements.emailIframe.classList.add('show');
+                    resolve();
+                    elements.emailIframe.onload = null; // Prevent multiple triggers
+                };
+                // Fallback in case onload doesn't fire quickly
+                setTimeout(() => {
+                     if (!elements.emailIframe.classList.contains('show')) {
+                         elements.emailIframe.classList.add('show');
+                         resolve();
+                     }
+                }, 150);
+            });
+        }
+
+
+        function hideEmail() {
+            elements.emailIframe.classList.remove('show');
+        }
+
+        function showIncomingSummary() {
+            const summaryHTML = `
+                <strong>From:</strong> ${INCOMING_CUSTOMER_EMAIL.sender}<br>
+                <strong>Subject:</strong> ${INCOMING_CUSTOMER_EMAIL.subject}<br><br>
+                <p>${INCOMING_CUSTOMER_EMAIL.body.replace(/\n/g, '<br>')}</p>
+            `;
+            elements.summaryContent.innerHTML = summaryHTML;
+            elements.incomingEmailSummary.classList.add('show');
+        }
+
+        function hideIncomingSummary() {
+            elements.incomingEmailSummary.classList.remove('show');
+        }
+
+        function showFeedbackModal() {
+            elements.feedbackTextarea.value = ''; // Clear previous feedback
+            elements.feedbackModalOverlay.classList.add('show');
+        }
+
+        function hideFeedbackModal() {
+            elements.feedbackModalOverlay.classList.remove('show');
+        }
+
+        function showActionButtons(showApprove = true, showReject = true, showSend = false) {
+            elements.approveBtn.style.display = showApprove ? 'flex' : 'none';
+            elements.rejectBtn.style.display = showReject ? 'flex' : 'none';
+            elements.sendBtn.style.display = showSend ? 'flex' : 'none';
+            elements.actionButtons.classList.add('show');
+        }
+
+        function hideActionButtons() {
+            elements.actionButtons.classList.remove('show');
+        }
+
+        // --- Spinner Control ---
+        function showSpinner() {
+            elements.loadingSpinner.classList.add('show');
+        }
+        function hideSpinner() {
+             elements.loadingSpinner.classList.remove('show');
+        }
+
+        function typeText(element, text, speed) {
+            return new Promise(resolve => {
+                let i = 0;
+                element.innerHTML = ''; // Clear previous content for display elements
+                element.value = ''; // Clear previous content for input/textarea elements
+                const isTextarea = element.tagName === 'TEXTAREA';
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                cursor.innerHTML = '|';
+                let parentForCursor = isTextarea ? element.parentElement : element; // Append cursor outside textarea
+
+                function type() {
+                    if (i < text.length) {
+                        // Remove cursor before adding next char
+                        if (!isTextarea && parentForCursor.contains(cursor)) {
+                            parentForCursor.removeChild(cursor);
+                        }
+
+                        const char = text.charAt(i);
+                        if (isTextarea) {
+                            element.value += char;
+                            element.scrollTop = element.scrollHeight; // Auto-scroll textarea
+                        } else {
+                            if (char === '\n') {
+                                element.innerHTML += '<br>';
+                            } else {
+                                element.innerHTML += char;
+                            }
+                        }
+
+                         // Append cursor again (outside textarea)
+                        if (!isTextarea) {
+                           parentForCursor.appendChild(cursor);
+                        }
+
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        // Remove cursor at the end
+                         if (!isTextarea && parentForCursor.contains(cursor)) {
+                            parentForCursor.removeChild(cursor);
+                        }
+                        resolve();
+                    }
+                }
+                // Initial cursor for non-textarea
+                if (!isTextarea) {
+                    parentForCursor.appendChild(cursor);
+                }
+                type(); // Start typing
+            });
+        }
+
+         function updateNotification(element, count) {
+            element.textContent = count;
+            if (count > 0) {
+                element.classList.add('show');
+                 if (element === elements.reviewNotification) {
+                     element.classList.add('pulse');
+                 }
+            } else {
+                element.classList.remove('show');
+                element.classList.remove('pulse');
+            }
+        }
+
+         function setActiveSidebar(activeElement) {
+             [elements.sidebarInbox, elements.sidebarDrafts, elements.sidebarReview, elements.sidebarSent].forEach(el => {
+                 el.classList.remove('sidebar-item-active');
+             });
+             if(activeElement) {
+                 activeElement.classList.add('sidebar-item-active');
+             }
+         }
+
+        // --- Animation Sequence (REVISED ORDER) ---
+        async function startAnimation() {
+            // --- Initial State ---
+            updateStatus('Ready', 'human');
+            setActiveSidebar(elements.sidebarInbox);
+            updateNotification(elements.inboxNotification, 1);
+            updateNotification(elements.draftsNotification, 0);
+            updateNotification(elements.reviewNotification, 0);
+            updateNotification(elements.sentNotification, 0);
+            hideEmail();
+            hideIncomingSummary();
+            hideFeedbackModal();
+            hideActionButtons();
+            hideSpinner();
+            await delay(CONFIG.initialDelay);
+
+            // --- Step 1: Customer Email Arrives ---
+            updateStatus('Incoming email received', 'human');
+            showIncomingSummary(); // Show customer email first
+            await delay(CONFIG.summaryDisplayTime); // Wait while summary is shown
+
+            // --- Step 2: AI Drafts ---
+            hideIncomingSummary(); // Hide summary before AI starts
+            updateStatus('AI drafting email...', 'robot');
+            setActiveSidebar(null); // No active item while AI works
+            updateNotification(elements.inboxNotification, 0); // "Read" the email
+            showSpinner(); // Show spinner while AI works
+            await delay(CONFIG.draftGenerationTime); // Simulate AI work
+            hideSpinner(); // Hide spinner
+            await showEmail(DRAFT_EMAIL_TEMPLATE); // Show the generated draft
+            updateNotification(elements.draftsNotification, 1); // Add to drafts
+            updateStatus('Draft ready for review', 'robot');
+            setActiveSidebar(elements.sidebarDrafts); // Highlight drafts
+            await delay(CONFIG.stepDelay);
+
+            // --- Step 3: Agent Review + Feedback ---
+            updateStatus('Sending draft for human review...', 'robot');
+            await delay(CONFIG.stepDelay / 2);
+            updateNotification(elements.draftsNotification, 0); // Remove from drafts
+            updateNotification(elements.reviewNotification, 1); // Add to review queue
+            setActiveSidebar(elements.sidebarReview); // Highlight review
+            updateStatus('Awaiting human review...', 'human');
+            showActionButtons(true, true, false); // Show Approve/Reject buttons
+            await delay(CONFIG.stepDelay);
+
+            // Simulate Reject click & Feedback
+            updateStatus('Human reviewing draft...', 'human');
+            elements.rejectBtn.classList.add('click-animation');
+            await delay(300);
+            elements.rejectBtn.classList.remove('click-animation');
+            hideActionButtons();
+            hideEmail(); // Hide draft while feedback is given
+            updateStatus('Human providing feedback...', 'human');
+            showFeedbackModal();
+            await typeText(elements.feedbackTextarea, AGENT_FEEDBACK, CONFIG.feedbackTypingSpeed);
+            await delay(CONFIG.stepDelay / 2);
+            elements.submitFeedbackBtn.classList.add('click-animation');
+            await delay(300);
+            elements.submitFeedbackBtn.classList.remove('click-animation');
+            hideFeedbackModal();
+            await delay(CONFIG.stepDelay / 2);
+
+            // --- Step 4: AI Revises ---
+            updateStatus('Sending draft and feedback for AI revision...', 'human');
+            await delay(CONFIG.stepDelay / 2);
+            updateNotification(elements.reviewNotification, 0); // Leaves review queue temporarily
+            setActiveSidebar(null); // No active item
+            updateStatus('AI revising draft...', 'edit');
+            showSpinner(); // Show spinner while AI revises
+            await delay(CONFIG.revisionTime); // Simulate AI work
+            hideSpinner(); // Hide spinner
+
+            // --- Step 5: Agent Final Review + Approval ---
+            await showEmail(REVISED_EMAIL_TEMPLATE); // Show the revised draft
+            updateStatus('Revised draft ready for final review', 'robot');
+            updateNotification(elements.reviewNotification, 1); // Back to review queue
+            setActiveSidebar(elements.sidebarReview); // Highlight review again
+            showActionButtons(true, true, false); // Show Approve/Reject again
+            await delay(CONFIG.stepDelay);
+
+            // Simulate Approve click
+            updateStatus('Human reviewing revised draft...', 'human');
+            await delay(CONFIG.stepDelay / 2);
+            elements.approveBtn.classList.add('click-animation');
+            await delay(300);
+            elements.approveBtn.classList.remove('click-animation');
+            updateStatus('Draft approved by human!', 'human');
+            hideActionButtons();
+            showActionButtons(false, false, true); // Show only Send button
+            await delay(CONFIG.stepDelay);
+
+            // --- Step 6: Send Email ---
+            updateStatus('Sending email...', 'sending');
+            elements.sendBtn.classList.add('click-animation');
+            await delay(300);
+            elements.sendBtn.classList.remove('click-animation');
+            hideActionButtons();
+            elements.emailSendingOverlay.classList.add('show');
+            elements.sendingMessage.textContent = 'Sending email...';
+            elements.paperPlaneContainer.style.display = 'block';
+            elements.successIcon.classList.remove('show');
+            updateNotification(elements.reviewNotification, 0); // Leaves review queue
+            setActiveSidebar(null); // No active item
+            await delay(CONFIG.sendingTime);
+
+            // Show success
+            elements.sendingMessage.textContent = 'Email sent successfully!';
+            elements.paperPlaneContainer.style.display = 'none';
+            elements.successIcon.classList.add('show');
+            updateStatus('Email sent!', 'sending');
+            await delay(CONFIG.successMessageTime);
+            elements.emailSendingOverlay.classList.remove('show');
+            updateNotification(elements.sentNotification, 1); // Update sent count
+            setActiveSidebar(elements.sidebarSent); // Highlight sent
+            updateStatus('Process Complete', 'human');
+            hideEmail();
+
+            // Optional: Restart animation after a pause
+            await delay(5000);
+            startAnimation();
+        }
+
+        // --- Start Animation on Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            startAnimation();
+        });
+
+    </script>
+</body>
+</html>
