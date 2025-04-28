@@ -19,15 +19,17 @@
             /* --- Background Image --- */
             /* Instructions: Replace 'YOUR_BACKGROUND_IMAGE.png' with the actual path/URL to your image */
             background-image: url('LinkedInBackground.png');
-            background-color: #eef2f5; /* Fallback color if image doesn't load */
+            /* background-color: #eef2f5; /* Fallback color if image doesn't load */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             /* Add a subtle overlay to improve text readability over background */
             background-blend-mode: overlay;
-            background-color: rgba(255, 255, 255, 0.85); /* Adjust opacity (0.0 to 1.0) as needed */
+            /* background-color: rgba(255, 255, 255, 0.85); /* Adjust opacity (0.0 to 1.0) as needed */
 
             display: flex;
+            /* Changed to column layout to accommodate explainer */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -41,11 +43,13 @@
             max-width: 950px; /* Max width */
             height: auto; /* Adjust height automatically */
             aspect-ratio: 950 / 820; /* Maintain aspect ratio */
-            min-height: 600px; /* Minimum height */
+            min-height: 550px; /* Adjusted min-height */
             position: relative;
             perspective: 1500px;
             transform-style: preserve-3d;
             transform: rotateX(5deg) rotateY(0deg); /* Subtle 3D tilt */
+            margin-bottom: 20px; /* Space between laptop and explainer */
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
         .laptop-screen {
@@ -579,6 +583,39 @@
             animation: success-pop 0.5s ease-out;
         }
 
+        /* --- Explainer Section --- */
+        .explainer-section {
+            width: 100%;
+            max-width: 950px; /* Match laptop width */
+            padding: 15px 25px;
+            background-color: rgba(47, 62, 70, 0.85); /* Secondary color, semi-transparent */
+            color: #ffffff;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.5;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0; /* Prevent shrinking */
+            min-height: 50px; /* Ensure space */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease; /* Smooth transition */
+        }
+        .explainer-section strong {
+            color: #a7d0c8; /* Lighter shade of primary color */
+            font-weight: 700;
+        }
+        .explainer-text {
+             opacity: 0;
+             transition: opacity 0.5s ease-in-out;
+             max-width: 800px; /* Limit text width */
+        }
+         .explainer-text.show {
+             opacity: 1;
+         }
+
+
         /* --- Animations --- */
         @keyframes blink {
             0%, 100% { opacity: 1; }
@@ -628,40 +665,18 @@
         }
 
         /* --- RomAIx Logo --- */
-        .romaix-logo {
-            position: absolute;
-            bottom: -50px; /* Position below the laptop base */
-            right: 0px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #2F3E46; /* Secondary color */
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .romaix-logo-icon {
-            width: 35px;
-            height: 35px;
-            background-color: #587C74; /* Primary color */
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: white; /* White text on primary */
-            font-weight: bold;
-        }
+        /* Removed - now placed within body flow */
 
         /* --- Responsive Adjustments --- */
         @media screen and (max-width: 768px) {
             body {
-                align-items: flex-start; /* Align to top on smaller screens */
-                padding-top: 5vh;
+                align-items: center; /* Center content vertically */
+                padding-top: 20px; /* Reset padding */
             }
             .laptop-mockup {
                 transform: rotateX(0deg) rotateY(0deg); /* Less tilt on mobile */
                 min-height: 500px;
+                margin-bottom: 15px;
             }
             .email-header { height: 45px; padding: 0 10px; }
             .email-header-title { font-size: 14px; gap: 8px; }
@@ -682,8 +697,7 @@
             .feedback-modal { padding: 20px; }
             .feedback-modal-title { font-size: 16px; margin-bottom: 15px; }
             .feedback-modal textarea { font-size: 13px; min-height: 80px; }
-            .romaix-logo { font-size: 16px; gap: 8px; bottom: -40px; }
-            .romaix-logo-icon { width: 30px; height: 30px; font-size: 14px; }
+            .explainer-section { padding: 12px 20px; font-size: 14px; min-height: 40px; }
             .sending-container { padding: 25px 40px; }
             .sending-message { font-size: 16px; }
             .sending-icon-container { width: 80px; height: 80px; }
@@ -695,10 +709,10 @@
              .email-sidebar { display: none; } /* Hide sidebar on very small screens */
              .email-content { margin-left: 0; } /* Content takes full width */
              .laptop-mockup { perspective: 1000px; } /* Reduce perspective */
-             .romaix-logo { display: none; } /* Hide logo if too cramped */
              .feedback-modal { width: 95%; padding: 15px; }
              .incoming-email-summary { margin: 5px; padding: 10px; }
              .loading-spinner { width: 35px; height: 35px; border-width: 3px; }
+             .explainer-section { font-size: 13px; padding: 10px 15px; }
          }
 
     </style>
@@ -787,6 +801,10 @@
             </div>
         </div>
         <div class="laptop-base"></div>
+        </div>
+
+    <div class="explainer-section" id="explainer-section">
+        <span class="explainer-text" id="explainer-text">Initializing Animation...</span>
     </div>
 
     <div class="feedback-modal-overlay" id="feedback-modal-overlay">
@@ -835,7 +853,8 @@
             draftGenerationTime: 2750, // Time AI takes to "generate" draft (was 2500)
             revisionTime: 3300,     // Time AI takes to "revise" draft (was 3000)
             sendingTime: 2200,      // Duration of the sending overlay before success (was 2000)
-            successMessageTime: 1650 // How long success message shows in overlay (was 1500)
+            successMessageTime: 1650, // How long success message shows in overlay (was 1500)
+            explainerFadeDuration: 500 // Duration for explainer text fade
         };
 
         // --- INCOMING EMAIL DATA ---
@@ -897,7 +916,8 @@
             feedbackModalOverlay: document.getElementById('feedback-modal-overlay'),
             feedbackTextarea: document.getElementById('feedback-textarea'),
             submitFeedbackBtn: document.getElementById('submit-feedback-btn'),
-            loadingSpinner: document.getElementById('loading-spinner'), // Added spinner
+            loadingSpinner: document.getElementById('loading-spinner'),
+            explainerText: document.getElementById('explainer-text'), // Added explainer text element
         };
 
         // --- Utility Functions ---
@@ -913,6 +933,20 @@
             if (icon === 'human') elements.statusIconHuman.style.display = 'inline-block';
             if (icon === 'edit') elements.statusIconEdit.style.display = 'inline-block';
              if (icon === 'sending') elements.statusIconSending.style.display = 'inline-block';
+        }
+
+        // --- Explainer Text Update Function ---
+        async function updateExplainer(htmlContent) {
+            // Fade out current text
+            elements.explainerText.classList.remove('show');
+            await delay(CONFIG.explainerFadeDuration / 2); // Wait half the fade duration
+
+            // Update content
+            elements.explainerText.innerHTML = htmlContent;
+
+            // Fade in new text
+            elements.explainerText.classList.add('show');
+            await delay(CONFIG.explainerFadeDuration / 2); // Wait for fade in
         }
 
         function showEmail(template) {
@@ -1070,16 +1104,19 @@
             hideFeedbackModal();
             hideActionButtons();
             hideSpinner();
-            await delay(CONFIG.initialDelay);
+            await updateExplainer('Waiting for incoming customer email...');
+            await delay(CONFIG.initialDelay + CONFIG.stepDelay); // Longer initial pause
 
             // --- Step 1: Customer Email Arrives ---
             updateStatus('Incoming email received', 'human');
+            await updateExplainer('<strong>Step 1:</strong> A new customer email arrives in the inbox.');
             showIncomingSummary(); // Show customer email first
             await delay(CONFIG.summaryDisplayTime); // Wait while summary is shown
 
             // --- Step 2: AI Drafts ---
             hideIncomingSummary(); // Hide summary before AI starts
             updateStatus('AI drafting email...', 'robot');
+            await updateExplainer('<strong>Step 2:</strong> The AI Assistant reads the email and automatically generates a draft response.');
             setActiveSidebar(null); // No active item while AI works
             updateNotification(elements.inboxNotification, 0); // "Read" the email
             showSpinner(); // Show spinner while AI works
@@ -1093,6 +1130,7 @@
 
             // --- Step 3: Agent Review + Feedback ---
             updateStatus('Sending draft for human review...', 'robot');
+            await updateExplainer('<strong>Step 3:</strong> The AI-generated draft is sent to a <strong>Human Agent</strong> for review (Human-in-the-Loop).');
             await delay(CONFIG.stepDelay / 2);
             updateNotification(elements.draftsNotification, 0); // Remove from drafts
             updateNotification(elements.reviewNotification, 1); // Add to review queue
@@ -1103,12 +1141,14 @@
 
             // Simulate Reject click & Feedback
             updateStatus('Human reviewing draft...', 'human');
+            await updateExplainer('The Human Agent reviews the draft and decides it needs a change.');
             elements.rejectBtn.classList.add('click-animation');
             await delay(300);
             elements.rejectBtn.classList.remove('click-animation');
             hideActionButtons();
             hideEmail(); // Hide draft while feedback is given
             updateStatus('Human providing feedback...', 'human');
+            await updateExplainer('The Agent provides specific feedback for the AI Assistant.');
             showFeedbackModal();
             await typeText(elements.feedbackTextarea, AGENT_FEEDBACK, CONFIG.feedbackTypingSpeed);
             await delay(CONFIG.stepDelay / 2);
@@ -1120,6 +1160,7 @@
 
             // --- Step 4: AI Revises ---
             updateStatus('Sending draft and feedback for AI revision...', 'human');
+            await updateExplainer('<strong>Step 4:</strong> The original draft and the agent\'s feedback are sent back to the AI for revision.');
             await delay(CONFIG.stepDelay / 2);
             updateNotification(elements.reviewNotification, 0); // Leaves review queue temporarily
             setActiveSidebar(null); // No active item
@@ -1131,6 +1172,7 @@
             // --- Step 5: Agent Final Review + Approval ---
             await showEmail(REVISED_EMAIL_TEMPLATE); // Show the revised draft
             updateStatus('Revised draft ready for final review', 'robot');
+            await updateExplainer('<strong>Step 5:</strong> The AI presents the revised draft, incorporating the feedback, for final human approval.');
             updateNotification(elements.reviewNotification, 1); // Back to review queue
             setActiveSidebar(elements.sidebarReview); // Highlight review again
             showActionButtons(true, true, false); // Show Approve/Reject again
@@ -1138,6 +1180,7 @@
 
             // Simulate Approve click
             updateStatus('Human reviewing revised draft...', 'human');
+            await updateExplainer('The Human Agent reviews the improved draft and approves it.');
             await delay(CONFIG.stepDelay / 2);
             elements.approveBtn.classList.add('click-animation');
             await delay(300);
@@ -1149,6 +1192,7 @@
 
             // --- Step 6: Send Email ---
             updateStatus('Sending email...', 'sending');
+            await updateExplainer('<strong>Step 6:</strong> The approved email is now being sent to the customer.');
             elements.sendBtn.classList.add('click-animation');
             await delay(300);
             elements.sendBtn.classList.remove('click-animation');
@@ -1166,11 +1210,13 @@
             elements.paperPlaneContainer.style.display = 'none';
             elements.successIcon.classList.add('show');
             updateStatus('Email sent!', 'sending');
+            await updateExplainer('The email has been successfully sent!');
             await delay(CONFIG.successMessageTime);
             elements.emailSendingOverlay.classList.remove('show');
             updateNotification(elements.sentNotification, 1); // Update sent count
             setActiveSidebar(elements.sidebarSent); // Highlight sent
             updateStatus('Process Complete', 'human');
+            await updateExplainer('The Human-in-the-Loop workflow is complete.');
             hideEmail();
 
             // Optional: Restart animation after a pause
