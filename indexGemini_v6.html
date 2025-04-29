@@ -803,7 +803,7 @@
                             </div>
                             <div class="step-indicator" id="step-4">
                                 <span class="step-number">4</span>
-                                <span class="step-text">Human Review</span>
+                                <span class="step-text">Final Approval</span>
                             </div>
                             <div class="step-indicator" id="step-5">
                                 <span class="step-number">5</span>
@@ -887,11 +887,12 @@
             typingSpeed: 39,
             feedbackTypingSpeed: 50,
             initialDelay: 600,
-            stepDelay: 2100,
+            stepDelay: 4000, // General delay between steps (kept from previous update)
+            finalApprovalPause: 6000, // <<< Specific delay for Step 4 viewing
             summaryDisplayTime: 3000,
-            draftGenerationTime: 2000,
-            revisionTime: 2000,
-            sendingTime: 1800,
+            draftGenerationTime: 2600,
+            revisionTime: 3000,
+            sendingTime: 2200,
             successMessageTime: 1650,
             explainerFadeDuration: 500 // Keep for potential re-use, but function is removed
         };
@@ -1136,12 +1137,10 @@
             hideActionButtons();
             hideSpinner();
             updateStepIndicator(0); // No active step initially
-            // await updateExplainer('Waiting for incoming customer email...'); // Removed
             await delay(CONFIG.initialDelay);
 
             // --- Step 1: Email Arrives & AI Drafts ---
             updateStepIndicator(1);
-            // await updateExplainer('<strong>Step 1:</strong> New email arrives. AI reads & generates a draft.'); // Removed
             showIncomingSummary(); // Show customer email first
             await delay(CONFIG.summaryDisplayTime); // Wait while summary is shown
             hideIncomingSummary(); // Hide summary before AI starts
@@ -1153,21 +1152,20 @@
             await showEmail(DRAFT_EMAIL_TEMPLATE); // Show the generated draft
             updateNotification(elements.draftsNotification, 1); // Add to drafts
             setActiveSidebar(elements.sidebarDrafts); // Highlight drafts
-            await delay(CONFIG.stepDelay);
+            await delay(CONFIG.stepDelay); // Pause after showing draft (uses general stepDelay)
 
             // --- Step 2: Human Review ---
             updateStepIndicator(2);
-            // await updateExplainer('<strong>Step 2:</strong> AI draft sent to a <strong>Human Agent</strong> for review (Human-in-the-Loop).'); // Removed
-            await delay(CONFIG.stepDelay / 2);
+            await delay(CONFIG.stepDelay / 2); // Short delay before moving to review (uses general stepDelay)
             updateNotification(elements.draftsNotification, 0); // Remove from drafts
             updateNotification(elements.reviewNotification, 1); // Add to review queue
             setActiveSidebar(elements.sidebarReview); // Highlight review
             showActionButtons(true, true, false); // Show Approve/Reject buttons
-            await delay(CONFIG.stepDelay);
+            await delay(CONFIG.stepDelay); // Pause while buttons are shown (uses general stepDelay)
 
             // --- Step 3: Feedback & Revise ---
             updateStepIndicator(3);
-            // await updateExplainer('<strong>Step 3:</strong> Agent reviews, requests revision & provides feedback.'); // Removed
+            // Simulate Reject click
             elements.rejectBtn.classList.add('click-animation');
             await delay(300);
             elements.rejectBtn.classList.remove('click-animation');
@@ -1175,45 +1173,46 @@
             hideEmail(); // Hide draft while feedback is given
             showFeedbackModal();
             await typeText(elements.feedbackTextarea, AGENT_FEEDBACK, CONFIG.feedbackTypingSpeed);
-            await delay(CONFIG.stepDelay / 2);
+            await delay(CONFIG.stepDelay / 2); // Pause after typing feedback (uses general stepDelay)
+            // Simulate Submit Feedback click
             elements.submitFeedbackBtn.classList.add('click-animation');
             await delay(300);
             elements.submitFeedbackBtn.classList.remove('click-animation');
             hideFeedbackModal();
-            await delay(CONFIG.stepDelay / 3); // Shorter delay before AI revision starts
+            await delay(CONFIG.stepDelay / 3); // Shorter delay before AI revision starts (uses general stepDelay)
 
             // AI Revises
-            await delay(CONFIG.stepDelay / 3);
             updateNotification(elements.reviewNotification, 0); // Leaves review queue temporarily
             setActiveSidebar(null); // No active item
-            // await updateExplainer('<strong>Step 3:</strong> AI incorporates feedback and revises the draft.'); // Removed
             showSpinner(); // Show spinner while AI revises
             await delay(CONFIG.revisionTime); // Simulate AI work
             hideSpinner(); // Hide spinner
-            await delay(CONFIG.stepDelay / 3);
+            await delay(CONFIG.stepDelay / 3); // Short delay after revision (uses general stepDelay)
 
             // --- Step 4: Final Human Approval ---
             updateStepIndicator(4);
             await showEmail(REVISED_EMAIL_TEMPLATE); // Show the revised draft
-            // await updateExplainer('<strong>Step 4:</strong> AI presents the revised draft for final human approval.'); // Removed
             updateNotification(elements.reviewNotification, 1); // Back to review queue
             setActiveSidebar(elements.sidebarReview); // Highlight review again
             showActionButtons(true, true, false); // Show Approve/Reject again
-            await delay(CONFIG.stepDelay);
+
+            // *** THIS is the specific delay for Step 4 ***
+            console.log(`Using specific delay for Step 4: ${CONFIG.finalApprovalPause}ms`); // Optional: Log the delay being used
+            await delay(CONFIG.finalApprovalPause); // Pause while revised draft and buttons are shown (uses specific finalApprovalPause)
 
             // Simulate Approve click
+            // Use a fraction of the general stepDelay for the pre-click pause to keep it relatively snappy
             await delay(CONFIG.stepDelay / 2);
             elements.approveBtn.classList.add('click-animation');
             await delay(300);
             elements.approveBtn.classList.remove('click-animation');
-            // await updateExplainer('<strong>Step 4:</strong> Agent reviews the improved draft and approves it.'); // Removed
             hideActionButtons();
             showActionButtons(false, false, true); // Show only Send button
-            await delay(CONFIG.stepDelay);
+            await delay(CONFIG.stepDelay); // Pause after approval, before sending (uses general stepDelay)
 
             // --- Step 5: Send Email ---
             updateStepIndicator(5);
-            // await updateExplainer('<strong>Step 5:</strong> The approved email is sent to the customer.'); // Removed
+            // Simulate Send click
             elements.sendBtn.classList.add('click-animation');
             await delay(300);
             elements.sendBtn.classList.remove('click-animation');
@@ -1224,14 +1223,13 @@
             elements.successIcon.classList.remove('show');
             updateNotification(elements.reviewNotification, 0); // Leaves review queue
             setActiveSidebar(null); // No active item
-            await delay(CONFIG.sendingTime);
+            await delay(CONFIG.sendingTime); // Simulate sending
 
             // Show success
             elements.sendingMessage.textContent = 'Email sent successfully!';
             elements.paperPlaneContainer.style.display = 'none';
             elements.successIcon.classList.add('show');
-            // await updateExplainer('<strong>Step 5:</strong> Email successfully sent! Workflow complete.'); // Removed
-            await delay(CONFIG.successMessageTime);
+            await delay(CONFIG.successMessageTime); // Show success message
             elements.emailSendingOverlay.classList.remove('show');
             updateNotification(elements.sentNotification, 1); // Update sent count
             setActiveSidebar(elements.sidebarSent); // Highlight sent
@@ -1259,6 +1257,12 @@
             } else if (!body.style.backgroundColor) {
                  body.style.backgroundColor = '#eef2f5'; // Default fallback if no bg specified
             }
+
+            // Add the new config value to the CONFIG object
+             if (typeof CONFIG !== 'undefined' && typeof CONFIG.finalApprovalPause === 'undefined') {
+                CONFIG.finalApprovalPause = 6000; // Default value if somehow missed above
+             }
+
 
             startAnimation();
         });
