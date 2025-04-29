@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Email Filter - Avatar Flow (Branded) - RomAIx</title>
+    <title>AI Email Filter - Avatar Flow (Branded V2) - RomAIx</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
@@ -41,8 +41,8 @@
 
         body {
             font-family: 'Open Sans', sans-serif;
-            /* --- Background Image (from example) --- */
-            background-image: url('LinkedIn_Background.png'); /* Use correct path */
+            /* --- Background Image (Ensure 'LinkedIn_Background.png' is in the same folder or update path) --- */
+            background-image: url('LinkedInBackground.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -72,8 +72,8 @@
         .inbox-container {
             width: 90vw;
             max-width: 700px;
-            height: 85vh; /* Increased height slightly more for spacing */
-            max-height: 850px; /* Increased max-height */
+            height: 85vh;
+            max-height: 850px;
             background-color: var(--ui-bg);
             border-radius: 18px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
@@ -108,20 +108,20 @@
 
         /* --- Top Area for Incoming Emails & Filter --- */
         .processing-area {
-            /* Adjusted height calculation to ensure space */
-            height: calc(var(--avatar-size) + 90px); /* Increased spacing */
-            min-height: 170px; /* Adjusted min-height */
+            /* ** Increased height slightly more for spacing ** */
+            height: calc(var(--avatar-size) + 110px); /* e.g., 65px avatar + 110px spacing */
+            min-height: 190px; /* Adjusted min-height */
             position: relative;
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
             overflow: hidden;
             background: linear-gradient(180deg, #fdfdfe, #ffffff);
-            padding-top: 10px; /* Added padding to push content down */
+            padding-top: 10px;
         }
 
         .incoming-label {
              position: absolute;
-             top: 22px; /* Adjusted position due to padding */
+             top: 22px;
              left: 50%;
              transform: translateX(-50%);
              font-size: 13px;
@@ -139,7 +139,7 @@
             border-radius: 50%;
             background-color: var(--secondary-color);
             position: absolute;
-            bottom: 20px; /* Position relative to bottom of processing area */
+            bottom: 20px; /* Keep position relative to bottom */
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
@@ -420,7 +420,7 @@
         .email-item.entering, /* State as it moves to the avatar */
         .email-item.scanning { /* State while being scanned */
             /* ** MODIFIED: Increased subtracted value for more space ** */
-            top: calc(100% - var(--avatar-size) - 45px); /* Target position above avatar */
+            top: calc(100% - var(--avatar-size) - 60px); /* Target position above avatar */
             opacity: 1;
             transform: translateX(-50%) scale(1.1);
             z-index: 15; /* Bring above avatar */
@@ -434,7 +434,7 @@
         }
         .email-item.rejected { /* State when moving to filtered column */
             /* ** Adjusted top slightly to match new spacing ** */
-            top: calc(100% - var(--avatar-size) / 2 - 25px); /* Adjusted target position vertically */
+            top: calc(100% - var(--avatar-size) / 2 - 35px); /* Adjusted target position vertically */
             left: calc(100% - 75px); /* Adjusted target position horizontally */
             transform: translateX(-50%) scale(0.6) rotate(8deg);
             opacity: 0;
@@ -472,9 +472,9 @@
              .processing-area { height: 180px; }
               :root { --avatar-size: 60px; }
              .ai-avatar { bottom: 20px; }
-             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 40px); } /* Adjusted responsive */
+             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 50px); } /* Adjusted responsive */
              .email-item.accepted { top: calc(100% + 20px); }
-             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2 - 15px); left: calc(100% - 65px); } /* Adjusted responsive */
+             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2 - 25px); left: calc(100% - 65px); } /* Adjusted responsive */
              .filtered-column { width: 130px; }
              .counters span { font-size: 20px; }
              .counter { font-size: 12px; }
@@ -490,13 +490,13 @@
              .email-icon { width: 20px; height: 20px;}
              .email-subject { font-size: 13px; }
              .email-sender { font-size: 11px; }
-             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 60px); } /* Adjust position */
+             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 45px); } /* Adjust position */
              .email-item.accepted { top: calc(100% + 15px); } /* Adjust position */
              .filtered-column { width: 110px; }
              .filtered-column-title { font-size: 11px; gap: 4px; padding: 15px 8px 12px 8px;}
              .filtered-column-title svg { width: 14px; height: 14px;}
              .filtered-list-container { padding: 12px 8px 15px 8px; }
-             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2 - 10px); left: calc(100% - 55px); } /* Adjust position */
+             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2 - 20px); left: calc(100% - 55px); } /* Adjust position */
              .filtered-list-container .email-item { height: 45px; padding: 5px 8px; gap: 5px;}
              .filtered-list-container .email-icon { width: 14px; height: 14px;}
              .filtered-list-container .email-subject { font-size: 11px;}
