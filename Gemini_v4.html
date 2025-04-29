@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Email Filter - Avatar Flow (Larger) - RomAIx</title>
+    <title>AI Email Filter - Avatar Flow (Enhanced Style) - RomAIx</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
@@ -22,8 +22,10 @@
             --text-light: #f9fafb;
             --reject-color: #f87171; /* Lighter Red for reject flash/border */
             --accept-color: #4ade80; /* Lighter Green for accept flash/border */
-            --avatar-size: 65px; /* Slightly larger avatar */
+            --avatar-size: 65px;
             --avatar-border-width: 4px;
+            --header-height: 60px; /* Define header height */
+            --counters-height: 65px; /* Define counters height */
         }
 
         * {
@@ -34,25 +36,21 @@
 
         body {
             font-family: 'Open Sans', sans-serif;
-            /* --- Background Image --- */
-            background-image: url('LinkedInBackground.png'); /* Use uploaded file */
+            background-image: url('CleanShot 2025-04-29 at 13.44.14@2x.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: var(--bg-color); /* Fallback solid color */
-            background-attachment: fixed; /* Prevent scrolling with content */
-
+            background-color: var(--bg-color);
+            background-attachment: fixed;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            justify-content: center; /* Center container horizontally */
+            align-items: center; /* Center container vertically */
             min-height: 100vh;
             overflow: hidden;
             padding: 20px;
-            position: relative; /* Needed for overlay */
+            position: relative;
         }
 
-        /* Optional overlay for better contrast */
         body::before {
             content: '';
             position: absolute;
@@ -60,51 +58,67 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.1); /* Slight dark overlay */
-            z-index: -1; /* Place behind content */
+            background-color: rgba(0, 0, 0, 0.15); /* Slightly darker overlay */
+            z-index: 1; /* Place above background, below container */
         }
 
-
-        .animation-title {
-            font-size: 28px; /* Larger title */
-            font-weight: 700;
-            color: var(--text-light); /* White text for contrast on bg */
-            margin-bottom: 30px; /* Increased margin */
-            text-align: center;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.4); /* Add shadow for readability */
-        }
+        /* Removed separate .animation-title */
 
         .inbox-container {
-            width: 90vw; /* Use viewport width */
-            max-width: 700px; /* Increased max-width */
-            height: 75vh; /* Use viewport height */
-            max-height: 750px; /* Increased max-height */
+            width: 90vw;
+            max-width: 700px;
+            height: 80vh; /* Increased height slightly */
+            max-height: 800px; /* Increased max-height */
             background-color: var(--ui-bg);
-            border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 18px; /* More rounded */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25); /* Enhanced shadow */
             position: relative;
-            overflow: hidden; /* Keep this hidden */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3); /* Slightly more visible border */
+            z-index: 2; /* Ensure container is above body overlay */
+        }
+
+        /* --- New Animation Header --- */
+        .animation-header {
+            height: var(--header-height);
+            background: linear-gradient(145deg, var(--secondary-color), #4a5a6a); /* Gradient using secondary */
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px 16px 0 0; /* Match container rounding */
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Header shadow */
+            position: relative; /* For potential pseudo-elements */
+            z-index: 20; /* Keep header above processing area */
+        }
+        .animation-header h1 {
+            font-size: 22px; /* Adjust size as needed */
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Text shadow for pop */
+            letter-spacing: 0.5px;
         }
 
         /* --- Top Area for Incoming Emails & Filter --- */
         .processing-area {
-            height: 200px; /* Increased height */
+            /* Height calculated based on container, header, and counters */
+            height: calc(var(--avatar-size) + 80px); /* Dynamic height based on avatar + spacing */
+            min-height: 160px; /* Ensure minimum space */
             position: relative;
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
             overflow: hidden;
-            background: linear-gradient(180deg, #f9fafb, #ffffff);
+            background: linear-gradient(180deg, #fdfdfe, #ffffff); /* Slightly brighter gradient */
         }
 
         .incoming-label {
              position: absolute;
-             top: 18px; /* Adjusted position */
+             top: 18px;
              left: 50%;
              transform: translateX(-50%);
-             font-size: 13px; /* Slightly larger */
+             font-size: 13px;
              font-weight: 600;
              color: var(--secondary-color);
              opacity: 0.9;
@@ -117,25 +131,23 @@
             width: var(--avatar-size);
             height: var(--avatar-size);
             border-radius: 50%;
-            /* Fallback gradient if image fails */
-            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            background-color: var(--secondary-color); /* Fallback color */
             position: absolute;
-            bottom: 25px; /* Adjusted position */
+            bottom: 15px; /* Position relative to bottom of processing area */
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25); /* Enhanced shadow */
             border: var(--avatar-border-width) solid transparent;
-            transition: border-color 0.3s ease;
-             /* --- Image Settings --- */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
              background-image: url('EmailRobotAgent.svg'); /* Your SVG image */
-             background-size: contain; /* ** Changed from cover to contain ** */
+             background-size: contain;
              background-position: center;
-             background-repeat: no-repeat; /* ** Added no-repeat ** */
-             overflow: hidden; /* Keep ensuring clipping */
+             background-repeat: no-repeat;
+             overflow: hidden;
         }
 
         /* Status Indicator Overlay (Check/Cross) */
@@ -154,7 +166,7 @@
             transform: scale(0.5);
             transition: opacity 0.3s ease, transform 0.3s ease;
             pointer-events: none;
-            overflow: hidden; /* Clip the SVG content */
+            overflow: hidden;
         }
         .avatar-status-overlay svg {
             width: 60%;
@@ -162,12 +174,12 @@
             fill: var(--text-light);
         }
         .ai-avatar.accept .avatar-status-overlay {
-            background-color: rgba(74, 222, 128, 0.7);
+            background-color: rgba(74, 222, 128, 0.75); /* Slightly stronger overlay */
             opacity: 1;
             transform: scale(1);
         }
         .ai-avatar.reject .avatar-status-overlay {
-            background-color: rgba(248, 113, 113, 0.7);
+            background-color: rgba(248, 113, 113, 0.75); /* Slightly stronger overlay */
             opacity: 1;
             transform: scale(1);
         }
@@ -177,8 +189,8 @@
             animation: pulseBorder 1s infinite ease-in-out;
         }
         @keyframes pulseBorder {
-            0%, 100% { border-color: transparent; box-shadow: 0 5px 15px rgba(0,0,0,0.2); } /* Reset shadow */
-            50% { border-color: var(--scan-pulse-color); box-shadow: 0 0 20px var(--scan-pulse-color), 0 5px 15px rgba(0,0,0,0.2); } /* Add pulse shadow */
+            0%, 100% { border-color: transparent; box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+            50% { border-color: var(--scan-pulse-color); box-shadow: 0 0 25px var(--scan-pulse-color), 0 6px 18px rgba(0,0,0,0.25); }
         }
         /* Static border colors for decision */
         .ai-avatar.accept {
@@ -194,44 +206,42 @@
             flex-grow: 1;
             display: flex;
             position: relative;
-            overflow: hidden; /* ** Important: Hide overflow here ** */
-            min-height: 0; /* ** Added: Prevent flex items from overflowing parent ** */
+            overflow: hidden;
+            min-height: 0;
         }
 
         /* Actionable Emails List */
         .actionable-column {
             flex-grow: 1;
-            padding: 0; /* Remove padding here, add to inner container */
+            padding: 0;
             position: relative;
-            display: flex; /* Use flex for inner container */
-            flex-direction: column; /* Stack title and list */
-            gap: 0; /* Remove gap here */
-            overflow: hidden; /* ** Hide overflow here ** */
-            min-width: 0; /* ** Added: Prevent flex item from overflowing parent ** */
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            overflow: hidden;
+            min-width: 0;
         }
          .actionable-column-title {
              font-size: 16px;
              font-weight: 700;
              color: var(--primary-color);
-             margin-bottom: 0; /* Remove margin */
-             padding: 20px 20px 8px 20px; /* Adjust padding */
+             margin-bottom: 0;
+             padding: 20px 20px 8px 20px;
              border-bottom: 3px solid var(--primary-color);
              text-align: center;
              flex-shrink: 0;
-             /* position: sticky; No longer needed with flex approach */
-             /* top: 0; */
              background-color: var(--ui-bg);
              z-index: 1;
          }
         /* Container for actionable emails */
         .actionable-list-container {
-            flex-grow: 1; /* Take remaining space */
-            overflow-y: auto; /* Allow scrolling */
-            padding: 15px 20px 20px 20px; /* Padding for the list */
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px 20px 20px 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px; /* Gap between emails */
-            min-height: 0; /* ** Added: Ensure it fits within flex parent ** */
+            gap: 12px;
+            min-height: 0;
         }
 
 
@@ -247,7 +257,7 @@
             flex-shrink: 0;
             overflow: hidden;
             transition: background-color 0.3s ease;
-            min-width: 0; /* ** Added: Prevent flex item from overflowing parent ** */
+            min-width: 0;
         }
          .filtered-column-title {
              font-size: 13px;
@@ -261,8 +271,6 @@
              gap: 6px;
              flex-shrink: 0;
              padding: 20px 12px 15px 12px;
-             /* position: sticky; No longer needed */
-             /* top: 0; */
              background-color: var(--filtered-area-bg);
              z-index: 1;
              width: 100%;
@@ -281,7 +289,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 0; /* ** Added: Ensure it fits within flex parent ** */
+            min-height: 0;
          }
 
 
@@ -321,14 +329,14 @@
          /* Style for emails in the list containers */
          .actionable-list-container .email-item,
          .filtered-list-container .email-item {
-             position: relative; /* Change to relative */
-             width: 100%; /* Full width of container */
-             left: auto; /* Reset positioning */
+             position: relative;
+             width: 100%;
+             left: auto;
              top: auto;
              transform: none;
-             margin-bottom: 0; /* Remove margin, use gap */
-             opacity: 1; /* Default opacity */
-             flex-shrink: 0; /* Prevent shrinking */
+             margin-bottom: 0;
+             opacity: 1;
+             flex-shrink: 0;
          }
          /* Specific styles for filtered list items */
          .filtered-list-container .email-item {
@@ -377,9 +385,11 @@
 
         /* Counters */
         .counters {
+            height: var(--counters-height);
             display: flex;
             justify-content: space-around;
-            padding: 18px 20px;
+            align-items: center; /* Vertically center content */
+            padding: 10px 20px; /* Adjusted padding */
             border-top: 1px solid var(--border-color);
             background-color: #f9fafb;
             flex-shrink: 0;
@@ -402,23 +412,23 @@
 
         /* Animation States */
         .email-item.entering { /* State as it moves to the avatar */
-            top: 115px; /* Adjusted target position */
+            top: calc(100% - var(--avatar-size) - 30px); /* Target position above avatar */
             opacity: 1;
             transform: translateX(-50%) scale(1.1);
         }
         .email-item.scanning { /* State while being scanned */
-             top: 115px;
+             top: calc(100% - var(--avatar-size) - 30px);
              z-index: 15;
              transform: translateX(-50%) scale(1.1);
         }
         .email-item.accepted { /* State when moving to actionable list */
-             top: 215px; /* Adjusted target position */
+             top: calc(100% + 20px); /* Move down past the processing area */
              opacity: 1;
              transform: translateX(-50%) scale(1);
         }
         .email-item.rejected { /* State when moving to filtered column */
-            top: 120px; /* Adjusted target position */
-            left: calc(100% - 75px); /* Adjusted target position */
+            top: calc(100% - var(--avatar-size) / 2 - 10px); /* Stay near avatar level vertically */
+            left: calc(100% - 75px); /* Move to the center of the filtered column */
             transform: translateX(-50%) scale(0.6) rotate(8deg);
             opacity: 0;
             z-index: 5;
@@ -437,36 +447,36 @@
         @media screen and (max-width: 768px) {
             .inbox-container {
                  width: 95vw;
-                 height: 70vh;
+                 height: 75vh; /* Adjusted height */
             }
-             .animation-title { font-size: 24px; }
+             .animation-header h1 { font-size: 20px; }
              .processing-area { height: 180px; }
               :root { --avatar-size: 60px; }
              .ai-avatar { bottom: 20px; }
-             .email-item.entering, .email-item.scanning { top: 100px; }
-             .email-item.accepted { top: 195px; }
-             .email-item.rejected { top: 105px; left: calc(100% - 65px); }
+             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 25px); }
+             .email-item.accepted { top: calc(100% + 15px); }
+             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2 - 5px); left: calc(100% - 65px); }
              .filtered-column { width: 130px; }
              .counters span { font-size: 20px; }
              .counter { font-size: 12px; }
         }
          @media screen and (max-width: 480px) {
-             .animation-title { font-size: 20px; }
-             .inbox-container { height: 70vh; max-width: 95%; } /* Increased height slightly */
-             .processing-area { height: 150px; }
+             .animation-header h1 { font-size: 18px; }
+             .inbox-container { height: 75vh; max-width: 95%; } /* Adjusted height */
+             .processing-area { height: 160px; } /* Adjusted height */
               :root { --avatar-size: 55px; }
              .ai-avatar { bottom: 15px; }
              .email-item { height: 60px; gap: 8px; padding: 6px 10px;}
              .email-icon { width: 20px; height: 20px;}
              .email-subject { font-size: 13px; }
              .email-sender { font-size: 11px; }
-             .email-item.entering, .email-item.scanning { top: 75px; }
-             .email-item.accepted { top: 165px; }
+             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 20px); } /* Adjust position */
+             .email-item.accepted { top: calc(100% + 10px); } /* Adjust position */
              .filtered-column { width: 110px; }
              .filtered-column-title { font-size: 11px; gap: 4px; padding: 15px 8px 12px 8px;}
              .filtered-column-title svg { width: 14px; height: 14px;}
              .filtered-list-container { padding: 12px 8px 15px 8px; }
-             .email-item.rejected { top: 80px; left: calc(100% - 55px); }
+             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2); left: calc(100% - 55px); } /* Adjust position */
              .filtered-list-container .email-item { height: 45px; padding: 5px 8px; gap: 5px;}
              .filtered-list-container .email-icon { width: 14px; height: 14px;}
              .filtered-list-container .email-subject { font-size: 11px;}
@@ -479,11 +489,12 @@
     </style>
 </head>
 <body>
-    <div class="animation-title">RomAIx AI Email Filtering Process</div>
-
     <div class="inbox-container">
+        <div class="animation-header">
+            <h1>RomAIx AI Email Filtering Process</h1>
+        </div>
+
         <div class="processing-area" id="processing-area">
-            <div class="incoming-label">Incoming Emails</div>
             <div class="ai-avatar" id="ai-avatar">
                 <div class="avatar-status-overlay" id="avatar-status-overlay">
                     </div>
@@ -607,7 +618,8 @@
             emailEl.querySelector('.email-icon').appendChild(iconSvg);
 
             emailEl.style.opacity = '0';
-            emailEl.style.top = '15px'; // Start near the top label
+            // Start position adjusted based on new processing area height
+            emailEl.style.top = '25px';
 
             elements.processingArea.appendChild(emailEl);
             return emailEl;
