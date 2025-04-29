@@ -133,6 +133,7 @@
              background-image: url('EmailRobotAgent.svg'); /* Updated placeholder size */
              background-size: cover;
              background-position: center;
+             overflow: hidden; /* Added to ensure background clipping */
         }
 
         /* Status Indicator Overlay (Check/Cross) */
@@ -151,6 +152,7 @@
             transform: scale(0.5);
             transition: opacity 0.3s ease, transform 0.3s ease;
             pointer-events: none;
+            overflow: hidden; /* ** Added: Clip the SVG content ** */
         }
         .avatar-status-overlay svg {
             width: 60%;
@@ -702,8 +704,11 @@
 
         // --- Start Loop ---
         function startAnimation() {
-            // Add reference to actionable list container
+            // Add reference to actionable list container (Ensure it's correct)
             elements.actionableListContainer = document.getElementById('actionable-list-container');
+            // Add reference to filtered list container (Ensure it's correct)
+             elements.filteredListContainer = document.getElementById('filtered-list-container');
+
 
             elements.processedCounter.textContent = processedCount;
             elements.relevantCounter.textContent = relevantCount;
