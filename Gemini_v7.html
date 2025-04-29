@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Filter - Avatar Flow (Branded V2) - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        :root {
+            /* --- Branding Colors --- */
+            --primary-color: #587C74;   /* Teal green - Used for Relevant/Highlight */
+            --secondary-color: #2F3E46; /* Dark blue-grey - Used for UI/Structure */
+            /* --- Supporting Colors --- */
+            --bg-color: #eef2f5;        /* Fallback background */
+            --ui-bg: #ffffff;           /* Inbox background */
+            --border-color: #e5e7eb;    /* Light borders */
+            --filtered-area-bg: #f8fafc; /* Very light grey for filtered area */
+            --filtered-color: #9ca3af;  /* Muted grey for filtered text/icons */
+            --scan-pulse-color: #a7f3d0; /* Light green pulse */
+            --text-dark: #1f2937;
+            --text-light: #f9fafb;
+            --reject-color: #f87171; /* Lighter Red for reject flash/border */
+            --accept-color: #4ade80; /* Lighter Green for accept flash/border */
+            --avatar-size: 65px;
+            --avatar-border-width: 4px;
+            --header-height: 60px;
+            --counters-height: 65px;
+            /* --- Logo Variables (from example) --- */
+            --logo-width: 80px;
+            --logo-height: 80px;
+            --logo-margin-bottom: 20px;
+            --logo-margin-right: 25px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            /* --- Background Image (Ensure 'LinkedIn_Background.png' is in the same folder or update path) --- */
+            background-image: url('LinkedInBackground.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: var(--bg-color); /* Fallback solid color */
+            background-attachment: fixed;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.15);
+            z-index: 1;
+        }
+
+        .inbox-container {
+            width: 90vw;
+            max-width: 700px;
+            height: 85vh;
+            max-height: 850px;
+            background-color: var(--ui-bg);
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.3);
+            z-index: 2;
+        }
+
+        /* --- Animation Header --- */
+        .animation-header {
+            height: var(--header-height);
+            background: linear-gradient(145deg, var(--secondary-color), #4a5a6a);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px 16px 0 0; /* Match top rounding */
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 20;
+        }
+        .animation-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Top Area for Incoming Emails & Filter --- */
+        .processing-area {
+            /* ** Increased height slightly more for spacing ** */
+            height: calc(var(--avatar-size) + 110px); /* e.g., 65px avatar + 110px spacing */
+            min-height: 190px; /* Adjusted min-height */
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            overflow: hidden;
+            background: linear-gradient(180deg, #fdfdfe, #ffffff);
+            padding-top: 10px;
+        }
+
+        .incoming-label {
+             position: absolute;
+             top: 22px;
+             left: 50%;
+             transform: translateX(-50%);
+             font-size: 13px;
+             font-weight: 600;
+             color: var(--secondary-color);
+             opacity: 0.9;
+             text-transform: uppercase;
+             letter-spacing: 0.5px;
+        }
+
+        /* AI Avatar */
+        .ai-avatar {
+            width: var(--avatar-size);
+            height: var(--avatar-size);
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            position: absolute;
+            bottom: 20px; /* Keep position relative to bottom */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+            border: var(--avatar-border-width) solid transparent;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+             background-image: url('EmailRobotAgent.svg'); /* Your SVG image */
+             background-size: contain;
+             background-position: center;
+             background-repeat: no-repeat;
+             overflow: hidden;
+        }
+
+        /* Status Indicator Overlay (Check/Cross) */
+        .avatar-status-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .avatar-status-overlay svg {
+            width: 60%;
+            height: 60%;
+            fill: var(--text-light);
+        }
+        .ai-avatar.accept .avatar-status-overlay {
+            background-color: rgba(74, 222, 128, 0.75);
+            opacity: 1;
+            transform: scale(1);
+        }
+        .ai-avatar.reject .avatar-status-overlay {
+            background-color: rgba(248, 113, 113, 0.75);
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Pulsing border animation */
+        .ai-avatar.scanning {
+            animation: pulseBorder 1s infinite ease-in-out;
+        }
+        @keyframes pulseBorder {
+            0%, 100% { border-color: transparent; box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+            50% { border-color: var(--scan-pulse-color); box-shadow: 0 0 25px var(--scan-pulse-color), 0 6px 18px rgba(0,0,0,0.25); }
+        }
+        /* Static border colors for decision */
+        .ai-avatar.accept {
+            border-color: var(--accept-color);
+        }
+        .ai-avatar.reject {
+            border-color: var(--reject-color);
+        }
+
+
+        /* --- Main Content Area (Actionable & Filtered) --- */
+        .content-area {
+            flex-grow: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* Actionable Emails List */
+        .actionable-column {
+            flex-grow: 1;
+            padding: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            overflow: hidden;
+            min-width: 0;
+        }
+         .actionable-column-title {
+             font-size: 16px;
+             font-weight: 700;
+             color: var(--primary-color);
+             margin-bottom: 0;
+             padding: 20px 20px 8px 20px;
+             border-bottom: 3px solid var(--primary-color);
+             text-align: center;
+             flex-shrink: 0;
+             background-color: var(--ui-bg);
+             z-index: 1;
+         }
+        /* Container for actionable emails */
+        .actionable-list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+
+        /* Filtered Emails Area */
+        .filtered-column {
+            width: 150px;
+            background-color: var(--filtered-area-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            flex-shrink: 0;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+            min-width: 0;
+        }
+         .filtered-column-title {
+             font-size: 13px;
+             font-weight: 700;
+             color: var(--filtered-color);
+             text-transform: uppercase;
+             letter-spacing: 0.5px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 6px;
+             flex-shrink: 0;
+             padding: 20px 12px 15px 12px;
+             background-color: var(--filtered-area-bg);
+             z-index: 1;
+             width: 100%;
+             border-bottom: 1px solid var(--border-color);
+         }
+          .filtered-column-title svg {
+              width: 18px;
+              height: 18px;
+              fill: currentColor;
+          }
+         /* Container for the scrolling filtered emails */
+         .filtered-list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px 12px 20px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 0;
+         }
+
+
+        /* Email Item Visual */
+        .email-item {
+            width: 90%;
+            max-width: 350px;
+            height: 65px;
+            background-color: var(--ui-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: absolute;
+            top: 45px; /* Adjusted start position */
+            left: 50%;
+            transform: translateX(-50%) scale(1);
+            z-index: 5;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            gap: 12px;
+            overflow: hidden;
+            transition: top 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+                        left 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+                        transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+                        opacity 0.5s ease-out,
+                        background-color 0.3s ease,
+                        border-color 0.3s ease;
+        }
+         .email-item.relevant {
+             border-left: 5px solid var(--primary-color);
+         }
+         .email-item.irrelevant {
+             border-left: 5px solid var(--filtered-color);
+         }
+         /* Style for emails in the list containers */
+         .actionable-list-container .email-item,
+         .filtered-list-container .email-item {
+             position: relative;
+             width: 100%;
+             left: auto;
+             top: auto;
+             transform: none;
+             margin-bottom: 0;
+             opacity: 1;
+             flex-shrink: 0;
+         }
+         /* Specific styles for filtered list items */
+         .filtered-list-container .email-item {
+             height: 50px;
+             opacity: 0.7;
+             padding: 6px 10px;
+             gap: 8px;
+             box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+             border-left-width: 4px;
+         }
+
+
+        .email-icon {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+         .email-icon svg { fill: currentColor; }
+         .filtered-list-container .email-icon { width: 16px; height: 16px; }
+
+        .email-details {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .email-subject {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+         .filtered-list-container .email-subject { font-size: 12px; margin-bottom: 2px;}
+
+        .email-sender {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+         .filtered-list-container .email-sender { font-size: 11px; }
+
+
+        /* Counters */
+        .counters {
+            height: var(--counters-height);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-color);
+            background-color: #f9fafb;
+            flex-shrink: 0;
+        }
+        .counter {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        .counter span {
+            display: block;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        #relevant-counter span { color: var(--primary-color); }
+        #filtered-counter span { color: var(--filtered-color); }
+        #processed-counter span { color: var(--secondary-color); }
+
+        /* Animation States */
+        .email-item.entering, /* State as it moves to the avatar */
+        .email-item.scanning { /* State while being scanned */
+            /* ** MODIFIED: Increased subtracted value for more space ** */
+            top: calc(100% - var(--avatar-size) - 60px); /* Target position above avatar */
+            opacity: 1;
+            transform: translateX(-50%) scale(1.1);
+            z-index: 15; /* Bring above avatar */
+        }
+        /* Removed separate .scanning rule as top is the same */
+
+        .email-item.accepted { /* State when moving to actionable list */
+             top: calc(100% + 25px); /* Adjusted target position */
+             opacity: 1;
+             transform: translateX(-50%) scale(1);
+        }
+        .email-item.rejected { /* State when moving to filtered column */
+            /* ** Adjusted top slightly to match new spacing ** */
+            top: calc(100% - var(--avatar-size) / 2 - 35px); /* Adjusted target position vertically */
+            left: calc(100% - 75px); /* Adjusted target position horizontally */
+            transform: translateX(-50%) scale(0.6) rotate(8deg);
+            opacity: 0;
+            z-index: 5;
+        }
+         /* Flash effect for filtered column */
+         .filtered-column.flash {
+             animation: flashBg 0.4s ease-out;
+         }
+         @keyframes flashBg {
+             0%, 100% { background-color: var(--filtered-area-bg); }
+             50% { background-color: var(--reject-color); opacity: 0.3; }
+         }
+
+        /* --- Custom Logo Styles (from example) --- */
+        #custom-logo {
+            position: fixed;
+            bottom: var(--logo-margin-bottom);
+            right: var(--logo-margin-right);
+            width: var(--logo-width);
+            height: var(--logo-height);
+            object-fit: contain;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+
+        /* Responsive Adjustments */
+        @media screen and (max-width: 768px) {
+            .inbox-container {
+                 width: 95vw;
+                 height: 75vh;
+            }
+             .animation-header h1 { font-size: 20px; }
+             .processing-area { height: 180px; }
+              :root { --avatar-size: 60px; }
+             .ai-avatar { bottom: 20px; }
+             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 50px); } /* Adjusted responsive */
+             .email-item.accepted { top: calc(100% + 20px); }
+             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2 - 25px); left: calc(100% - 65px); } /* Adjusted responsive */
+             .filtered-column { width: 130px; }
+             .counters span { font-size: 20px; }
+             .counter { font-size: 12px; }
+             :root { --logo-width: 60px; --logo-height: 60px; --logo-margin-bottom: 15px; --logo-margin-right: 15px;}
+        }
+         @media screen and (max-width: 480px) {
+             .animation-header h1 { font-size: 18px; }
+             .inbox-container { height: 75vh; max-width: 95%; } /* Adjusted height */
+             .processing-area { height: 160px; } /* Adjusted height */
+              :root { --avatar-size: 55px; }
+             .ai-avatar { bottom: 15px; }
+             .email-item { height: 60px; gap: 8px; padding: 6px 10px;}
+             .email-icon { width: 20px; height: 20px;}
+             .email-subject { font-size: 13px; }
+             .email-sender { font-size: 11px; }
+             .email-item.entering, .email-item.scanning { top: calc(100% - var(--avatar-size) - 45px); } /* Adjust position */
+             .email-item.accepted { top: calc(100% + 15px); } /* Adjust position */
+             .filtered-column { width: 110px; }
+             .filtered-column-title { font-size: 11px; gap: 4px; padding: 15px 8px 12px 8px;}
+             .filtered-column-title svg { width: 14px; height: 14px;}
+             .filtered-list-container { padding: 12px 8px 15px 8px; }
+             .email-item.rejected { top: calc(100% - var(--avatar-size) / 2 - 20px); left: calc(100% - 55px); } /* Adjust position */
+             .filtered-list-container .email-item { height: 45px; padding: 5px 8px; gap: 5px;}
+             .filtered-list-container .email-icon { width: 14px; height: 14px;}
+             .filtered-list-container .email-subject { font-size: 11px;}
+             .filtered-list-container .email-sender { font-size: 10px;}
+             .counters span { font-size: 18px; }
+             .counter { font-size: 11px; }
+             .actionable-column-title { font-size: 14px;}
+             :root { --logo-width: 50px; --logo-height: 50px; --logo-margin-bottom: 10px; --logo-margin-right: 10px;}
+         }
+
+    </style>
+</head>
+<body>
+    <div class="inbox-container">
+        <div class="animation-header">
+            <h1>RomAIx AI Email Filtering Process</h1>
+        </div>
+
+        <div class="processing-area" id="processing-area">
+            <div class="ai-avatar" id="ai-avatar">
+                <div class="avatar-status-overlay" id="avatar-status-overlay">
+                    </div>
+            </div>
+            </div>
+
+        <div class="content-area">
+            <div class="actionable-column" id="actionable-column">
+                 <div class="actionable-column-title">Actionable Emails</div>
+                 <div class="actionable-list-container" id="actionable-list-container">
+                     </div>
+            </div>
+            <div class="filtered-column" id="filtered-column">
+                 <div class="filtered-column-title">
+                     <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                     Filtered
+                 </div>
+                 <div class="filtered-list-container" id="filtered-list-container">
+                    </div>
+            </div>
+        </div>
+
+        <div class="counters">
+            <div class="counter" id="processed-counter">
+                <span >0</span>Processed
+            </div>
+            <div class="counter" id="relevant-counter">
+                <span >0</span>Relevant
+            </div>
+            <div class="counter" id="filtered-counter">
+                <span >0</span>Filtered
+            </div>
+        </div>
+    </div>
+
+    <img id="custom-logo" src="RomAIxLogoDesign.svg" alt="RomAIx Logo">
+
+    <script>
+        // --- Configuration ---
+        const CONFIG = {
+            spawnInterval: 1900, // Time between new emails (ms)
+            timeToAvatar: 900,    // Time for email to travel to the avatar
+            scanTime: 700,        // Time the avatar pulses/scans
+            decisionPause: 250,   // Short pause after scan before moving
+            moveToInboxTime: 800, // Time for relevant email to slide into inbox list
+            rejectTime: 700,      // Time for irrelevant email to slide/fade out to filtered list
+            maxFilteredEmails: 6, // Increased limit
+            maxActionableEmails: 7 // Increased limit
+        };
+
+        // --- DOM Elements ---
+        const elements = {
+            processingArea: document.getElementById('processing-area'),
+            aiAvatar: document.getElementById('ai-avatar'),
+            avatarStatusOverlay: document.getElementById('avatar-status-overlay'),
+            actionableColumn: document.getElementById('actionable-column'),
+            actionableListContainer: document.getElementById('actionable-list-container'), // Target list container
+            filteredColumn: document.getElementById('filtered-column'),
+            filteredListContainer: document.getElementById('filtered-list-container'), // Target list container
+            processedCounter: document.querySelector('#processed-counter span'),
+            relevantCounter: document.querySelector('#relevant-counter span'),
+            filteredCounter: document.querySelector('#filtered-counter span'),
+        };
+
+        // --- SVG Icons ---
+        const ICONS = {
+             accept: `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`, // Checkmark
+             reject: `<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`  // Cross
+        };
+
+        // --- State ---
+        let processedCount = 0;
+        let relevantCount = 0;
+        let filteredCount = 0;
+        let emailIdCounter = 0;
+        const actionableEmails = [];
+        const filteredEmails = [];
+
+        // --- Utility ---
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        // --- Email Data (Simplified) ---
+        const sampleEmails = [
+            { subject: "Tour Booking Inquiry", sender: "guest@email.com", relevant: true },
+            { subject: "Re: Question about availability", sender: "traveler@mail.net", relevant: true },
+            { subject: "FW: Marketing Newsletter", sender: "promo@events.org", relevant: false },
+            { subject: "Need to reschedule my trip", sender: "customer@web.com", relevant: true },
+            { subject: "SPAM: Win a Free Cruise!", sender: "winner@contest.biz", relevant: false },
+            { subject: "Partnership Opportunity", sender: "corp@business.io", relevant: false },
+            { subject: "Confirmation: Your Tour Details", sender: "bookings@romiax.com", relevant: true },
+        ];
+
+        // --- Create Email Element ---
+        function createEmailElement(emailData) {
+            const emailEl = document.createElement('div');
+            emailEl.classList.add('email-item');
+            emailEl.id = `email-${emailIdCounter++}`;
+            emailEl.dataset.relevant = emailData.relevant;
+
+            const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            iconSvg.setAttribute('viewBox', '0 0 24 24');
+            const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+            if (emailData.relevant) {
+                emailEl.classList.add('relevant');
+                // ** UPDATED ICON: Standard Checkmark **
+                iconPath.setAttribute('d', 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z');
+                iconSvg.style.color = 'var(--primary-color)';
+            } else {
+                emailEl.classList.add('irrelevant');
+                iconPath.setAttribute('d', 'M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z'); // Spam/Warning
+                iconSvg.style.color = 'var(--filtered-color)';
+            }
+            iconSvg.appendChild(iconPath);
+
+            emailEl.innerHTML = `
+                <div class="email-icon"></div>
+                <div class="email-details">
+                    <div class="email-subject">${emailData.subject}</div>
+                    <div class="email-sender">${emailData.sender}</div>
+                </div>
+            `;
+            emailEl.querySelector('.email-icon').appendChild(iconSvg);
+
+            emailEl.style.opacity = '0';
+            // Start position adjusted based on new processing area height
+            emailEl.style.top = '25px'; // Adjusted start top
+
+            elements.processingArea.appendChild(emailEl);
+            return emailEl;
+        }
+
+        // --- Manage List Display & Limits ---
+        function addEmailToList(emailEl, listContainer, listArray, limit) {
+             // Final styles for list display
+             emailEl.style.position = 'relative';
+             emailEl.style.left = 'auto';
+             emailEl.style.top = 'auto';
+             emailEl.style.transform = 'none';
+             emailEl.style.opacity = listContainer === elements.filteredListContainer ? '0.7' : '1'; // Dim if filtered
+             emailEl.style.transition = 'opacity 0.4s ease-out';
+
+             // Add to the top of the list (below the title)
+             listContainer.insertBefore(emailEl, listContainer.firstChild); // Prepend to list container
+             listArray.push(emailEl);
+
+             // Enforce list limit by removing the last child if over limit
+             if (listArray.length > limit) {
+                 const oldestEmail = listArray.shift(); // Remove from array tracking
+                 const emailToRemove = listContainer.lastChild; // Get last DOM element
+                 if (emailToRemove && emailToRemove.classList.contains('email-item')) {
+                    emailToRemove.style.opacity = '0';
+                    setTimeout(() => emailToRemove.remove(), 400); // Remove after fade
+                 }
+             }
+        }
+
+         // --- Show Avatar Status ---
+         function showAvatarStatus(statusType) {
+             elements.aiAvatar.classList.remove('scanning', 'accept', 'reject');
+             elements.avatarStatusOverlay.innerHTML = ICONS[statusType];
+             elements.aiAvatar.classList.add(statusType);
+
+             setTimeout(() => {
+                 elements.aiAvatar.classList.remove(statusType);
+             }, CONFIG.scanTime * 0.8);
+         }
+
+
+        // --- Animation Sequence ---
+        async function processEmailFlow() {
+            const emailData = sampleEmails[Math.floor(Math.random() * sampleEmails.length)];
+            const emailEl = createEmailElement(emailData);
+            const isRelevant = emailData.relevant;
+
+            processedCount++;
+            elements.processedCounter.textContent = processedCount;
+
+            // 1. Animate Arrival to Avatar
+            await delay(50);
+            emailEl.classList.add('entering'); // Trigger animation to avatar position
+            emailEl.style.opacity = '1';
+
+            await delay(CONFIG.timeToAvatar); // Wait for arrival
+
+            // 2. Scanning Phase
+            emailEl.classList.remove('entering');
+            emailEl.classList.add('scanning'); // Keep near avatar
+            elements.aiAvatar.classList.add('scanning'); // Start avatar pulse
+            await delay(CONFIG.scanTime);
+            elements.aiAvatar.classList.remove('scanning'); // Stop pulse
+
+            // 3. Decision Flash & Pause
+            showAvatarStatus(isRelevant ? 'accept' : 'reject'); // Show check or cross on avatar
+            await delay(CONFIG.decisionPause);
+
+            // 4. Routing
+            emailEl.classList.remove('scanning');
+            if (isRelevant) {
+                // Move Down to Actionable List
+                relevantCount++;
+                elements.relevantCounter.textContent = relevantCount;
+                emailEl.classList.add('accepted'); // Trigger downward movement
+                await delay(CONFIG.moveToInboxTime / 2); // Wait part way
+
+                // Add to the visual list in the actionable column's container
+                addEmailToList(emailEl, elements.actionableListContainer, actionableEmails, CONFIG.maxActionableEmails);
+
+            } else {
+                // Deflect Sideways to Filtered List
+                filteredCount++;
+                elements.filteredCounter.textContent = filteredCount;
+                emailEl.classList.add('rejected'); // Trigger sideways movement & fade
+                elements.filteredColumn.classList.add('flash'); // Flash background
+
+                await delay(CONFIG.rejectTime); // Wait for animation
+
+                 // Add dimmed item to filtered list container
+                 addEmailToList(emailEl, elements.filteredListContainer, filteredEmails, CONFIG.maxFilteredEmails);
+                 setTimeout(() => elements.filteredColumn.classList.remove('flash'), 100);
+            }
+        }
+
+        // --- Start Loop ---
+        function startAnimation() {
+            // Add reference to actionable list container (Ensure it's correct)
+            elements.actionableListContainer = document.getElementById('actionable-list-container');
+            // Add reference to filtered list container (Ensure it's correct)
+             elements.filteredListContainer = document.getElementById('filtered-list-container');
+
+
+            elements.processedCounter.textContent = processedCount;
+            elements.relevantCounter.textContent = relevantCount;
+            elements.filteredCounter.textContent = filteredCount;
+
+            // Add error handler for background image
+            const body = document.body;
+            const currentBg = body.style.backgroundImage;
+            if (currentBg && currentBg !== 'none') {
+                const imgUrlMatch = currentBg.match(/url\(["']?([^"']*)["']?\)/);
+                if (imgUrlMatch && imgUrlMatch[1]) {
+                    const imgUrl = imgUrlMatch[1];
+                    const img = new Image();
+                    img.onerror = () => {
+                        console.warn(`Background image failed to load: ${imgUrl}. Falling back to color.`);
+                        body.style.backgroundImage = 'none'; // Remove failed background
+                        body.style.backgroundColor = 'var(--bg-color)'; // Apply fallback color
+                    }
+                    img.src = imgUrl;
+                }
+            } else if (!body.style.backgroundColor) {
+                 body.style.backgroundColor = 'var(--bg-color)'; // Default fallback if no bg specified
+            }
+
+            // Add error handler for logo image
+            const logo = document.getElementById('custom-logo');
+            if (logo) {
+                logo.onerror = function() {
+                    console.warn(`Logo image failed to load: ${this.src}. Hiding logo.`);
+                    this.style.display = 'none'; // Hide logo if it fails to load
+                };
+                // Check if src is valid initially (optional but good practice)
+                if (!logo.getAttribute('src')) {
+                     console.warn('Logo src attribute is missing.');
+                     logo.style.display = 'none';
+                }
+            }
+
+
+            setInterval(processEmailFlow, CONFIG.spawnInterval);
+            processEmailFlow(); // Start first one
+        }
+
+        // --- Initialize ---
+        document.addEventListener('DOMContentLoaded', startAnimation);
+
+    </script>
+</body>
+</html>
