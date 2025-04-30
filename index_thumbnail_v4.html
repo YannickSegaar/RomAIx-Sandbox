@@ -169,6 +169,7 @@
             flex-grow: 1;
             overflow: hidden;
             position: relative;
+            height: calc(100% - 50px); /* Full height minus header */
         }
 
         /* --- Email Sidebar --- */
@@ -219,8 +220,8 @@
             flex-wrap: wrap;
             padding: 8px;
             gap: 6px;
-            align-content: flex-start; /* Align rows to top */
-            overflow-y: hidden; /* Hide vertical scroll for thumbnail */
+            align-content: stretch; /* Stretch items vertically */
+            overflow-y: hidden; /* Hide scroll for thumbnail */
             background-color: #ffffff;
             position: relative;
         }
@@ -232,16 +233,10 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.07);
             overflow: hidden;
             width: calc(50% - 3px); /* Two columns */
-             /* Let height be determined by content, but ensure consistency via flex */
-            /* height: calc(25% - 4.5px); Removed fixed height */
+            height: calc(25% - 4.5px); /* Each item takes ~25% height minus gap adjustment */
             display: flex;
             flex-direction: column;
-            /* Use flex-basis to suggest initial height distribution */
-            flex-basis: calc(25% - 4.5px);
-            flex-grow: 1; /* Allow items to grow slightly if needed */
         }
-        /* No hover effect needed for static thumbnail */
-        /* .collage-item:hover { transform: translateY(-2px); } */
 
         .collage-header {
             padding: 5px 7px;
@@ -250,7 +245,7 @@
             align-items: center;
             gap: 5px;
             border-bottom: 1px solid #eee;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Prevent shrinking */
         }
         .collage-logo {
             width: 18px;
@@ -270,25 +265,24 @@
 
         .collage-banner {
             width: 100%;
-            /* Let banner take more space */
-            flex-grow: 3; /* Give more weight to banner */
-            height: 0; /* Initial height for flex-grow calculation */
-            min-height: 50px; /* Ensure minimum banner height */
+            /* Let banner take more space using flex-grow */
+            flex-grow: 1; /* Allow banner to grow */
+            height: 0; /* Let flex-grow determine height */
+            min-height: 40px; /* Minimum visual height */
             object-fit: cover;
             display: block;
         }
 
         .collage-title {
-            padding: 5px; /* Reduced padding */
+            padding: 4px 5px; /* Reduced padding */
             font-size: 10px;
             font-weight: bold;
             color: #333;
-            line-height: 1.2;
+            line-height: 1.1; /* Tighter line height */
             text-align: center;
             background-color: #fff;
-            flex-grow: 1; /* Title takes remaining space */
-            flex-shrink: 0; /* Don't shrink title area */
-            min-height: 25px; /* Minimum height for title */
+            flex-shrink: 0; /* Prevent title from shrinking */
+            min-height: 20px; /* Reduced min-height */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -315,9 +309,9 @@
             .sidebar-item { padding: 8px 10px; font-size: 12px; gap: 6px; }
             .sidebar-item-icon { width: 14px; height: 14px; }
 
-            .collage-item { width: calc(50% - 4px); flex-basis: calc(25% - 4.5px); }
-            .collage-banner { min-height: 45px; }
-            .collage-title { font-size: 9px; padding: 4px; min-height: 22px;}
+            .collage-item { width: calc(50% - 4px); height: calc(25% - 4.5px); }
+            .collage-banner { min-height: 35px; }
+            .collage-title { font-size: 9px; padding: 3px; min-height: 18px;}
             .collage-header { padding: 4px 6px; }
             .collage-logo { width: 16px; height: 16px; }
             .collage-company { font-size: 8px; }
@@ -332,9 +326,9 @@
              .email-sidebar { display: none; }
              .email-content-area { margin-left: 0; padding: 6px; gap: 4px; }
 
-             .collage-item { width: calc(50% - 2px); flex-basis: calc(25% - 3px); }
-             .collage-banner { min-height: 40px; }
-             .collage-title { font-size: 8px; padding: 3px; line-height: 1.1; min-height: 18px;}
+             .collage-item { width: calc(50% - 2px); height: calc(25% - 3px); }
+             .collage-banner { min-height: 30px; }
+             .collage-title { font-size: 8px; padding: 2px; line-height: 1.1; min-height: 16px;}
               .collage-header { padding: 3px 4px; gap: 3px;}
              .collage-logo { width: 14px; height: 14px; }
              .collage-company { font-size: 7px; }
