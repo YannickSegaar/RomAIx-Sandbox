@@ -45,6 +45,29 @@
             padding: 20px; /* Add some padding */
         }
 
+        /* --- Main Container for Title + Laptop --- */
+        .animation-container {
+            width: 100%;
+            max-width: 950px; /* Match laptop max width */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Title Container --- */
+        .title-container {
+            width: 100%;
+            background: linear-gradient(to right, #2F3E46, #3a4f5a); /* Dark gradient */
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px; /* Rounded corners */
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px; /* Space below title */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
         /* --- Laptop Mockup --- */
         .laptop-mockup {
             width: 100%; /* Responsive width */
@@ -361,6 +384,12 @@
     </style>
 </head>
 <body>
+
+    <div class="animation-container">
+        <div class="title-container">
+            First Response Wins: Why Travelers Don't Wait
+        </div>
+
     <div class="laptop-mockup">
         <div class="laptop-screen">
             <div class="display">
@@ -406,7 +435,7 @@
         // --- CONFIGURATION ---
         const CONFIG = {
             initialDelay: 1000,      // Wait 1 second before starting
-            templateDisplayTime: 4000, // Show each template for 4 seconds (Increased from original)
+            templateDisplayTime: 1000, // Show each template for 4 seconds (Increased from original)
             fadeDuration: 600       // Duration of the fade effect (matches CSS transition)
         };
 
