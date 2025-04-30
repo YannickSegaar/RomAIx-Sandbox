@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Thumbnail - AI Email Auto-Reply Showcase - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+        /* Import fonts used in templates */
+        @import url('https://fonts.googleapis.com/css2?family=Trebuchet+MS&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Georgia&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap');
+
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            /* --- Background Image --- */
+            background-image: url('https://placehold.co/1920x1080/e0e4e8/777777?text=Background'); /* Placeholder */
+            /* background-image: url('LinkedInBackground.png'); */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #eef2f5; /* Fallback solid color */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrollbars from body */
+            padding: 20px; /* Add some padding */
+        }
+
+        /* --- Main Container --- */
+        .animation-container {
+            width: 100%;
+            max-width: 950px; /* Match laptop max width */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Laptop Mockup --- */
+        .laptop-mockup {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 950 / 680;
+            min-height: 550px;
+            position: relative;
+            perspective: 1500px;
+            transform-style: preserve-3d;
+            transform: rotateX(5deg) rotateY(0deg);
+            flex-shrink: 0;
+        }
+
+        .laptop-screen {
+            width: 100%;
+            height: calc(100% - 30px);
+            background-color: #1a1a1a;
+            border-radius: 20px 20px 0 0;
+            padding: 15px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+        }
+
+        .laptop-screen::after { /* Glossy effect */
+            content: '';
+            position: absolute;
+            width: calc(100% - 30px);
+            height: calc(100% - 30px);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px 12px 0 0;
+            top: 15px;
+            left: 15px;
+            transform: translateZ(2px);
+            pointer-events: none;
+        }
+
+        .laptop-base {
+            width: calc(100% + 40px);
+            height: 30px;
+            background: linear-gradient(to bottom, #333, #1a1a1a);
+            position: absolute;
+            bottom: 0;
+            left: -20px;
+            transform: rotateX(80deg);
+            transform-origin: top;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- Email Client Display --- */
+        .display {
+            width: 100%;
+            height: 100%;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- Email Client Header --- */
+        .email-header {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .email-header-title {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-svg {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-svg img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .email-toolbar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toolbar-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- Main Email Area (Sidebar + Content) --- */
+        .email-main {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Email Sidebar --- */
+         .email-sidebar {
+            width: 180px;
+            height: 100%;
+            background-color: rgba(241, 242, 242, 0.7);
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 20px 0;
+            z-index: 1;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .sidebar-item {
+            padding: 12px 20px;
+            font-size: 14px;
+            color: rgba(85, 85, 85, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            cursor: default;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar-item-active {
+            background-color: rgba(88, 124, 116, 0.15);
+            color: #2F3E46;
+            font-weight: 600;
+        }
+
+        .sidebar-item-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            background-color: rgba(88, 124, 116, 0.3);
+        }
+
+        .notification { display: none; }
+
+        /* --- Email Content Area (Right side) --- */
+        .email-content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 8px;
+            gap: 6px;
+            align-content: flex-start; /* Align rows to top */
+            overflow-y: hidden; /* Hide vertical scroll for thumbnail */
+            background-color: #ffffff;
+            position: relative;
+        }
+
+        /* --- Collage Item Styling --- */
+        .collage-item {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            overflow: hidden;
+            width: calc(50% - 3px); /* Two columns */
+             /* Let height be determined by content, but ensure consistency via flex */
+            /* height: calc(25% - 4.5px); Removed fixed height */
+            display: flex;
+            flex-direction: column;
+            /* Use flex-basis to suggest initial height distribution */
+            flex-basis: calc(25% - 4.5px);
+            flex-grow: 1; /* Allow items to grow slightly if needed */
+        }
+        /* No hover effect needed for static thumbnail */
+        /* .collage-item:hover { transform: translateY(-2px); } */
+
+        .collage-header {
+            padding: 5px 7px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .collage-logo {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            object-fit: contain;
+        }
+        .collage-company {
+            font-size: 9px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+        }
+
+        .collage-banner {
+            width: 100%;
+            /* Let banner take more space */
+            flex-grow: 3; /* Give more weight to banner */
+            height: 0; /* Initial height for flex-grow calculation */
+            min-height: 50px; /* Ensure minimum banner height */
+            object-fit: cover;
+            display: block;
+        }
+
+        .collage-title {
+            padding: 5px; /* Reduced padding */
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.2;
+            text-align: center;
+            background-color: #fff;
+            flex-grow: 1; /* Title takes remaining space */
+            flex-shrink: 0; /* Don't shrink title area */
+            min-height: 25px; /* Minimum height for title */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+
+        /* --- Responsive Adjustments --- */
+        @media screen and (max-width: 768px) {
+            body {
+                align-items: center;
+                padding-top: 20px;
+            }
+            .laptop-mockup {
+                transform: rotateX(0deg) rotateY(0deg);
+                min-height: 500px;
+                aspect-ratio: 950 / 700;
+            }
+            .email-header { height: 45px; padding: 0 10px; }
+            .email-header-title { font-size: 14px; gap: 8px; }
+            .logo-svg { width: 28px; height: 28px; }
+            .toolbar-icon { width: 18px; height: 18px; }
+            .email-sidebar { width: 150px; padding: 10px 0; }
+            .sidebar-item { padding: 8px 10px; font-size: 12px; gap: 6px; }
+            .sidebar-item-icon { width: 14px; height: 14px; }
+
+            .collage-item { width: calc(50% - 4px); flex-basis: calc(25% - 4.5px); }
+            .collage-banner { min-height: 45px; }
+            .collage-title { font-size: 9px; padding: 4px; min-height: 22px;}
+            .collage-header { padding: 4px 6px; }
+            .collage-logo { width: 16px; height: 16px; }
+            .collage-company { font-size: 8px; }
+        }
+         @media screen and (max-width: 480px) {
+             .laptop-mockup {
+                 perspective: 1000px;
+                 aspect-ratio: 950 / 800;
+                 min-height: 450px;
+             }
+             .email-header-title span { display: none; }
+             .email-sidebar { display: none; }
+             .email-content-area { margin-left: 0; padding: 6px; gap: 4px; }
+
+             .collage-item { width: calc(50% - 2px); flex-basis: calc(25% - 3px); }
+             .collage-banner { min-height: 40px; }
+             .collage-title { font-size: 8px; padding: 3px; line-height: 1.1; min-height: 18px;}
+              .collage-header { padding: 3px 4px; gap: 3px;}
+             .collage-logo { width: 14px; height: 14px; }
+             .collage-company { font-size: 7px; }
+
+         }
+
+    </style>
+</head>
+<body>
+    <div class="animation-container">
+        <div class="laptop-mockup">
+            <div class="laptop-screen">
+                <div class="display">
+                    <div class="email-header">
+                        <div class="email-header-title">
+                            <div class="logo-svg">
+                                 <img src="https://yannicksegaar.github.io/RomAIx-Logo/RomAIx_Favicon.png" alt="App Logo"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/32x32/ffffff/587C74?text=R';">
+                            </div>
+                            <span>AI Inbox: Auto-Reply Showcase</span>
+                        </div>
+                        <div class="email-toolbar">
+                            <div class="toolbar-icon"></div>
+                            <div class="toolbar-icon"></div>
+                            <div class="toolbar-icon"></div>
+                        </div>
+                    </div>
+
+                    <div class="email-main">
+                        <div class="email-sidebar">
+                            <div class="sidebar-item sidebar-item-active">
+                                <div class="sidebar-item-icon"></div>
+                                Inbox
+                                <div class="notification"></div>
+                            </div>
+                            <div class="sidebar-item">
+                                <div class="sidebar-item-icon"></div>
+                                Sent
+                                 <div class="notification"></div>
+                            </div>
+                        </div>
+
+                        <div class="email-content-area">
+                            <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="AlohaAdventures_Logo.png" class="collage-logo" alt="Aloha Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/ff9b42/ffffff?text=A';">
+                                    <span class="collage-company">Aloha Adventures</span>
+                                </div>
+                                <img src="AlohaAdventures_Banner.png" class="collage-banner" alt="Aloha Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/f0c491/333333?text=Banner';">
+                                <div class="collage-title">Mahalo for Your Message!</div>
+                            </div>
+                            <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="VineyardVoyages_Logo.png" class="collage-logo" alt="Vineyard Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/722F37/ffffff?text=V';">
+                                    <span class="collage-company">Vineyard Voyages</span>
+                                </div>
+                                <img src="VineyardVoyages_Banner.png" class="collage-banner" alt="Vineyard Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/d4c0a1/333333?text=Banner';">
+                                <div class="collage-title">Your Inquiry Has Been Received</div>
+                            </div>
+                            <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="SummitSeekers_Logo.png" class="collage-logo" alt="Summit Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/2e4830/ffffff?text=S';">
+                                    <span class="collage-company">Summit Seekers</span>
+                                </div>
+                                <img src="SummitSeekers_Banner.png" class="collage-banner" alt="Summit Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/a2b8a6/333333?text=Banner';">
+                                <div class="collage-title">Your Adventure Begins Here</div>
+                            </div>
+                             <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="CityStrides_Logo.png" class="collage-logo" alt="City Strides Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/2c3e50/ffffff?text=C';">
+                                    <span class="collage-company">City Strides</span>
+                                </div>
+                                <img src="CityStrides_Banner.png" class="collage-banner" alt="City Strides Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/bdc3c7/333333?text=Banner';">
+                                <div class="collage-title">Thanks for Stopping By!</div>
+                            </div>
+                            <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="SavannaJourneys_Logo.png" class="collage-logo" alt="Savanna Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/5a472b/ffffff?text=S';">
+                                    <span class="collage-company">Savanna Journeys</span>
+                                </div>
+                                <img src="SavannaJourneys_Banner.png" class="collage-banner" alt="Savanna Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/e0cdab/333333?text=Banner';">
+                                <div class="collage-title">Your Safari Inquiry Has Been Spotted!</div>
+                            </div>
+                             <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="SakuraJourneys_Logo.png" class="collage-logo" alt="Sakura Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/2d2d2d/ffffff?text=S';">
+                                    <span class="collage-company">Sakura Journeys</span>
+                                </div>
+                                <img src="SakuraJourneys_Banner.png" class="collage-banner" alt="Sakura Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/fce4ec/333333?text=Banner';">
+                                <div class="collage-title">🌸 Your Message Has Been Received</div>
+                            </div>
+                            <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="AzureVoyages_Logo.png" class="collage-logo" alt="Azure Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/1e5f8c/ffffff?text=A';">
+                                    <span class="collage-company">Azure Voyages</span>
+                                </div>
+                                <img src="AzureVoyages_Banner.png" class="collage-banner" alt="Azure Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/a9d6e5/333333?text=Banner';">
+                                <div class="collage-title">Your Inquiry Is On Deck!</div>
+                            </div>
+                             <div class="collage-item">
+                                <div class="collage-header">
+                                    <img src="HeritageHallmarks_Logo.png" class="collage-logo" alt="Heritage Logo" onerror="this.onerror=null; this.src='https://placehold.co/24x24/39273e/ffffff?text=H';">
+                                    <span class="collage-company">Heritage Hallmarks</span>
+                                </div>
+                                <img src="HeritageHallmarks_Banner.png" class="collage-banner" alt="Heritage Banner" onerror="this.onerror=null; this.src='https://placehold.co/200x60/dcd0c0/333333?text=Banner';">
+                                <div class="collage-title">Your Inquiry Has Been Received</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="laptop-base"></div>
+        </div>
+    </div>
+
+    </body>
+</html>
