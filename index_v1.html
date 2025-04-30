@@ -350,25 +350,6 @@
                                  <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                             </div>
                             Inbox
-                            <div class="notification" id="inbox-notification">1</div>
-                        </div>
-                        <div class="sidebar-item">
-                             <div class="sidebar-item-icon">
-                                 <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                             </div>
-                            Sent
-                            <div class="notification" id="sent-notification">0</div> </div>
-                        <div class="sidebar-item">
-                             <div class="sidebar-item-icon">
-                                 <svg viewBox="0 0 24 24"><path d="M21.41 6.34l-3.75-3.75L16.25 1 12 5.25 7.75 1 6.34 2.59 2.59 6.34 1 7.75 5.25 12 1 16.25l1.59 1.41 3.75 3.75L7.75 23 12 18.75 16.25 23l1.41-1.59 3.75-3.75L23 16.25 18.75 12 23 7.75l-1.59-1.41zM12 16.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5z"/></svg>
-                             </div>
-                            Drafts
-                            <div class="notification" id="drafts-notification">0</div> </div>
-                         <div class="sidebar-item" id="sidebar-spam">
-                             <div class="sidebar-item-icon">
-                                 <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
-                             </div>
-                            Spam
                         </div>
                     </div>
 
@@ -387,7 +368,7 @@
         // --- CONFIGURATION ---
         const CONFIG = {
             initialDelay: 1000,      // Wait 1 second before starting
-            templateDisplayTime: 4000, // Show each template for 4 seconds
+            templateDisplayTime: 1000, // Show each template for 4 seconds
             fadeDuration: 600       // Duration of the fade effect (matches CSS transition)
         };
 
