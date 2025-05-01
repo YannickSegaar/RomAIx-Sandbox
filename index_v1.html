@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Agent - Tone of Voice Comparison - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #eef2f5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Title Container */
+        .title-container {
+            width: 100%;
+            max-width: 1400px;
+            background: linear-gradient(to right, #2F3E46, #587C74);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Container */
+        .comparison-outer-container {
+            width: 100%;
+            max-width: 1400px;
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        .comparison-container {
+            width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Comparison Header */
+        .comparison-header {
+            display: flex;
+            width: 100%;
+        }
+
+        .comparison-header-col {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .generic-header {
+            background-color: #686868;
+            border-radius: 10px 0 0 0;
+        }
+
+        .branded-header {
+            background-color: #587C74;
+            border-radius: 0 10px 0 0;
+        }
+
+        /* Comparison Content */
+        .comparison-content {
+            display: flex;
+            flex-direction: row;
+            min-height: 600px;
+        }
+
+        .comparison-col {
+            flex: 1;
+            padding: 50px 25px 30px;
+            position: relative;
+        }
+
+        /* Generic Column Styling */
+        .generic-col {
+            background-color: #f0f0f0;
+            border-right: 1px solid #e0e0e0;
+            border-radius: 0 0 0 10px;
+        }
+
+        /* Branded Column Styling */
+        .branded-col {
+            background-color: #f9fffc;
+            border-radius: 0 0 10px 0;
+        }
+
+        /* Email Styling */
+        .email-container {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin: 0;
+        }
+
+        /* Generic Email Styling */
+        .generic-email {
+            border: 1px solid #e0e0e0;
+            background-color: #fcfcfc;
+        }
+
+        .generic-email .email-header {
+            background-color: #ebebeb;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        /* Branded Email Styling */
+        .branded-email {
+            border: 1px solid #d5e6e2;
+            background-color: white;
+        }
+
+        .branded-email .email-header {
+            background-color: #e8f4f1;
+            border-bottom: 1px solid #d5e6e2;
+        }
+
+        .email-header {
+            padding: 15px;
+        }
+
+        .email-subject {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .generic-email .email-subject {
+            color: #555;
+        }
+
+        .branded-email .email-subject {
+            color: #2F3E46;
+        }
+
+        .email-metadata {
+            font-size: 13px;
+        }
+
+        .generic-email .email-metadata {
+            color: #888;
+        }
+
+        .branded-email .email-metadata {
+            color: #587C74;
+        }
+
+        .email-body {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .generic-email .email-body {
+            color: #555;
+        }
+
+        .branded-email .email-body {
+            color: #333;
+        }
+
+        .email-signature {
+            margin-top: 20px;
+            padding-top: 10px;
+            font-size: 14px;
+        }
+
+        .generic-email .email-signature {
+            border-top: 1px solid #eee;
+            color: #777;
+        }
+
+        .branded-email .email-signature {
+            border-top: 1px solid #e8f4f1;
+            color: #2F3E46;
+        }
+
+        /* Highlighted Text in Emails */
+        .highlight-text {
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .generic-email .highlight-text {
+            background-color: rgba(211, 211, 211, 0.3);
+            border-bottom: 1px dashed #aaa;
+        }
+
+        .branded-email .highlight-text {
+            background-color: rgba(88, 124, 116, 0.15);
+            border-bottom: 1px dashed #587C74;
+        }
+
+        /* Callout/Highlight Bubbles */
+        .highlight-bubble {
+            position: absolute;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 250px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            color: white;
+        }
+
+        /* Lines connecting bubbles to content */
+        .highlight-line {
+            position: absolute;
+            height: 2px;
+            z-index: 5;
+        }
+
+        /* Generic Email Highlight Bubbles - LEFT side */
+        .highlight-generic {
+            background-color: #b24a44;
+            left: -280px;
+        }
+
+        .highlight-line-generic {
+            background-color: #b24a44;
+            width: 30px;
+            left: -30px;
+        }
+
+        .highlight-generic-1 {
+            top: 100px;
+        }
+
+        .highlight-line-generic-1 {
+            top: 115px;
+        }
+
+        .highlight-generic-2 {
+            top: 250px;
+        }
+
+        .highlight-line-generic-2 {
+            top: 265px;
+        }
+
+        .highlight-generic-3 {
+            top: 400px;
+        }
+
+        .highlight-line-generic-3 {
+            top: 415px;
+        }
+
+        /* Branded Email Highlight Bubbles - RIGHT side */
+        .highlight-branded {
+            background-color: #3c8065;
+            right: -280px;
+        }
+
+        .highlight-line-branded {
+            background-color: #3c8065;
+            width: 30px;
+            right: -30px;
+        }
+
+        .highlight-branded-1 {
+            top: 100px;
+        }
+
+        .highlight-line-branded-1 {
+            top: 115px;
+        }
+
+        .highlight-branded-2 {
+            top: 250px;
+        }
+
+        .highlight-line-branded-2 {
+            top: 265px;
+        }
+
+        .highlight-branded-3 {
+            top: 400px;
+        }
+
+        .highlight-line-branded-3 {
+            top: 415px;
+        }
+
+        /* Verdict Labels */
+        .verdict-label {
+            position: absolute;
+            top: 15px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            z-index: 5;
+            color: white;
+        }
+
+        .generic-verdict {
+            background-color: #b24a44;
+            left: 25px;
+        }
+
+        .branded-verdict {
+            background-color: #3c8065;
+            right: 25px;
+        }
+
+        /* Logo */
+        .logo {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            z-index: 50;
+        }
+
+        /* Responsive Adjustments */
+        @media screen and (max-width: 1400px) {
+            .comparison-outer-container {
+                max-width: 1000px;
+            }
+            
+            .comparison-container {
+                width: 100%;
+            }
+            
+            .highlight-bubble {
+                position: relative;
+                top: auto;
+                left: auto;
+                right: auto;
+                width: 100%;
+                margin: 10px 0;
+            }
+            
+            .highlight-line {
+                display: none;
+            }
+            
+            .generic-col {
+                padding-top: 80px;
+            }
+            
+            .branded-col {
+                padding-top: 80px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .comparison-content {
+                flex-direction: column;
+            }
+            
+            .comparison-col {
+                width: 100%;
+            }
+            
+            .generic-col {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+                border-radius: 0;
+            }
+            
+            .branded-col {
+                border-radius: 0 0 10px 10px;
+            }
+            
+            .generic-header {
+                border-radius: 10px 10px 0 0;
+            }
+            
+            .branded-header {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title-container">
+        Beyond Generic Responses: The Power of Tone of Voice in AI Email Systems
+    </div>
+
+    <div class="comparison-outer-container">
+        <div class="comparison-container">
+            <div class="comparison-header">
+                <div class="comparison-header-col generic-header">Generic Email Response</div>
+                <div class="comparison-header-col branded-header">Brand-Aligned Email Response</div>
+            </div>
+            
+            <div class="comparison-content">
+                <!-- Generic Email Column -->
+                <div class="comparison-col generic-col">
+                    <div class="verdict-label generic-verdict">Ineffective</div>
+                    
+                    <div class="email-container generic-email">
+                        <div class="email-header">
+                            <div class="email-subject">RE: Inquiry about Hawaiian tours</div>
+                            <div class="email-metadata">From: support@acmetours.com</div>
+                        </div>
+                        <div class="email-body">
+                            <p>Dear John,</p>
+                            <p>Thank you for your inquiry about our Hawaii tours. <span class="highlight-text">We have received your message</span> and would like to provide you with information about our tour options.</p>
+                            <p><span class="highlight-text">Please find below some tour options that might interest you:</span></p>
+                            <p>1. Historical Tour - Visit Pearl Harbor and other historical sites<br>
+                            2. Island Circle Tour - See the key attractions around Oahu<br>
+                            3. Volcano Tour - Experience Hawaii's natural wonders</p>
+                            <p><span class="highlight-text">Let us know if you have any questions or would like to proceed with booking.</span></p>
+                            <p>Best regards,</p>
+                            <div class="email-signature">
+                                Customer Service<br>
+                                Acme Tours<br>
+                                support@acmetours.com
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Highlight Bubbles for Generic (LEFT SIDE) -->
+                    <div class="highlight-bubble highlight-generic highlight-generic-1">
+                        Generic opening lacks personality and doesn't create an emotional connection with the customer
+                    </div>
+                    <div class="highlight-line highlight-line-generic highlight-line-generic-1"></div>
+                    
+                    <div class="highlight-bubble highlight-generic highlight-generic-2">
+                        Standard "catalog-style" listing fails to convey excitement or address customer's specific needs
+                    </div>
+                    <div class="highlight-line highlight-line-generic highlight-line-generic-2"></div>
+                    
+                    <div class="highlight-bubble highlight-generic highlight-generic-3">
+                        Formal closing feels impersonal and misses opportunity to build brand relationship
+                    </div>
+                    <div class="highlight-line highlight-line-generic highlight-line-generic-3"></div>
+                </div>
+                
+                <!-- Branded Email Column -->
+                <div class="comparison-col branded-col">
+                    <div class="verdict-label branded-verdict">Effective</div>
+                    
+                    <div class="email-container branded-email">
+                        <div class="email-header">
+                            <div class="email-subject">RE: Your Hawaiian Adventure Awaits!</div>
+                            <div class="email-metadata">From: aloha@alohaacmetours.com</div>
+                        </div>
+                        <div class="email-body">
+                            <p><span class="highlight-text">Aloha John!</span></p>
+                            <p><span class="highlight-text">Mahalo for reaching out about our Hawaiian adventures!</span> We're thrilled you're considering exploring our beautiful islands with us.</p>
+                            <p>Based on your interest in ocean activities and cultural experiences, I'd love to recommend:</p>
+                            <p><span class="highlight-text">🌊 Our Turtle Snorkel Safari</span> - Swim alongside Hawaii's graceful green sea turtles in crystal-clear waters<br>
+                            <span class="highlight-text">🌋 Legends & Volcanoes Cultural Tour</span> - Experience Hawaii's dramatic landscapes while learning about ancient Hawaiian traditions<br>
+                            <span class="highlight-text">🥥 North Shore Surf & Culture Experience</span> - Combine beach time with authentic cultural demonstrations</p>
+                            <p>These adventures capture the true spirit of the islands and offer those unforgettable moments you're looking for!</p>
+                            <p><span class="highlight-text">E komo mai (Welcome)!</span></p>
+                            <div class="email-signature">
+                                Kelly Kealoha<br>
+                                Island Experience Guide<br>
+                                Aloha Acme Tours<br>
+                                🌴 "Creating Island Memories Since 1985" 🌴
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Highlight Bubbles for Branded (RIGHT SIDE) -->
+                    <div class="highlight-bubble highlight-branded highlight-branded-1">
+                        Authentic Hawaiian greeting creates immediate connection and reflects local culture
+                    </div>
+                    <div class="highlight-line highlight-line-branded highlight-line-branded-1"></div>
+                    
+                    <div class="highlight-bubble highlight-branded highlight-branded-2">
+                        Descriptive, evocative tour names with emojis convey excitement and island atmosphere
+                    </div>
+                    <div class="highlight-line highlight-line-branded highlight-line-branded-2"></div>
+                    
+                    <div class="highlight-bubble highlight-branded highlight-branded-3">
+                        Personal signature with Hawaiian elements reinforces brand identity and creates trust
+                    </div>
+                    <div class="highlight-line highlight-line-branded highlight-line-branded-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <img class="logo" src="https://yannicksegaar.github.io/RomAIx-Logo/RomAIx_Favicon.png" alt="RomAIx Logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\' viewBox=\'0 0 80 80\'><circle cx=\'40\' cy=\'40\' r=\'40\' fill=\'%23587C74\'/><text x=\'50%\' y=\'50%\' font-size=\'36\' text-anchor=\'middle\' dy=\'.3em\' fill=\'white\' font-family=\'Arial, sans-serif\'>R</text></svg>';">
+
+</body>
+</html>
