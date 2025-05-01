@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Email Agent - Tone of Voice Comparison - RomAIx</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #eef2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        /* Title Container */
+        .title-container {
+            width: 100%;
+            max-width: 1200px;
+            background: linear-gradient(135deg, #2F3E46, #587C74);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 30px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .title-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+
+        /* Main Container */
+        .comparison-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        /* Comparison Header */
+        .comparison-header {
+            display: flex;
+            width: 100%;
+        }
+
+        .comparison-header-col {
+            flex: 1;
+            text-align: center;
+            padding: 18px 15px;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .generic-header {
+            background: linear-gradient(to right, #555555, #686868);
+            box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .branded-header {
+            background: linear-gradient(to right, #4a8c7d, #587C74);
+            box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Comparison Content */
+        .comparison-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .comparison-col {
+            flex: 1;
+            padding: 30px;
+            position: relative;
+        }
+
+        /* Generic Column Styling */
+        .generic-col {
+            background-color: #f5f5f5;
+        }
+
+        /* Branded Column Styling */
+        .branded-col {
+            background-color: #f9fffc;
+        }
+
+        /* Email Containers */
+        .email-section {
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .email-header-section {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .generic-email .email-header-section {
+            background: linear-gradient(to bottom, #e8e8e8, #f0f0f0);
+        }
+
+        .branded-email .email-header-section {
+            background: linear-gradient(to bottom, #e8f4f1, #f0f9f6);
+        }
+
+        .email-subject {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .generic-email .email-subject {
+            color: #555;
+        }
+
+        .branded-email .email-subject {
+            color: #2F3E46;
+        }
+
+        .email-metadata {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .generic-email .email-metadata {
+            color: #888;
+        }
+
+        .branded-email .email-metadata {
+            color: #587C74;
+        }
+
+        .email-body {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+        }
+
+        .generic-email .email-body {
+            color: #555;
+        }
+
+        .branded-email .email-body {
+            color: #333;
+        }
+
+        .email-paragraph {
+            margin-bottom: 15px;
+        }
+
+        /* Email Signature Styles */
+        .email-signature {
+            margin-top: 25px;
+            padding-top: 15px;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+
+        .generic-email .email-signature {
+            color: #b24a44;
+            background-color: rgba(255, 130, 130, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            border-top: 1px solid rgba(178, 74, 68, 0.2);
+        }
+
+        .branded-email .email-signature {
+            color: #3c8065;
+            background-color: rgba(88, 196, 114, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            border-top: 1px solid rgba(60, 128, 101, 0.2);
+        }
+
+        /* Highlighted Text */
+        .highlight-text {
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .generic-email .highlight-text {
+            background-color: rgba(231, 76, 60, 0.15);
+            border-bottom: 1px dashed #e74c3c;
+        }
+
+        .branded-email .highlight-text {
+            background-color: rgba(39, 174, 96, 0.15);
+            border-bottom: 1px dashed #27ae60;
+            font-weight: bold;
+        }
+
+        /* Verdict Labels */
+        .verdict-label {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .generic-verdict {
+            background-color: #b24a44;
+        }
+
+        .branded-verdict {
+            background-color: #3c8065;
+        }
+
+        /* Text Bubbles */
+        .bubble-container {
+            position: absolute;
+            width: 230px;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .bubble-left {
+            left: -240px;
+            top: 150px;
+        }
+
+        .bubble-right {
+            right: -240px;
+            top: 150px;
+        }
+
+        .text-bubble {
+            padding: 15px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            color: white;
+            position: relative;
+            font-weight: 600;
+        }
+
+        .generic-bubble {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            text-align: right;
+        }
+
+        .generic-bubble:after {
+            content: '';
+            position: absolute;
+            right: -12px;
+            top: 15px;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-left: 12px solid #e74c3c;
+        }
+
+        .branded-bubble {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            text-align: left;
+        }
+
+        .branded-bubble:after {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 15px;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-right: 12px solid #27ae60;
+        }
+
+        /* Tour List Formatting */
+        .tour-list {
+            margin: 10px 0;
+        }
+
+        .tour-item {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        /* Logo */
+        .logo {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            z-index: 50;
+        }
+
+        /* Responsive Adjustments */
+        @media screen and (max-width: 1400px) {
+            .bubble-container {
+                position: static;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .text-bubble {
+                text-align: left;
+            }
+            
+            .text-bubble:after {
+                display: none;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .comparison-content {
+                flex-direction: column;
+            }
+            
+            .comparison-col {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title-container">
+        Beyond Generic Responses: The Power of Tone of Voice in AI Email Systems
+    </div>
+
+    <!-- Left side bubbles for generic email -->
+    <div class="bubble-container bubble-left">
+        <div class="text-bubble generic-bubble">
+            Bland opening lacks personality
+        </div>
+        <div class="text-bubble generic-bubble">
+            Generic listing fails to showcase value
+        </div>
+        <div class="text-bubble generic-bubble">
+            Missing descriptions lose customer interest
+        </div>
+        <div class="text-bubble generic-bubble">
+            Impersonal closing misses connection
+        </div>
+        <div class="text-bubble generic-bubble">
+            Generic signature lacks identity and warmth
+        </div>
+    </div>
+
+    <div class="comparison-container">
+        <div class="comparison-header">
+            <div class="comparison-header-col generic-header">Generic Email Response</div>
+            <div class="comparison-header-col branded-header">Brand-Aligned Email Response</div>
+        </div>
+        
+        <div class="comparison-content">
+            <!-- Generic Email Column -->
+            <div class="comparison-col generic-col">
+                <div class="verdict-container">
+                <span class="verdict-label generic-verdict">DON'T</span>
+            </div>
+                
+                <div class="email-section generic-email">
+                    <div class="email-header-section">
+                        <div class="email-subject">RE: Inquiry about adventure tours</div>
+                        <div class="email-metadata">From: support@acmetours.com</div>
+                    </div>
+                    <div class="email-body">
+                        <p class="email-paragraph">Dear John,</p>
+                        
+                        <p class="email-paragraph">Thank you for your inquiry about our adventure tours. <span class="highlight-text">We have received your message</span> and would like to provide you with information.</p>
+                        
+                        <p class="email-paragraph"><span class="highlight-text">Please find below some tour options that might interest you:</span></p>
+                        
+                        <div class="tour-list">
+                            <p class="tour-item">1. Mountain Hiking Tour</p>
+                            <p class="tour-item">2. City Discovery Tour</p>
+                            <p class="tour-item">3. Nature Experience</p>
+                        </div>
+                        
+                        <p class="email-paragraph"><span class="highlight-text">Let us know if you have any questions or would like to proceed with booking.</span></p>
+                        
+                        <p class="email-paragraph">Best regards,</p>
+                        <div class="email-signature">
+                            Customer Service<br>
+                            Acme Tours<br>
+                            support@acmetours.com
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Branded Email Column -->
+            <div class="comparison-col branded-col">
+                <div class="verdict-container">
+                <span class="verdict-label branded-verdict">DO</span>
+            </div>
+                
+                <div class="email-section branded-email">
+                    <div class="email-header-section">
+                        <div class="email-subject">RE: Your Adventure Journey Begins Here!</div>
+                        <div class="email-metadata">From: james@explorertours.com</div>
+                    </div>
+                    <div class="email-body">
+                        <p class="email-paragraph"><span class="highlight-text">Hi John! Great to hear from you!</span></p>
+                        
+                        <p class="email-paragraph"><span class="highlight-text">Thanks for reaching out about our adventure packages!</span> We're excited you're considering creating some unforgettable memories with us.</p>
+                        
+                        <p class="email-paragraph"><span class="highlight-text">I've personally selected some perfect adventures based on your interests in outdoor activities and cultural experiences:</span></p>
+                        
+                        <div class="tour-list">
+                            <p class="tour-item">🏔️ Mountain Explorer Trek - <span class="highlight-text">Perfect for nature lovers who want breathtaking views and unforgettable photo opportunities at sunrise</span></p>
+                            <p class="tour-item">🏛️ Cultural Heritage Journey - Immerse yourself in local traditions and authentic experiences</p>
+                            <p class="tour-item">🌊 Coastal Adventure Tour - Combine thrilling activities with stunning scenery</p>
+                        </div>
+                        
+                        <p class="email-paragraph">These adventures consistently receive rave reviews from our guests!</p>
+                        
+                        <p class="email-paragraph"><span class="highlight-text">Can't wait to help you create amazing memories!</span></p>
+                        <div class="email-signature">
+                            James Thompson<br>
+                            Adventure Specialist<br>
+                            Explorer Tours<br>
+                            🌍 "Crafting Extraordinary Journeys Since 1995" 🌍
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right side bubbles for branded email -->
+    <div class="bubble-container bubble-right">
+        <div class="text-bubble branded-bubble">
+            Enthusiastic greeting creates connection
+        </div>
+        <div class="text-bubble branded-bubble">
+            Personalized recommendations show value
+        </div>
+        <div class="text-bubble branded-bubble">
+            Detailed tour descriptions build excitement
+        </div>
+        <div class="text-bubble branded-bubble">
+            Warm closing builds brand relationship
+        </div>
+        <div class="text-bubble branded-bubble">
+            Branded signature with title builds trust
+        </div>
+    </div>
+    
+    <img class="logo" src="https://yannicksegaar.github.io/RomAIx-Logo/RomAIx_Favicon.png" alt="RomAIx Logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\' viewBox=\'0 0 80 80\'><circle cx=\'40\' cy=\'40\' r=\'40\' fill=\'%23587C74\'/><text x=\'50%\' y=\'50%\' font-size=\'36\' text-anchor=\'middle\' dy=\'.3em\' fill=\'white\' font-family=\'Arial, sans-serif\'>R</text></svg>';">
+
+</body>
+</html>
